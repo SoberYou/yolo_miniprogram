@@ -50,6 +50,12 @@ Page({
     })
   },
 
+  goToUser() {
+    wx.navigateTo({
+      url: '/pages/user/user'
+    })
+  },
+
   goToGoal(e) {
     const goalId = e.currentTarget.dataset.id;
     wx.navigateTo({
