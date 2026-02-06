@@ -1,0 +1,23 @@
+<!-- pages/result/result.wxml -->
+<view class="container">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+      <!-- No back button here to encourage moving forward or home -->
+  </view>
+
+  <!-- Content -->
+  <view class="content-wrapper">
+    <view class="result-text-group">
+      <view class="result-main-text">
+        <text>你刚刚为「{{goalName}}」</text>
+        <text>投入了 {{durationText}}</text>
+      </view>
+      <text class="result-sub-text">时间已经发生</text>
+    </view>
+
+    <view class="action-group">
+      <button class="btn-home" bindtap="goHome">返回首页</button>
+      <button class="btn-restart" bindtap="restartFocus">再来一段</button>
+    </view>
+  </view>
+</view>

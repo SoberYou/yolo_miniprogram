@@ -1,0 +1,241 @@
+/** pages/index/index.wxss */
+page {
+  background-color: #ffffff;
+  color: #333333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.custom-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  padding-left: 24px; /* Align with content */
+  position: relative;
+}
+
+.app-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+.user-icon-container {
+  position: absolute;
+  right: 100px; /* Approximate safe zone left of capsule */
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.user-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  position: relative;
+}
+
+/* Simple user icon graphic (head and body) */
+.user-icon::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 50%;
+}
+
+.user-icon::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 8px 8px 0 0;
+}
+
+
+/* Main Content */
+.main-content {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Section A: Life Time */
+.section-life {
+  padding: 20px 24px;
+}
+
+.life-bar-container {
+  width: 100%;
+  height: 48px;
+  background-color: #f5f5f5;
+  border-radius: 4px; /* Minimal rounding */
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 24px;
+  display: flex;
+}
+
+.life-bar-fill {
+  height: 100%;
+  background-color: #d1d1d1; /* Emotionally stable gray */
+  border-right: 1px solid #fff;
+}
+
+.life-bar-empty {
+  flex: 1;
+  background-color: #f5f5f5;
+}
+
+.life-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.life-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.life-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.life-time {
+  font-size: 32px;
+  font-weight: 300; /* Light weight for elegance */
+  color: #000;
+}
+
+.life-stats {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+
+.separator {
+  color: #ddd;
+}
+
+/* Section B: Buffer */
+.section-buffer {
+  padding: 0 24px 40px;
+}
+
+.buffer-text {
+  font-size: 14px;
+  color: #a0a0a0;
+  font-weight: 400;
+}
+
+/* GOAL Zone */
+.section-goals {
+  padding: 0 24px;
+  margin-bottom: 48px;
+}
+
+.goal-card {
+  background-color: #f9f9f9;
+  padding: 24px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+
+.goal-card:active {
+  opacity: 0.7;
+}
+
+.goal-name {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+.goal-time {
+  font-size: 14px;
+  color: #888;
+}
+
+/* CTA Zone */
+.section-cta {
+  padding: 0 24px;
+}
+
+.cta-header {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 12px;
+}
+
+.cta-suggestion {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 32px;
+  line-height: 1.4;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-start {
+  flex: 2;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 12px 0;
+  line-height: 1.5;
+}
+
+.btn-skip {
+  flex: 1;
+  background-color: transparent;
+  color: #999999;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 12px 0;
+  line-height: 1.5;
+}
+
+/* Remove button default borders */
+.btn-start::after, .btn-skip::after {
+  border: none;
+}

@@ -1,0 +1,90 @@
+/** pages/result/result.wxss */
+page {
+  background-color: #ffffff;
+  color: #333333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
+
+.custom-header {
+    width: 100%;
+}
+
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-text-group {
+  margin-bottom: 80px;
+  text-align: center;
+}
+
+.result-main-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.result-sub-text {
+  font-size: 14px;
+  color: #999;
+  letter-spacing: 1px;
+}
+
+.action-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-home {
+  width: 100% !important;
+  max-width: 200px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 30px;
+  padding: 14px 0;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-restart {
+  width: 100% !important;
+  max-width: 200px;
+  background-color: transparent;
+  color: #999999;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 12px 0;
+  line-height: 1.5;
+}
+
+.btn-home::after, .btn-restart::after {
+  border: none;
+}

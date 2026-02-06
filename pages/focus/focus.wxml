@@ -1,0 +1,39 @@
+<wxs module="utils">
+  module.exports.formatTime = function(seconds) {
+    var m = Math.floor(seconds / 60);
+    var s = seconds % 60;
+    if (m < 10) m = "0" + m;
+    if (s < 10) s = "0" + s;
+    return m + ":" + s;
+  }
+</wxs>
+
+<view class="container">
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+      <view class="header-content">
+          <view class="back-btn" bindtap="goBack">
+              <view class="back-arrow"></view>
+          </view>
+          <text class="title">专注</text>
+      </view>
+  </view>
+
+  <view class="content" style="padding-top: {{navBarHeight}}px;">
+    <!-- Ready State -->
+    <view class="ready-view" wx:if="{{status === 'ready'}}">
+        <view class="text-group">
+            <text class="main-text">你正在为「写作」</text>
+            <text class="main-text">投入真实时间</text>
+        </view>
+        <button class="start-btn" bindtap="startFocus">开始专注</button>
+    </view>
+
+    <!-- Running State -->
+    <view class="running-view" wx:if="{{status === 'running'}}">
+        <text class="target-name">写作</text>
+        <view class="timer-display">{{utils.formatTime(seconds)}}</view>
+        <text class="status-text">现在不需要想结果</text>
+        <button class="stop-btn" bindtap="finishFocus">结束</button>
+    </view>
+  </view>
+</view>

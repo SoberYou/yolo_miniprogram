@@ -1,0 +1,58 @@
+<!-- pages/goal/goal.wxml -->
+<view class="container">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+      <view class="back-btn" bindtap="goBack">
+        <view class="back-arrow"></view>
+      </view>
+      <text class="page-title">{{goal.name}}</text>
+    </view>
+  </view>
+
+  <!-- Main Content -->
+  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px;">
+    
+    <!-- Title & Description -->
+    <view class="section-header">
+      <view class="goal-title">{{goal.name}}</view>
+      <view class="goal-desc-group">
+        <text class="goal-desc">你以为你想要它</text>
+        <text class="goal-desc sub">这是最近的数据</text>
+      </view>
+    </view>
+
+    <!-- Time Investment Stats -->
+    <view class="section-stats">
+      <view class="stat-card">
+        <text class="stat-label">近 7 天</text>
+        <text class="stat-value">{{goal.stats.last7Days}}</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-label">近 30 天</text>
+        <text class="stat-value">{{goal.stats.last30Days}}</text>
+      </view>
+    </view>
+
+    <!-- History List -->
+    <view class="section-history">
+      <view class="history-label">时间记录</view>
+      <block wx:for="{{goal.history}}" wx:key="date">
+        <view class="history-item">
+          <text class="history-date">{{item.date}}</text>
+          <text class="history-duration">{{item.duration}}</text>
+        </view>
+      </block>
+    </view>
+
+    <!-- Actions -->
+    <view class="section-actions">
+      <button class="btn-primary" bindtap="startFocus">开始专注</button>
+      <button class="btn-secondary" bindtap="editGoal">编辑目标</button>
+    </view>
+
+    <!-- Footer Padding -->
+    <view style="height: 40px;"></view>
+
+  </scroll-view>
+</view>

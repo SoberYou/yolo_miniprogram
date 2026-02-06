@@ -1,0 +1,84 @@
+/** pages/life/life.wxss */
+page {
+  background-color: #ffffff;
+  color: #333333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.custom-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  height: 100%;
+}
+
+.back-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-arrow {
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #333;
+  border-left: 2px solid #333;
+  transform: rotate(-45deg);
+}
+
+.content-wrapper {
+    padding: 0 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.text-block {
+    margin-bottom: 40px;
+}
+
+.paragraph {
+    display: block;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 8px;
+}
+
+.paragraph.highlight {
+    color: #000;
+    font-weight: 500;
+}
+
+.footer {
+    margin-top: 40px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 24px;
+}
+
+.footer-text {
+    font-size: 12px;
+    color: #999;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}

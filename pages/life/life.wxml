@@ -1,0 +1,34 @@
+<!-- pages/life/life.wxml -->
+<view class="container">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+       <view class="back-btn" bindtap="goBack">
+        <view class="back-arrow"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="content-wrapper" style="padding-top: {{navBarHeight}}px;">
+    <view class="text-block">
+        <text class="paragraph">我们假设人均寿命为 80 岁。</text>
+        <text class="paragraph">这大约是 4000 个星期。</text>
+    </view>
+
+    <view class="text-block">
+        <text class="paragraph">首页的进度条，展示的是你已经用掉的时间。</text>
+        <text class="paragraph">它是客观事实。</text>
+        <text class="paragraph">它不会倒流，也不会因为你的焦虑而变慢。</text>
+    </view>
+
+    <view class="text-block">
+        <text class="paragraph">唯一能做的，</text>
+        <text class="paragraph highlight">是把剩下的时间，</text>
+        <text class="paragraph highlight">投入到你真正认为重要的事情上。</text>
+    </view>
+    
+    <view class="footer">
+        <text class="footer-text">You Only Live Once</text>
+    </view>
+  </view>
+</view>

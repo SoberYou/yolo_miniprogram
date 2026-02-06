@@ -1,0 +1,66 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+      <text class="app-title">YOU ONLY LIVE ONCE</text>
+      <!-- User Icon - Positioned absolute or flex to not overlap title -->
+      <view class="user-icon-container" bindtap="goToUser">
+         <view class="user-icon"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Main Content -->
+  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px;">
+    
+    <!-- A Zone: Life Time -->
+    <view class="section-life" bindtap="goToLife" >
+      <view class="life-bar-container">
+         <view class="life-bar-fill" style="width: {{lifeTime.usedPercentage}}"></view>
+         <view class="life-bar-empty"></view>
+      </view>
+      <view class="life-info">
+        <view class="life-text-group">
+          <text class="life-label">你的人生，现在是</text>
+          <text class="life-time">{{lifeTime.currentTime}}</text>
+        </view>
+        <view class="life-stats">
+          <text>已用 {{lifeTime.usedPercentage}}</text>
+          <text class="separator">|</text>
+          <text>剩余 {{lifeTime.leftPercentage}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- B Zone: Buffer Text -->
+    <view class="section-buffer">
+      <text class="buffer-text">这不是结束的时间</text>
+    </view>
+
+    <!-- GOAL Zone -->
+    <view class="section-goals">
+      <block wx:for="{{goals}}" wx:key="id">
+        <view class="goal-card" bindtap="goToGoal" data-id="{{item.id}}">
+          <view class="goal-name">{{item.name}}</view>
+          <view class="goal-time">{{item.timeSpent}}</view>
+        </view>
+      </block>
+    </view>
+
+    <!-- CTA Zone -->
+    <view class="section-cta">
+      <view class="cta-header">今天只需要做一件事</view>
+      <view class="cta-suggestion">{{cta.suggestion}}</view>
+      
+      <view class="cta-actions">
+        <button class="btn-start" bindtap="startFocus">开始</button>
+        <button class="btn-skip" bindtap="handleSkip">今天不做</button>
+      </view>
+    </view>
+
+    <!-- Footer Padding -->
+    <view style="height: 40px;"></view>
+
+  </scroll-view>
+</view>
