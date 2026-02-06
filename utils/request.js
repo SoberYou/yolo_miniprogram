@@ -1,4 +1,4 @@
-const BASE_URL = 'http://10.10.55.83:8080';
+const BASE_URL = 'http://10.10.55.83:8080/api';
 
 const request = (url, method, data) => {
   return new Promise((resolve, reject) => {

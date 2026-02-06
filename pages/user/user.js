@@ -16,7 +16,21 @@ Page({
   },
 
   onLoad(options) {
-    // Optionally load existing config if API supports GET
+    this.fetchLifeConfig();
+  },
+
+  fetchLifeConfig() {
+    request('/life/getLifeConfig', 'GET').then(res => {
+      if (res && res.code === 200 && res.data) {
+        const { birthDate, expectedLifeYears } = res.data;
+        this.setData({
+          birthDate: birthDate || getDefaultBirthDate(),
+          expectedLifeYears: expectedLifeYears || 80
+        });
+      }
+    }).catch(err => {
+      console.error('Failed to fetch life config', err);
+    });
   },
 
   bindDateChange(e) {
@@ -48,7 +62,7 @@ Page({
       return;
     }
 
-    request('/life/config', 'POST', {
+    request('/life/configLife', 'POST', {
       birthDate,
       expectedLifeYears: parseInt(expectedLifeYears)
     }).then(res => {

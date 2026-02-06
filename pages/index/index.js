@@ -1,10 +1,12 @@
 // pages/index/index.js
+const { request } = require('../../utils/request');
+
 Page({
   data: {
     lifeTime: {
-      currentTime: '上午 8:53',
-      usedPercentage: '37%',
-      leftPercentage: '63%'
+      currentTime: '--:--',
+      usedPercentage: '0%',
+      leftPercentage: '0%'
     },
     goals: [
       {
@@ -41,6 +43,31 @@ Page({
       statusBarHeight: menuButtonInfo.top,
       menuButtonHeight: menuButtonInfo.height,
       menuButtonTop: menuButtonInfo.top
+    });
+    this.fetchLifeStatus();
+  },
+
+  onShow() {
+    this.fetchLifeStatus();
+  },
+
+  fetchLifeStatus() {
+    request('/life/getLifeStatus', 'GET').then(res => {
+      if (res && res.code === 200 && res.data) {
+        const { lifeClock, usedRatio } = res.data;
+        const usedVal = parseFloat(usedRatio);
+        const leftVal = (100 - usedVal).toFixed(2);
+        
+        this.setData({
+          lifeTime: {
+            currentTime: lifeClock,
+            usedPercentage: usedRatio,
+            leftPercentage: `${leftVal}%`
+          }
+        });
+      }
+    }).catch(err => {
+      console.error('Failed to fetch life status', err);
     });
   },
 
