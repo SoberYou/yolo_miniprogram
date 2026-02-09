@@ -40,12 +40,14 @@
 
     <!-- GOAL Zone -->
     <view class="section-goals">
-      <block wx:for="{{goals}}" wx:key="id">
-        <view class="goal-card" bindtap="goToGoal" data-id="{{item.id}}">
-          <view class="goal-name">{{item.name}}</view>
-          <view class="goal-time">{{item.timeSpent}}</view>
-        </view>
-      </block>
+      <view class="goals-list-wrapper" style="{{goals.length > 3 ? 'height: 260px; overflow-y: auto;' : ''}}">
+        <block wx:for="{{goals}}" wx:key="id">
+          <view class="goal-card" bindtap="goToGoal" data-id="{{item.id}}">
+            <view class="goal-name">{{item.name}}</view>
+            <view class="goal-time">{{item.timeSpent}}</view>
+          </view>
+        </block>
+      </view>
     </view>
 
     <!-- CTA Zone -->

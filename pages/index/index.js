@@ -49,6 +49,7 @@ Page({
 
   onShow() {
     this.fetchLifeStatus();
+    this.fetchGoals();
   },
 
   fetchLifeStatus() {
@@ -71,6 +72,25 @@ Page({
     });
   },
 
+  fetchGoals() {
+    request('/goals', 'GET').then(res => {
+      if (res && res.code === 200 && res.data) {
+        const goals = res.data.map(item => {
+          const hours = (item.last7DaysMinutes / 60).toFixed(1);
+          return {
+            id: item.id,
+            name: item.title,
+            timeSpent: `近7天 ${hours} h`
+          };
+        });
+        this.setData({ goals });
+      }
+    }).catch(err => {
+      console.error('Failed to fetch goals', err);
+    });
+  },
+
+  
   goToLife() {
     wx.navigateTo({
       url: '/pages/life/life'

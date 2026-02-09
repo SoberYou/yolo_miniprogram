@@ -11,7 +11,7 @@
   </view>
 
   <!-- Main Content -->
-  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px;">
+  <scroll-view scroll-y class="main-content" style="padding-top: {{statusBarHeight}}px;">
     
     <!-- Title & Description -->
     <view class="section-header">
@@ -37,12 +37,14 @@
     <!-- History List -->
     <view class="section-history">
       <view class="history-label">时间记录</view>
-      <block wx:for="{{goal.history}}" wx:key="date">
-        <view class="history-item">
-          <text class="history-date">{{item.date}}</text>
-          <text class="history-duration">{{item.duration}}</text>
-        </view>
-      </block>
+      <view class="history-list-wrapper" style="{{goal.history.length > 3 ? 'height: 180px; overflow-y: auto;' : ''}}">
+        <block wx:for="{{goal.history}}" wx:key="date">
+          <view class="history-item">
+            <text class="history-date">{{item.date}}</text>
+            <text class="history-duration">{{item.duration}}</text>
+          </view>
+        </block>
+      </view>
     </view>
 
     <!-- Actions -->
