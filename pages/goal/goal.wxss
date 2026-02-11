@@ -131,13 +131,13 @@ page {
   border-radius: 6px;
   padding: 16px;
   display: flex;
-  gap: 8px;
+  gap: 2px; /* Reduced gap to expand scroll area left */
   overflow: hidden; /* Ensure rounded corners */
 }
 
 .weekday-labels {
   position: relative;
-  width: 20px;
+  width: 20px; /* Slightly wider for safety */
   height: 91px; /* 7 * 13 */
   margin-top: 24px; /* 20px month height + 4px margin */
 }

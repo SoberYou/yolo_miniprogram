@@ -41,13 +41,13 @@
       <view class="heatmap-container">
         <!-- Left Labels (Mon-Sun) -->
         <view class="weekday-labels">
-          <text class="weekday-label">Mon</text>
-          <text class="weekday-label">Tue</text>
-          <text class="weekday-label">Wed</text>
-          <text class="weekday-label">Thu</text>
-          <text class="weekday-label">Fri</text>
-          <text class="weekday-label">Sat</text>
-          <text class="weekday-label">Sun</text>
+          <text class="weekday-label">1</text>
+          <text class="weekday-label">2</text>
+          <text class="weekday-label">3</text>
+          <text class="weekday-label">4</text>
+          <text class="weekday-label">5</text>
+          <text class="weekday-label">6</text>
+          <text class="weekday-label">7</text>
         </view>
 
         <!-- Scrollable Heatmap -->
