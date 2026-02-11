@@ -129,7 +129,8 @@ Page({
     navBarHeight: 0,
     statusBarHeight: 0,
     menuButtonHeight: 0,
-    menuButtonTop: 0
+    menuButtonTop: 0,
+    scrollLeft: 0
   },
 
   onLoad(options) {
@@ -171,7 +172,8 @@ Page({
               date: formatRelativeDate(record.date),
               duration: `${record.minutes} 分钟`
             }))
-          }
+          },
+          scrollLeft: 9999 // Scroll to end
         });
       }
     }).catch(err => {

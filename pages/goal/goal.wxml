@@ -39,15 +39,19 @@
       <view class="history-label">专注分布</view>
       
       <view class="heatmap-container">
-        <!-- Left Labels (Mon/Wed/Fri) -->
+        <!-- Left Labels (Mon-Sun) -->
         <view class="weekday-labels">
           <text class="weekday-label">Mon</text>
+          <text class="weekday-label">Tue</text>
           <text class="weekday-label">Wed</text>
+          <text class="weekday-label">Thu</text>
           <text class="weekday-label">Fri</text>
+          <text class="weekday-label">Sat</text>
+          <text class="weekday-label">Sun</text>
         </view>
 
         <!-- Scrollable Heatmap -->
-        <scroll-view scroll-x class="heatmap-scroll" scroll-left="2000">
+        <scroll-view scroll-x class="heatmap-scroll" scroll-left="{{scrollLeft}}">
           <view class="heatmap-content">
             <!-- Month Labels -->
             <view class="months-row">

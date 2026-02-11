@@ -136,31 +136,10 @@ page {
 }
 
 .weekday-labels {
-  display: flex;
-  flex-direction: column;
-  padding-top: 20px; /* Align with grid below month labels */
-  gap: 3px; /* Match grid gap */
-}
-
-.weekday-label {
-  font-size: 9px;
-  color: #8b949e;
-  height: 10px; /* Match cell height */
-  line-height: 10px;
-  visibility: hidden; /* Hide by default */
-}
-
-/* Show specific labels */
-.weekday-label:nth-child(1) { visibility: visible; margin-top: 13px; } /* Mon (Row 1) */
-.weekday-label:nth-child(2) { visibility: visible; margin-top: 26px; } /* Wed (Row 3) - 13*2 = 26 gap */
-.weekday-label:nth-child(3) { visibility: visible; margin-top: 26px; } /* Fri (Row 5) */
-
-/* Refined label positioning */
-.weekday-labels {
   position: relative;
   width: 20px;
   height: 91px; /* 7 * 13 */
-  margin-top: 20px; /* Space for month labels */
+  margin-top: 24px; /* 20px month height + 4px margin */
 }
 
 .weekday-label {
@@ -172,9 +151,13 @@ page {
   visibility: visible;
 }
 
-.weekday-label:nth-child(1) { top: 13px; } /* Mon: Row 1 */
-.weekday-label:nth-child(2) { top: 39px; } /* Wed: Row 3 */
-.weekday-label:nth-child(3) { top: 65px; } /* Fri: Row 5 */
+.weekday-label:nth-child(1) { top: 0px; }  /* Mon */
+.weekday-label:nth-child(2) { top: 13px; } /* Tue */
+.weekday-label:nth-child(3) { top: 26px; } /* Wed */
+.weekday-label:nth-child(4) { top: 39px; } /* Thu */
+.weekday-label:nth-child(5) { top: 52px; } /* Fri */
+.weekday-label:nth-child(6) { top: 65px; } /* Sat */
+.weekday-label:nth-child(7) { top: 78px; } /* Sun */
 
 
 .heatmap-scroll {
