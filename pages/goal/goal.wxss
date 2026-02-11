@@ -114,7 +114,7 @@ page {
   color: #333;
 }
 
-/* History Zone */
+/* History Zone (Heatmap) */
 .section-history {
   padding: 0 24px;
   margin-bottom: 48px;
@@ -124,27 +124,137 @@ page {
   font-size: 14px;
   color: #999;
   margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
 }
 
-.history-item {
+.heatmap-container {
+  background-color: #0d1117; /* Dark background like GitHub dark mode */
+  border-radius: 6px;
+  padding: 16px;
   display: flex;
-  justify-content: space-between;
-  padding: 16px 0;
-  border-bottom: 1px solid #f9f9f9;
+  gap: 8px;
+  overflow: hidden; /* Ensure rounded corners */
 }
 
-.history-date {
-  font-size: 16px;
-  color: #333;
+.weekday-labels {
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px; /* Align with grid below month labels */
+  gap: 3px; /* Match grid gap */
 }
 
-.history-duration {
-  font-size: 16px;
-  color: #666;
-  font-family: 'SF Mono', 'Roboto Mono', monospace; /* Monospace for numbers looks cleaner */
+.weekday-label {
+  font-size: 9px;
+  color: #8b949e;
+  height: 10px; /* Match cell height */
+  line-height: 10px;
+  visibility: hidden; /* Hide by default */
 }
+
+/* Show specific labels */
+.weekday-label:nth-child(1) { visibility: visible; margin-top: 13px; } /* Mon (Row 1) */
+.weekday-label:nth-child(2) { visibility: visible; margin-top: 26px; } /* Wed (Row 3) - 13*2 = 26 gap */
+.weekday-label:nth-child(3) { visibility: visible; margin-top: 26px; } /* Fri (Row 5) */
+
+/* Refined label positioning */
+.weekday-labels {
+  position: relative;
+  width: 20px;
+  height: 91px; /* 7 * 13 */
+  margin-top: 20px; /* Space for month labels */
+}
+
+.weekday-label {
+  position: absolute;
+  left: 0;
+  font-size: 9px;
+  color: #8b949e;
+  line-height: 10px;
+  visibility: visible;
+}
+
+.weekday-label:nth-child(1) { top: 13px; } /* Mon: Row 1 */
+.weekday-label:nth-child(2) { top: 39px; } /* Wed: Row 3 */
+.weekday-label:nth-child(3) { top: 65px; } /* Fri: Row 5 */
+
+
+.heatmap-scroll {
+  flex: 1;
+  width: 0; /* Flexbox trick for scroll-view */
+}
+
+.heatmap-content {
+  display: inline-block;
+}
+
+.months-row {
+  display: flex;
+  height: 20px;
+  margin-bottom: 4px;
+}
+
+.month-col {
+  width: 13px; /* 10px cell + 3px gap */
+  flex-shrink: 0;
+  position: relative;
+}
+
+.month-text {
+  font-size: 9px;
+  color: #8b949e;
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+}
+
+.weeks-row {
+  display: flex;
+}
+
+.week-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-right: 3px;
+  flex-shrink: 0;
+}
+
+.day-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: #161b22; /* Level 0 */
+}
+
+/* Colors - Dark Mode Theme */
+.level-0 { background-color: #161b22; }
+.level-1 { background-color: #0e4429; }
+.level-2 { background-color: #006d32; }
+.level-3 { background-color: #26a641; }
+.level-4 { background-color: #39d353; }
+
+/* Legend */
+.heatmap-legend {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 8px;
+  gap: 4px;
+}
+
+.legend-text {
+  font-size: 10px;
+  color: #8b949e;
+  margin: 0 4px;
+}
+
+.legend-items {
+  display: flex;
+  gap: 3px;
+}
+
+/* Hide original list styles if necessary, but we replaced the HTML so it's fine */
+
 
 /* Actions Zone */
 .section-actions {

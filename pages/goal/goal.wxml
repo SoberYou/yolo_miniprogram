@@ -34,16 +34,55 @@
       </view>
     </view>
 
-    <!-- History List -->
+    <!-- History List (Heatmap) -->
     <view class="section-history">
-      <view class="history-label">时间记录</view>
-      <view class="history-list-wrapper" style="{{goal.history.length > 3 ? 'height: 180px; overflow-y: auto;' : ''}}">
-        <block wx:for="{{goal.history}}" wx:key="date">
-          <view class="history-item">
-            <text class="history-date">{{item.date}}</text>
-            <text class="history-duration">{{item.duration}}</text>
+      <view class="history-label">专注分布</view>
+      
+      <view class="heatmap-container">
+        <!-- Left Labels (Mon/Wed/Fri) -->
+        <view class="weekday-labels">
+          <text class="weekday-label">Mon</text>
+          <text class="weekday-label">Wed</text>
+          <text class="weekday-label">Fri</text>
+        </view>
+
+        <!-- Scrollable Heatmap -->
+        <scroll-view scroll-x class="heatmap-scroll" scroll-left="2000">
+          <view class="heatmap-content">
+            <!-- Month Labels -->
+            <view class="months-row">
+              <block wx:for="{{goal.heatmap}}" wx:key="index">
+                <view class="month-col">
+                  <text class="month-text" wx:if="{{item.month}}">{{item.month}}</text>
+                </view>
+              </block>
+            </view>
+
+            <!-- Grid -->
+            <view class="weeks-row">
+              <block wx:for="{{goal.heatmap}}" wx:key="index" wx:for-item="week">
+                <view class="week-col">
+                  <block wx:for="{{week.days}}" wx:key="date" wx:for-item="day">
+                    <view class="day-cell level-{{day.level}}"></view>
+                  </block>
+                </view>
+              </block>
+            </view>
           </view>
-        </block>
+        </scroll-view>
+      </view>
+
+      <!-- Legend -->
+      <view class="heatmap-legend">
+        <text class="legend-text">Less</text>
+        <view class="legend-items">
+          <view class="day-cell level-0"></view>
+          <view class="day-cell level-1"></view>
+          <view class="day-cell level-2"></view>
+          <view class="day-cell level-3"></view>
+          <view class="day-cell level-4"></view>
+        </view>
+        <text class="legend-text">More</text>
       </view>
     </view>
 
