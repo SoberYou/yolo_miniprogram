@@ -7,8 +7,52 @@
         <view class="back-arrow"></view>
       </view>
       <text class="page-title">{{goal.name}}</text>
+      <view class="edit-btn" bindtap="openEditModal" style="margin-left: auto; margin-right: 16px;">
+        <text style="font-size: 14px; color: #666;">编辑</text>
+      </view>
     </view>
   </view>
+
+  <!-- Edit Modal -->
+  <page-container show="{{showEditModal}}" position="center" round overlay custom-style="background-color: transparent;">
+    <view class="modal-overlay">
+      <view class="modal-content">
+        <view class="modal-header">编辑目标</view>
+        
+        <view class="form-item">
+          <input class="modal-input" placeholder="目标名称 (Title)" bindinput="handleTitleInput" value="{{editGoal.title}}" />
+        </view>
+        
+        <view class="form-item">
+          <textarea class="modal-textarea" placeholder="描述 (Description)" bindinput="handleDescriptionInput" value="{{editGoal.description}}" />
+        </view>
+        
+        <view class="form-item">
+          <input class="modal-input" type="number" placeholder="预期投入小时数" bindinput="handleHoursInput" value="{{editGoal.expected_total_hours}}" />
+        </view>
+        
+        <view class="form-item category-selection">
+          <text class="category-label">北极星</text>
+          <view class="category-chips">
+            <block wx:for="{{categories}}" wx:key="*this">
+              <view 
+                class="category-chip {{editGoal.north_star === item ? 'selected' : ''}}" 
+                bindtap="selectCategory" 
+                data-value="{{item}}"
+              >
+                {{item}}
+              </view>
+            </block>
+          </view>
+        </view>
+        
+        <view class="modal-actions">
+          <button class="modal-btn cancel" bindtap="closeEditModal">取消</button>
+          <button class="modal-btn confirm" bindtap="submitEdit">保存</button>
+        </view>
+      </view>
+    </view>
+  </page-container>
 
   <!-- Main Content -->
   <scroll-view scroll-y class="main-content" style="padding-top: {{statusBarHeight}}px;">
@@ -17,8 +61,8 @@
     <view class="section-header">
       <view class="goal-title">{{goal.name}}</view>
       <view class="goal-desc-group">
-        <text class="goal-desc">你以为你想要它</text>
-        <text class="goal-desc sub">这是最近的数据</text>
+        <text class="goal-desc">{{goal.description || '暂无描述'}}</text>
+        <text class="goal-desc sub">{{goal.northStar}} · 预期 {{goal.expectedTotalHours}} 小时</text>
       </view>
     </view>
 

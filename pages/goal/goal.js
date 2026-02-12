@@ -119,6 +119,7 @@ Page({
     goal: {
       id: 0,
       name: '',
+      description: '', // Added description
       stats: {
         last7Days: '0m',
         last30Days: '0m'
@@ -130,7 +131,16 @@ Page({
     statusBarHeight: 0,
     menuButtonHeight: 0,
     menuButtonTop: 0,
-    scrollLeft: 0
+    scrollLeft: 0,
+    showEditModal: false,
+    categories: ['健康', '事业', '关系', '成长'],
+    editGoal: {
+      id: null,
+      title: '',
+      description: '',
+      expected_total_hours: '',
+      north_star: ''
+    }
   },
 
   onLoad(options) {
@@ -148,7 +158,31 @@ Page({
 
     if (options.id) {
        this.fetchFocusStats(options.id);
+       this.fetchGoalDetails(options.id);
     }
+  },
+
+  fetchGoalDetails(goalId) {
+    request(`/goals/${goalId}`, 'GET').then(res => {
+      if (res && res.code === 200 && res.data) {
+        const data = res.data;
+        this.setData({
+          'goal.name': data.title,
+          'goal.description': data.description,
+          'goal.northStar': data.northStar,
+          'goal.expectedTotalHours': data.expectedTotalHours,
+          'editGoal': {
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            expected_total_hours: data.expectedTotalHours,
+            north_star: data.northStar
+          }
+        });
+      }
+    }).catch(err => {
+      console.error('Failed to fetch goal details', err);
+    });
   },
 
   fetchFocusStats(goalId) {
@@ -160,19 +194,17 @@ Page({
         const heatmapData = generateHeatmapData(dailyRecords);
         
         this.setData({
-          goal: {
-            id: goalId,
-            name: goalTitle,
-            stats: {
-              last7Days: formatDuration(last7DaysMinutes),
-              last30Days: formatDuration(last30DaysMinutes)
-            },
-            heatmap: heatmapData,
-            history: dailyRecords.map(record => ({
-              date: formatRelativeDate(record.date),
-              duration: `${record.minutes} 分钟`
-            }))
+          'goal.id': goalId,
+          'goal.name': goalTitle,
+          'goal.stats': {
+            last7Days: formatDuration(last7DaysMinutes),
+            last30Days: formatDuration(last30DaysMinutes)
           },
+          'goal.heatmap': heatmapData,
+          'goal.history': dailyRecords.map(record => ({
+            date: formatRelativeDate(record.date),
+            duration: `${record.minutes} 分钟`
+          })),
           scrollLeft: 9999 // Scroll to end
         });
       }
@@ -192,9 +224,69 @@ Page({
   },
 
   editGoal() {
-    wx.showToast({
-      title: '功能开发中',
-      icon: 'none'
-    })
+    this.openEditModal();
+  },
+
+  // Edit Modal Methods
+  openEditModal() {
+    this.setData({ showEditModal: true });
+  },
+
+  closeEditModal() {
+    this.setData({ showEditModal: false });
+  },
+
+  handleTitleInput(e) {
+    this.setData({ 'editGoal.title': e.detail.value });
+  },
+
+  handleDescriptionInput(e) {
+    this.setData({ 'editGoal.description': e.detail.value });
+  },
+
+  handleHoursInput(e) {
+    this.setData({ 'editGoal.expected_total_hours': e.detail.value });
+  },
+
+  selectCategory(e) {
+    const selectedCategory = e.currentTarget.dataset.value;
+    const currentCategory = this.data.editGoal.north_star;
+    
+    if (currentCategory === selectedCategory) {
+       this.setData({ 'editGoal.north_star': '' });
+    } else {
+      this.setData({ 'editGoal.north_star': selectedCategory });
+    }
+  },
+
+  submitEdit() {
+    const { id, title, description, expected_total_hours, north_star } = this.data.editGoal;
+    
+    if (!title) {
+      wx.showToast({ title: '请输入目标名称', icon: 'none' });
+      return;
+    }
+
+    const payload = {
+      id,
+      title,
+      description,
+      expectedTotalHours: parseInt(expected_total_hours) || 0,
+      northStar: north_star
+    };
+
+    request('/goals', 'POST', payload).then(res => {
+      if (res && res.code === 200) {
+        wx.showToast({ title: '更新成功', icon: 'success' });
+        this.closeEditModal();
+        // Refresh details
+        this.fetchGoalDetails(id);
+      } else {
+        wx.showToast({ title: '更新失败', icon: 'none' });
+      }
+    }).catch(err => {
+      console.error('Failed to update goal', err);
+      wx.showToast({ title: '网络错误', icon: 'none' });
+    });
   }
 })

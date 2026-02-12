@@ -27,6 +27,14 @@ Page({
     ],
     cta: {
       suggestion: '为「写作」再投入 25 分钟'
+    },
+    showAddGoalModal: false,
+    categories: ['健康', '事业', '关系', '成长'],
+    newGoal: {
+      title: '',
+      description: '',
+      expected_total_hours: '',
+      north_star: '' // Stores the category string (e.g., '健康')
     }
   },
 
@@ -101,6 +109,95 @@ Page({
     wx.navigateTo({
       url: '/pages/user/user'
     })
+  },
+
+  // Modal Methods
+  openAddGoalModal() {
+    this.setData({ showAddGoalModal: true });
+  },
+
+  closeAddGoalModal() {
+    this.setData({ 
+      showAddGoalModal: false,
+      newGoal: {
+        title: '',
+        description: '',
+        expected_total_hours: '',
+        north_star: ''
+      }
+    });
+  },
+
+  handleCategoryChange(e) {
+    // Deprecated in favor of selectCategory
+  },
+
+  handleTitleInput(e) {
+    this.setData({
+      'newGoal.title': e.detail.value
+    });
+  },
+
+  handleDescriptionInput(e) {
+    this.setData({
+      'newGoal.description': e.detail.value
+    });
+  },
+
+  handleHoursInput(e) {
+    this.setData({
+      'newGoal.expected_total_hours': e.detail.value
+    });
+  },
+
+  selectCategory(e) {
+    const selectedCategory = e.currentTarget.dataset.value;
+    const currentCategory = this.data.newGoal.north_star;
+    
+    // Toggle logic: if clicking already selected, deselect it
+    if (currentCategory === selectedCategory) {
+       this.setData({
+        'newGoal.north_star': ''
+      });
+    } else {
+      this.setData({
+        'newGoal.north_star': selectedCategory
+      });
+    }
+  },
+
+  submitGoal() {
+    const { title, description, expected_total_hours, north_star } = this.data.newGoal;
+    
+    if (!title) {
+      wx.showToast({ title: '请输入目标名称', icon: 'none' });
+      return;
+    }
+
+    const payload = {
+      title,
+      description,
+      expectedTotalHours: parseInt(expected_total_hours) || 0,
+      northStar: north_star
+    };
+    
+    // Support update if ID exists (though currently newGoal doesn't allow setting ID in UI)
+    if (this.data.newGoal.id) {
+        payload.id = this.data.newGoal.id;
+    }
+
+    request('/goals', 'POST', payload).then(res => {
+      if (res && res.code === 200) {
+        wx.showToast({ title: '添加成功', icon: 'success' });
+        this.closeAddGoalModal();
+        this.fetchGoals(); // Refresh list
+      } else {
+        wx.showToast({ title: '添加失败', icon: 'none' });
+      }
+    }).catch(err => {
+      console.error('Failed to add goal', err);
+      wx.showToast({ title: '网络错误', icon: 'none' });
+    });
   },
 
   goToGoal(e) {

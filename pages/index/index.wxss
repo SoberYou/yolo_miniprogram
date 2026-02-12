@@ -147,15 +147,145 @@ page {
   color: #ddd;
 }
 
-/* Section B: Buffer */
-.section-buffer {
-  padding: 0 24px 40px;
+/* Section B: North Star List Header */
+.section-header-b {
+  padding: 0 24px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.buffer-text {
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #999;
+}
+
+.add-btn {
+  width: 24px;
+  height: 24px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #999;
+  line-height: 1;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.modal-input {
+  width: 100%;
+  height: 44px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
   font-size: 14px;
-  color: #a0a0a0;
-  font-weight: 400;
+  margin: 0;
+}
+
+.modal-textarea {
+  width: 100%;
+  height: 80px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Category Selection */
+.category-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.category-label {
+  font-size: 16px;
+  color: #666;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+.category-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.category-chip {
+  padding: 6px 12px;
+  background-color: #999; /* Default gray as shown in image */
+  color: #fff;
+  font-size: 14px;
+  border-radius: 4px; /* Rectangular with slight radius */
+  transition: all 0.2s;
+}
+
+.category-chip.selected {
+  background-color: #333; /* Dark highlight color */
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-btn {
+  flex: 1;
+  font-size: 14px;
+  border-radius: 8px;
+  padding: 12px 0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.modal-btn.cancel {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.modal-btn.confirm {
+  background-color: #000;
+  color: #fff;
+}
+
+.modal-btn::after {
+  border: none;
 }
 
 /* GOAL Zone */
