@@ -95,10 +95,10 @@
     <!-- CTA Zone -->
     <view class="section-cta">
       <view class="cta-header">今天只需要做一件事</view>
-      <view class="cta-suggestion">{{cta.suggestion}}</view>
+      <view class="cta-suggestion" bindtap="switchCtaSuggestion">{{cta.suggestion}}</view>
       
       <view class="cta-actions">
-        <button class="btn-start" bindtap="startFocus">开始</button>
+        <button class="btn-start" bindtap="startFocus">{{runningSession && goals.length > 0 && runningSession.goalId === goals[currentCtaIndex].id ? '进行中' : '开始'}}</button>
         <button class="btn-skip" bindtap="handleSkip">今天不做</button>
       </view>
     </view>

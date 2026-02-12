@@ -136,7 +136,7 @@
 
     <!-- Actions -->
     <view class="section-actions">
-      <button class="btn-primary" bindtap="startFocus">开始专注</button>
+      <button class="btn-primary" bindtap="startFocus">{{runningSession ? '进行中' : '开始专注'}}</button>
       <button class="btn-secondary" bindtap="editGoal">编辑目标</button>
     </view>
 

@@ -8,25 +8,11 @@ Page({
       usedPercentage: '0%',
       leftPercentage: '0%'
     },
-    goals: [
-      {
-        id: 1,
-        name: '写作',
-        timeSpent: '近 7 天：1h 20m'
-      },
-      {
-        id: 2,
-        name: '阅读',
-        timeSpent: '近 7 天：3h 10m'
-      },
-      {
-        id: 3,
-        name: '冥想',
-        timeSpent: '近 7 天：45m'
-      }
-    ],
+    goals: [],
+    currentCtaIndex: 0,
+    runningSession: null,
     cta: {
-      suggestion: '为「写作」再投入 25 分钟'
+      suggestion: '加载中...'
     },
     showAddGoalModal: false,
     categories: ['健康', '事业', '关系', '成长'],
@@ -58,6 +44,21 @@ Page({
   onShow() {
     this.fetchLifeStatus();
     this.fetchGoals();
+  },
+
+  fetchRunningSession(goalId) {
+    const params = goalId ? { goalId } : {};
+    request('/focus/running', 'GET', params).then(res => {
+      if (res && res.code === 200) {
+        // If data is null, it means no running session
+        this.setData({ runningSession: res.data || null });
+      } else {
+        this.setData({ runningSession: null });
+      }
+    }).catch(err => {
+      console.error('Failed to fetch running session', err);
+      this.setData({ runningSession: null });
+    });
   },
 
   fetchLifeStatus() {
@@ -92,6 +93,20 @@ Page({
           };
         });
         this.setData({ goals });
+        
+        // Update CTA suggestion with the first goal
+        if (goals.length > 0) {
+          this.setData({
+            currentCtaIndex: 0,
+            'cta.suggestion': `为「${goals[0].name}」再投入 25 分钟`
+          });
+          this.fetchRunningSession(goals[0].id);
+        } else {
+          this.setData({
+            'cta.suggestion': '添加一个目标开始吧',
+            runningSession: null
+          });
+        }
       }
     }).catch(err => {
       console.error('Failed to fetch goals', err);
@@ -207,10 +222,40 @@ Page({
     })
   },
 
+  switchCtaSuggestion() {
+    const goals = this.data.goals;
+    if (!goals || goals.length === 0) return;
+
+    let nextIndex = (this.data.currentCtaIndex + 1) % goals.length;
+    
+    this.setData({
+      currentCtaIndex: nextIndex,
+      'cta.suggestion': `为「${goals[nextIndex].name}」再投入 25 分钟`
+    });
+    this.fetchRunningSession(goals[nextIndex].id);
+  },
+
   startFocus() {
-    wx.navigateTo({
-      url: '/pages/focus/focus'
-    })
+    const goals = this.data.goals;
+    if (goals && goals.length > 0) {
+      const currentGoal = goals[this.data.currentCtaIndex];
+      const runningSession = this.data.runningSession;
+      
+      // If there's a running session for this goal, pass the session ID to resume
+      let url = `/pages/focus/focus?goalId=${currentGoal.id}&title=${encodeURIComponent(currentGoal.name)}`;
+      if (runningSession && runningSession.goalId === currentGoal.id) {
+        url += `&sessionId=${runningSession.id}&startTime=${encodeURIComponent(runningSession.startTime)}`;
+      } else {
+        url += '&autoStart=true';
+      }
+      
+      wx.navigateTo({ url });
+    } else {
+      wx.showToast({
+        title: '请先添加目标',
+        icon: 'none'
+      });
+    }
   },
 
   handleSkip() {

@@ -21,19 +21,46 @@
   <view class="content" style="padding-top: {{navBarHeight}}px;">
     <!-- Ready State -->
     <view class="ready-view" wx:if="{{status === 'ready'}}">
-        <view class="text-group">
-            <text class="main-text">你正在为「写作」</text>
-            <text class="main-text">投入真实时间</text>
+        <view class="text-group" bindtap="switchGoal">
+            <text class="main-text">你正在为「{{goalTitle}}」</text>
+            <text class="main-text">投入真实时间 <text class="switch-icon">▼</text></text>
         </view>
         <button class="start-btn" bindtap="startFocus">开始专注</button>
     </view>
 
     <!-- Running State -->
     <view class="running-view" wx:if="{{status === 'running'}}">
-        <text class="target-name">写作</text>
+        <text class="main-text">你正在为「{{goalTitle}}」</text>
+        <text class="main-text">投入真实时间</text>
         <view class="timer-display">{{utils.formatTime(seconds)}}</view>
         <text class="status-text">现在不需要想结果</text>
         <button class="stop-btn" bindtap="finishFocus">结束</button>
     </view>
+
+    <!-- End Focus Modal -->
+    <page-container show="{{showEndModal}}" position="center" round overlay custom-style="background-color: transparent;">
+      <view class="modal-overlay">
+        <view class="modal-content">
+          <view class="modal-header">结束专注</view>
+          
+          <view class="form-item">
+            <text class="label">结束时间</text>
+            <picker mode="time" value="{{endTime}}" end="{{maxEndTime}}" bindchange="handleEndTimeChange">
+              <view class="picker-display">{{endTime}}</view>
+            </picker>
+          </view>
+          
+          <view class="form-item">
+             <text class="label">实际投入 (分钟)</text>
+             <input class="modal-input" type="number" value="{{durationMinutes}}" bindinput="handleDurationInput" />
+          </view>
+          
+          <view class="modal-actions">
+            <button class="modal-btn cancel" bindtap="closeEndModal">取消</button>
+            <button class="modal-btn confirm" bindtap="confirmEndFocus">确认结束</button>
+          </view>
+        </view>
+      </view>
+    </page-container>
   </view>
 </view>

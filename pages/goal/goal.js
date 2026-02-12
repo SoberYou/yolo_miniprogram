@@ -140,7 +140,8 @@ Page({
       description: '',
       expected_total_hours: '',
       north_star: ''
-    }
+    },
+    runningSession: null
   },
 
   onLoad(options) {
@@ -159,7 +160,21 @@ Page({
     if (options.id) {
        this.fetchFocusStats(options.id);
        this.fetchGoalDetails(options.id);
+       this.fetchRunningSession(options.id);
     }
+  },
+
+  fetchRunningSession(goalId) {
+    request('/focus/running', 'GET', { goalId }).then(res => {
+      if (res && res.code === 200) {
+        this.setData({ runningSession: res.data || null });
+      } else {
+        this.setData({ runningSession: null });
+      }
+    }).catch(err => {
+      console.error('Failed to fetch running session', err);
+      this.setData({ runningSession: null });
+    });
   },
 
   fetchGoalDetails(goalId) {
@@ -218,9 +233,19 @@ Page({
   },
 
   startFocus() {
-    wx.navigateTo({
-      url: '/pages/focus/focus'
-    })
+    const goalId = this.data.goal.id;
+    const goalName = this.data.goal.name;
+    const runningSession = this.data.runningSession;
+    
+    let url = `/pages/focus/focus?goalId=${goalId}&title=${encodeURIComponent(goalName)}`;
+    
+    if (runningSession && runningSession.goalId === goalId) {
+       url += `&sessionId=${runningSession.id}&startTime=${encodeURIComponent(runningSession.startTime)}`;
+    } else {
+       url += '&autoStart=true';
+    }
+    
+    wx.navigateTo({ url });
   },
 
   editGoal() {

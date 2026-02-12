@@ -1,10 +1,12 @@
-// pages/result/result.js
+const { request } = require('../../utils/request');
+
 Page({
   data: {
-    goalName: '写作',
-    durationText: '25 分钟',
+    goalName: '',
+    durationText: '',
     navBarHeight: 0,
-    statusBarHeight: 0
+    statusBarHeight: 0,
+    goalId: null // Store goalId for restart
   },
 
   onLoad(options) {
@@ -18,14 +20,33 @@ Page({
       statusBarHeight: systemInfo.statusBarHeight
     });
 
-    // Handle options
-    const duration = parseInt(options.duration || 0, 10);
-    const goalName = options.goalName || '任务';
+    if (options.id) {
+        this.fetchSessionDetails(options.id);
+    } else {
+        // Fallback or legacy handling if needed
+        const duration = parseInt(options.duration || 0, 10);
+        const goalName = options.goalName || '任务';
+        this.setData({
+            goalName: goalName,
+            durationText: this.formatDuration(duration * 60) // Assuming legacy passed minutes
+        });
+    }
+  },
 
-    this.setData({
-      goalName: goalName,
-      durationText: this.formatDuration(duration)
-    });
+  fetchSessionDetails(sessionId) {
+      request(`/focus/${sessionId}`, 'GET').then(res => {
+          if (res && res.code === 200 && res.data) {
+              const { goalTitle, durationMinutes, goalId } = res.data;
+              this.setData({
+                  goalName: goalTitle,
+                  durationText: `${durationMinutes} 分钟`,
+                  goalId: goalId
+              });
+          }
+      }).catch(err => {
+          console.error('Failed to fetch session details', err);
+          wx.showToast({ title: '加载记录失败', icon: 'none' });
+      });
   },
 
   formatDuration(seconds) {
@@ -48,8 +69,14 @@ Page({
   },
 
   restartFocus() {
-    wx.redirectTo({
-      url: `/pages/focus/focus?goalName=${this.data.goalName}`
-    });
+    if (this.data.goalId) {
+        wx.redirectTo({
+            url: `/pages/focus/focus?goalId=${this.data.goalId}&title=${encodeURIComponent(this.data.goalName)}`
+        });
+    } else {
+        wx.redirectTo({
+            url: '/pages/focus/focus'
+        });
+    }
   }
 })
