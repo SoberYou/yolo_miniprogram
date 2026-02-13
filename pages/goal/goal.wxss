@@ -294,16 +294,49 @@ page {
   color: #333;
 }
 
-/* History Zone (Heatmap) */
+/* History List (Heatmap) */
 .section-history {
-  padding: 0 24px;
-  margin-bottom: 48px;
+  padding: 0 24px 24px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .history-label {
-  font-size: 14px;
-  color: #999;
-  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.milestone-btn {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  padding: 6px 12px;
+  border-radius: 16px;
+  transition: opacity 0.2s;
+}
+
+.milestone-btn:active {
+  opacity: 0.7;
+}
+
+.milestone-text {
+  font-size: 12px;
+  color: #666;
+  margin-right: 4px;
+}
+
+.milestone-arrow {
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid #666;
+  border-right: 1px solid #666;
+  transform: rotate(45deg);
 }
 
 .heatmap-container {

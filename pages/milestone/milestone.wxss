@@ -1,0 +1,303 @@
+page {
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  overflow: hidden; /* Prevent whole page scroll */
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Fixed height */
+  overflow: hidden;
+  align-items: stretch; /* Override app.wxss center */
+  padding: 0; /* Override app.wxss padding */
+  justify-content: flex-start; /* Override app.wxss space-between */
+}
+
+/* Header */
+.custom-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 100;
+  padding-top: 40px; /* Approximate status bar */
+  height: 44px;
+  border-bottom: 1px solid #eee;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 16px;
+  position: relative;
+  justify-content: space-between; /* Add this */
+}
+
+.back-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* margin-right: 8px; Removed to let justify-between handle it or keep it? */
+  /* Actually if we use justify-between, back is left, add is right, title is center? 
+     Title has flex: 1. So it takes all space.
+     Back | Title | Add
+     Back has fixed width. Add has fixed width. Title flex 1.
+  */
+}
+
+.back-arrow {
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #000;
+  border-left: 2px solid #000;
+  transform: rotate(-45deg);
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+  flex: 1;
+  text-align: center;
+  margin-right: 32px; /* Balance back button width */
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  justify-content: flex-start; /* Left aligned */
+  align-items: center;
+  padding-bottom: 16px;
+  padding-left: 0; /* Align with timeline container border */
+}
+
+/* Remove section-title style */
+
+/* Add Button (Matching Index Page) */
+.add-btn {
+  width: 24px;
+  height: 24px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #999;
+  line-height: 1;
+}
+
+/* Main Content - Fixed box with scroll */
+.main-content {
+  margin-top: 160px; /* Header height (84px) + Extra space (~56px) */
+  height: calc(100vh - 140px);
+  padding: 0 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-container {
+  flex: 0.8;
+  overflow-y: auto; /* Allow internal scrolling */
+  position: relative;
+  /* Dashed area representation - optional border */
+  /* border: 1px dashed #ccc; */ /* User said "Show list within dashed area", maybe they want the border? */
+  /* Let's add a subtle dashed border as per request "Show list within dashed area" */
+  border: 1px dashed #999; 
+  border-radius: 12px;
+  padding: 20px; /* Padding inside the dashed box */
+  margin-top: 10px; /* Space between add button and list */
+  box-sizing: border-box;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  /* Removed padding-left as we are inside the box now */
+  /* padding-left: 20px; */
+  padding-bottom: 20px; 
+}
+
+/* Timeline Vertical Line - Remove if wireframe is just list */
+/* Wireframe shows dates and cards. No visible vertical line connecting them in the description "Show list within dashed area". 
+   Let's remove the vertical line to match the clean card look in wireframe.
+*/
+.timeline::before {
+  display: none;
+}
+
+/* Timeline Item & Swipe */
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+  margin-right: 6px; /* Add margin to avoid scrollbar overlap */
+}
+
+.timeline-date {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #999;
+  padding-left: 4px; /* Slight alignment */
+}
+
+/* Swipe Styles */
+.swipe-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.timeline-content {
+  position: relative;
+  padding-left: 0; /* Remove padding as no line/marker */
+  background-color: transparent; /* Container is transparent */
+  z-index: 2;
+  transition: transform 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 120rpx; /* Match JS translation */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.delete-btn {
+  width: 100%;
+  height: 100%; /* Match container height */
+  background-color: #ff4d4f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border-radius: 8px; /* Match card radius if desired, or keep square */
+}
+
+/* Remove Marker */
+.marker {
+  display: none;
+}
+
+
+.card {
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.desc {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* Modal Inputs */
+.modal-textarea {
+  width: 100%;
+  height: 80px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  width: 100%;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.modal-input {
+  width: 100%;
+  height: 44px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+  margin: 0;
+}
+
+.picker-view {
+  width: 100%;
+  height: 44px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 44px;
+  color: #333;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-btn {
+  flex: 1;
+  font-size: 14px;
+  border-radius: 8px;
+  padding: 12px 0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.modal-btn.cancel {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.modal-btn.confirm {
+  background-color: #000;
+  color: #fff;
+}
+
+.modal-btn::after {
+  border: none;
+}

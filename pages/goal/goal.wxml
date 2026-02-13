@@ -92,7 +92,13 @@
 
     <!-- History List (Heatmap) -->
     <view class="section-history">
-      <view class="history-label">专注分布</view>
+      <view class="history-header">
+        <view class="history-label">专注分布</view>
+        <view class="milestone-btn" bindtap="goToMilestone">
+           <text class="milestone-text">里程碑</text>
+           <view class="milestone-arrow"></view>
+        </view>
+      </view>
       
       <view class="heatmap-container">
         <!-- Left Labels (Mon-Sun) -->

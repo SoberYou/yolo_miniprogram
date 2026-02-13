@@ -216,6 +216,12 @@ Page({
     });
   },
 
+  goToMilestone() {
+    wx.navigateTo({
+      url: `/pages/milestone/milestone?goalId=${this.data.goal.id}&goalName=${this.data.goal.name}`
+    });
+  },
+
   onLoad(options) {
     // Navigation Bar Calculation
     const systemInfo = wx.getSystemInfoSync();
