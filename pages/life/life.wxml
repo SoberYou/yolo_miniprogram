@@ -11,8 +11,8 @@
 
   <view class="content-wrapper" style="padding-top: {{navBarHeight}}px;">
     <view class="text-block">
-        <text class="paragraph">我们假设人均寿命为 80 岁。</text>
-        <text class="paragraph">这大约是 4000 个星期。</text>
+        <text class="paragraph">我们假设人均寿命为 {{expectedLifeYears}} 岁。</text>
+        <text class="paragraph">这大约是 {{totalWeeks}} 个星期。</text>
     </view>
 
     <view class="text-block">

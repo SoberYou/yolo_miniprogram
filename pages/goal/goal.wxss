@@ -360,6 +360,32 @@ page {
 .legend-items {
   display: flex;
   gap: 3px;
+  position: relative;
+}
+
+.legend-tooltip {
+  position: absolute;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.legend-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
 }
 
 /* Hide original list styles if necessary, but we replaced the HTML so it's fine */

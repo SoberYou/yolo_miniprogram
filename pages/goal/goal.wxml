@@ -1,5 +1,5 @@
 <!-- pages/goal/goal.wxml -->
-<view class="container">
+<view class="container" bindtap="hideLegendTip">
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
@@ -124,11 +124,14 @@
       <view class="heatmap-legend">
         <text class="legend-text">Less</text>
         <view class="legend-items">
-          <view class="day-cell level-0"></view>
-          <view class="day-cell level-1"></view>
-          <view class="day-cell level-2"></view>
-          <view class="day-cell level-3"></view>
-          <view class="day-cell level-4"></view>
+          <view class="legend-tooltip" wx:if="{{legendTip.show}}" style="left: {{legendTip.left}}px;">
+            {{legendTip.text}}
+          </view>
+          <view class="day-cell level-0" catchtap="showLegendTip" data-level="0"></view>
+          <view class="day-cell level-1" catchtap="showLegendTip" data-level="1"></view>
+          <view class="day-cell level-2" catchtap="showLegendTip" data-level="2"></view>
+          <view class="day-cell level-3" catchtap="showLegendTip" data-level="3"></view>
+          <view class="day-cell level-4" catchtap="showLegendTip" data-level="4"></view>
         </view>
         <text class="legend-text">More</text>
       </view>

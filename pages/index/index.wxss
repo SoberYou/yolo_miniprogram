@@ -90,6 +90,11 @@ page {
   padding: 20px 24px;
 }
 
+.life-bar-wrapper {
+  position: relative;
+  margin-bottom: 24px;
+}
+
 .life-bar-container {
   width: 100%;
   height: 48px;
@@ -97,19 +102,62 @@ page {
   border-radius: 4px; /* Minimal rounding */
   overflow: hidden;
   position: relative;
-  margin-bottom: 24px;
-  display: flex;
+  display: block; /* Changed from flex to block for absolute positioning */
+}
+
+.bar-tooltip {
+  position: absolute;
+  /*bottom: 54px;*/ /* 48px height + gap */
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.bar-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.life-bar-energy {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #e0e0e0; /* Lighter than passed time */
+  z-index: 1;
+  border-right: 1px solid #fff;
 }
 
 .life-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
-  background-color: #d1d1d1; /* Emotionally stable gray */
+  background-color: #999999; /* Darker to represent passed time clearly */
+  z-index: 2;
   border-right: 1px solid #fff;
 }
 
 .life-bar-empty {
-  flex: 1;
+  width: 100%;
+  height: 100%;
   background-color: #f5f5f5;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
 }
 
 .life-info {
@@ -156,9 +204,8 @@ page {
 }
 
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #999;
+  font-size: 16px;
+  color: #666;
 }
 
 .add-btn {

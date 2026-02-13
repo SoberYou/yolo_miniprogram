@@ -141,7 +141,43 @@ Page({
       expected_total_hours: '',
       north_star: ''
     },
-    runningSession: null
+    runningSession: null,
+    legendTip: {
+      show: false,
+      text: '',
+      left: 0
+    }
+  },
+
+  hideLegendTip() {
+    if (this.data.legendTip.show) {
+      this.setData({
+        'legendTip.show': false
+      });
+    }
+  },
+
+  showLegendTip(e) {
+    const { level } = e.currentTarget.dataset;
+    const ranges = {
+      0: '0 min',
+      1: '1-15 min',
+      2: '16-30 min',
+      3: '31-60 min',
+      4: '> 60 min'
+    };
+    
+    // Cell width 10px + gap 3px = 13px per item.
+    // Center of item = index * 13 + 5.
+    const left = level * 13 + 5;
+
+    this.setData({
+      legendTip: {
+        show: true,
+        text: ranges[level] || '',
+        left: left
+      }
+    });
   },
 
   onLoad(options) {

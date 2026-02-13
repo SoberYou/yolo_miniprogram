@@ -12,6 +12,10 @@
       <text class="label">预期寿命 (年)</text>
       <input class="input" type="number" placeholder="请输入预期寿命" value="{{expectedLifeYears}}" bindinput="bindLifeInput" />
     </view>
+    <view class="form-item">
+      <text class="label">精力转折 (年)</text>
+      <input class="input" type="number" placeholder="请输入精力转折" value="{{energyLifeYears}}" bindinput="bindEnergyInput" />
+    </view>
   </view>
   <button class="submit-btn" bindtap="saveConfig">保存配置</button>
 </view>

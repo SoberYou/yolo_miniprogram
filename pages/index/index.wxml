@@ -12,13 +12,19 @@
   </view>
 
   <!-- Main Content -->
-  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px;">
+  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px;" bindtap="hideTooltip">
     
     <!-- A Zone: Life Time -->
     <view class="section-life" bindtap="goToLife" >
-      <view class="life-bar-container">
-         <view class="life-bar-fill" style="width: {{lifeTime.usedPercentage}}"></view>
-         <view class="life-bar-empty"></view>
+      <view class="life-bar-wrapper">
+         <view class="bar-tooltip" wx:if="{{tooltip.show}}" style="left: {{tooltip.left}};">
+            {{tooltip.text}}
+         </view>
+         <view class="life-bar-container">
+            <view class="life-bar-energy" style="width: {{lifeTime.energyPercentage}}" catchtap="showEnergyTooltip"></view>
+            <view class="life-bar-fill" style="width: {{lifeTime.usedPercentage}}" catchtap="showUsedTooltip"></view>
+            <view class="life-bar-empty" catchtap="showLeftTooltip"></view>
+         </view>
       </view>
       <view class="life-info">
         <view class="life-text-group">

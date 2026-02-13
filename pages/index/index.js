@@ -14,6 +14,11 @@ Page({
     cta: {
       suggestion: '加载中...'
     },
+    tooltip: {
+      show: false,
+      text: '',
+      left: '0%'
+    },
     showAddGoalModal: false,
     categories: ['健康', '事业', '关系', '成长'],
     newGoal: {
@@ -64,21 +69,115 @@ Page({
   fetchLifeStatus() {
     request('/life/getLifeStatus', 'GET').then(res => {
       if (res && res.code === 200 && res.data) {
-        const { lifeClock, usedRatio } = res.data;
+        const { lifeClock, usedRatio, energyDays, totalDays, usedDays } = res.data;
         const usedVal = parseFloat(usedRatio);
         const leftVal = (100 - usedVal).toFixed(2);
         
+        // Calculate Energy Percentage relative to Total Life
+        let energyPercentage = 0;
+        let energyVal = 0;
+        if (totalDays > 0 && energyDays > 0) {
+            energyVal = (energyDays / totalDays) * 100;
+            energyPercentage = energyVal.toFixed(2);
+        }
+
         this.setData({
           lifeTime: {
             currentTime: lifeClock,
             usedPercentage: usedRatio,
-            leftPercentage: `${leftVal}%`
+            leftPercentage: `${leftVal}%`,
+            energyPercentage: `${energyPercentage}%`,
+            energyDays: energyDays || 0,
+            usedDays: usedDays || 0,
+            totalDays: totalDays || 0,
+            usedVal: usedVal,
+            energyVal: energyVal
           }
         });
       }
     }).catch(err => {
       console.error('Failed to fetch life status', err);
     });
+  },
+
+  showEnergyTooltip() {
+    const { energyDays, usedDays, energyVal, usedVal } = this.data.lifeTime;
+    
+    // Calculate remaining energy days
+    let remainingDays = energyDays - usedDays;
+    if (remainingDays < 0) remainingDays = 0;
+
+    // Format to "X年X天"
+    const years = Math.floor(remainingDays / 365);
+    const days = remainingDays % 365;
+    const text = `剩余精力 ${years}年${days}天`;
+
+    // Calculate position: center of the visible energy part
+    // Visible part starts at usedVal (%) and ends at energyVal (%)
+    // Center = usedVal + (energyVal - usedVal) / 2
+    let left = 0;
+    if (energyVal > usedVal) {
+      left = usedVal + (energyVal - usedVal) / 2;
+    } else {
+      left = usedVal; // Fallback
+    }
+
+    this.setData({
+      tooltip: {
+        show: true,
+        text: text,
+        left: `${left}%`
+      }
+    });
+  },
+
+  showUsedTooltip() {
+    const { usedDays, usedVal } = this.data.lifeTime;
+    
+    const years = Math.floor(usedDays / 365);
+    const days = usedDays % 365;
+    const text = `已过去的时间 ${years}年${days}天`;
+
+    // Position: Center of used part (0 to usedVal)
+    const left = usedVal / 2;
+
+    this.setData({
+      tooltip: {
+        show: true,
+        text: text,
+        left: `${left}%`
+      }
+    });
+  },
+
+  showLeftTooltip() {
+    const { totalDays, usedDays, usedVal } = this.data.lifeTime;
+    
+    let remainingDays = totalDays - usedDays;
+    if (remainingDays < 0) remainingDays = 0;
+
+    const years = Math.floor(remainingDays / 365);
+    const days = remainingDays % 365;
+    const text = `剩下的时间 ${years}年${days}天`;
+
+    // Position: Center of remaining part (usedVal to 100)
+    const left = usedVal + (100 - usedVal) / 2;
+
+    this.setData({
+      tooltip: {
+        show: true,
+        text: text,
+        left: `${left}%`
+      }
+    });
+  },
+
+  hideTooltip() {
+    if (this.data.tooltip.show) {
+      this.setData({
+        'tooltip.show': false
+      });
+    }
   },
 
   fetchGoals() {

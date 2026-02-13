@@ -12,7 +12,8 @@ const getDefaultBirthDate = () => {
 Page({
   data: {
     birthDate: getDefaultBirthDate(),
-    expectedLifeYears: 80
+    expectedLifeYears: 80,
+    energyLifeYears: 60
   },
 
   onLoad(options) {
@@ -22,10 +23,11 @@ Page({
   fetchLifeConfig() {
     request('/life/getLifeConfig', 'GET').then(res => {
       if (res && res.code === 200 && res.data) {
-        const { birthDate, expectedLifeYears } = res.data;
+        const { birthDate, expectedLifeYears, energyLifeYears } = res.data;
         this.setData({
           birthDate: birthDate || getDefaultBirthDate(),
-          expectedLifeYears: expectedLifeYears || 80
+          expectedLifeYears: expectedLifeYears || 80,
+          energyLifeYears: energyLifeYears || 60
         });
       }
     }).catch(err => {
@@ -45,8 +47,14 @@ Page({
     });
   },
 
+  bindEnergyInput(e) {
+    this.setData({
+      energyLifeYears: e.detail.value
+    });
+  },
+
   saveConfig() {
-    const { birthDate, expectedLifeYears } = this.data;
+    const { birthDate, expectedLifeYears, energyLifeYears } = this.data;
     if (!birthDate) {
       wx.showToast({
         title: '请选择出生日期',
@@ -61,10 +69,18 @@ Page({
       });
       return;
     }
+    if (!energyLifeYears) {
+        wx.showToast({
+          title: '请输入精力转折',
+          icon: 'none'
+        });
+        return;
+    }
 
     request('/life/configLife', 'POST', {
       birthDate,
-      expectedLifeYears: parseInt(expectedLifeYears)
+      expectedLifeYears: parseInt(expectedLifeYears),
+      energyLifeYears: parseInt(energyLifeYears)
     }).then(res => {
       wx.showToast({
         title: '保存成功',
