@@ -13,6 +13,7 @@ Page({
     showEndModal: false,
     endTime: '',
     durationMinutes: '',
+    memo: '',
     maxEndTime: '',
     goals: [],
     currentGoalIndex: 0
@@ -160,12 +161,16 @@ Page({
         showEndModal: true,
         endTime: endTime,
         maxEndTime: endTime,
-        durationMinutes: durationMinutes
+        durationMinutes: durationMinutes,
+        memo: ''
     });
   },
 
   closeEndModal() {
-    this.setData({ showEndModal: false });
+    this.setData({ 
+      showEndModal: false,
+      memo: ''
+    });
     // Resume timer if cancelled? Or just keep stopped?
     // Requirement implies "Adjust", so maybe we should keep timer running in background or restart it?
     // Usually if user cancels "End", they continue focusing.
@@ -180,6 +185,10 @@ Page({
     this.setData({ durationMinutes: e.detail.value });
   },
 
+  handleMemoInput(e) {
+    this.setData({ memo: e.detail.value });
+  },
+
   confirmEndFocus() {
       const payload = {};
       if (this.data.sessionId) {
@@ -191,18 +200,6 @@ Page({
       const [hours, minutes] = this.data.endTime.split(':');
       const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hours), parseInt(minutes));
       
-      // Handle day rollover if needed? Assuming same day for simplicity unless spanning midnight, 
-      // but UI only shows HH:mm. Let's assume today.
-      // If user picks time > now, it's invalid (but picker limits max).
-      // If user picks time < start time, it's weird.
-      
-      // Use toISOString() but adjust for timezone offset if needed or just send local time string if backend handles it?
-      // Typically backend expects ISO 8601 UTC.
-      // Let's manually format to "YYYY-MM-DDTHH:mm:ss" in local time or convert to UTC.
-      // The requirement example shows "2024-03-20T14:45:00", which looks like local time (no Z).
-      // Let's send local time string for safety or full ISO.
-      // Let's use utility format or simple construction.
-      
       const year = endDate.getFullYear();
       const month = (endDate.getMonth() + 1).toString().padStart(2, '0');
       const day = endDate.getDate().toString().padStart(2, '0');
@@ -213,6 +210,10 @@ Page({
       
       if (this.data.durationMinutes) {
           payload.durationMinutes = parseInt(this.data.durationMinutes);
+      }
+
+      if (this.data.memo) {
+          payload.memo = this.data.memo;
       }
 
       request('/focus/end', 'POST', payload).then(res => {

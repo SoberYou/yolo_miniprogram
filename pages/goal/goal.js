@@ -125,7 +125,10 @@ Page({
         last30Days: '0m'
       },
       heatmap: [], // Array of weeks
-      history: []
+      history: [],
+      totalHours: '0.0',
+      expectedTotalHours: '0.0', // Ensure this exists
+      progressPercent: 0 // For progress bar
     },
     navBarHeight: 0,
     statusBarHeight: 0,
@@ -146,7 +149,36 @@ Page({
       show: false,
       text: '',
       left: 0
+    },
+    progressTooltip: {
+      show: false,
+      text: '',
+      left: 0
     }
+  },
+
+  showProgressTooltip(e) {
+    const { totalHours } = e.currentTarget.dataset;
+    // Calculate position based on touch or fixed
+    // For simplicity, let's just show it above the progress bar or at a fixed position relative to the bar
+    // Since we don't have exact coordinates easily without query, let's just toggle visibility
+    // Or we can use the event's detail x
+    
+    // Let's just toggle show for now, maybe use a fixed position relative to the container
+    // But user asked for "suspension" (tooltip)
+    
+    this.setData({
+      progressTooltip: {
+        show: true,
+        text: `累计投入 ${totalHours} h`
+      }
+    });
+  },
+
+  hideProgressTooltip() {
+    this.setData({
+      'progressTooltip.show': false
+    });
   },
 
   hideLegendTip() {
@@ -154,6 +186,10 @@ Page({
       this.setData({
         'legendTip.show': false
       });
+    }
+    // Also hide progress tooltip on global tap
+    if (this.data.progressTooltip.show) {
+      this.hideProgressTooltip();
     }
   },
 
@@ -217,11 +253,22 @@ Page({
     request(`/goals/${goalId}`, 'GET').then(res => {
       if (res && res.code === 200 && res.data) {
         const data = res.data;
+        
+        // Calculate progress
+        const totalHours = this.data.goal.totalHours || 0;
+        const expectedTotalHours = data.expectedTotalHours || 0;
+        let progressPercent = 0;
+        if (expectedTotalHours > 0) {
+            progressPercent = (totalHours / expectedTotalHours) * 100;
+            if (progressPercent > 100) progressPercent = 100;
+        }
+
         this.setData({
           'goal.name': data.title,
           'goal.description': data.description,
           'goal.northStar': data.northStar,
           'goal.expectedTotalHours': data.expectedTotalHours,
+          'goal.progressPercent': progressPercent,
           'editGoal': {
             id: data.id,
             title: data.title,
@@ -239,18 +286,32 @@ Page({
   fetchFocusStats(goalId) {
     request(`/focus/statistics?goalId=${goalId}`, 'GET').then(res => {
       if (res && res.code === 200 && res.data) {
-        const { goalId, goalTitle, last7DaysMinutes, last30DaysMinutes, dailyRecords } = res.data;
+        const { goalId, goalTitle, totalMinutes, last7DaysMinutes, last30DaysMinutes, dailyRecords } = res.data;
         
         // Generate Heatmap Data
-        const heatmapData = generateHeatmapData(dailyRecords);
-        
-        this.setData({
-          'goal.id': goalId,
-          'goal.name': goalTitle,
-          'goal.stats': {
-            last7Days: formatDuration(last7DaysMinutes),
-            last30Days: formatDuration(last30DaysMinutes)
-          },
+                    const heatmapData = generateHeatmapData(dailyRecords);
+                    
+                    // Convert totalMinutes to hours
+                    const totalHours = (totalMinutes / 60).toFixed(1);
+                    
+                    // Calculate progress based on existing expectedTotalHours
+                    const expectedTotalHours = this.data.goal.expectedTotalHours || 0;
+                    
+                    let progressPercent = 0;
+                    if (expectedTotalHours > 0) {
+                      progressPercent = (totalHours / expectedTotalHours) * 100;
+                      if (progressPercent > 100) progressPercent = 100;
+                    }
+
+                    this.setData({
+                        'goal.id': goalId,
+                        'goal.name': goalTitle,
+                        'goal.totalHours': totalHours,
+                        'goal.progressPercent': progressPercent,
+                        'goal.stats': {
+                            last7Days: formatDuration(last7DaysMinutes),
+                            last30Days: formatDuration(last30DaysMinutes)
+                        },
           'goal.heatmap': heatmapData,
           'goal.history': dailyRecords.map(record => ({
             date: formatRelativeDate(record.date),

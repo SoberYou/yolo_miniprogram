@@ -55,6 +55,11 @@
              <input class="modal-input" type="number" value="{{durationMinutes}}" bindinput="handleDurationInput" />
           </view>
           
+          <view class="form-item">
+             <text class="label">备注</text>
+             <textarea class="modal-textarea" placeholder="本次专注做了什么..." value="{{memo}}" bindinput="handleMemoInput" />
+          </view>
+          
           <view class="modal-actions">
             <button class="modal-btn cancel" bindtap="closeEndModal">取消</button>
             <button class="modal-btn confirm" bindtap="confirmEndFocus">确认结束</button>

@@ -62,7 +62,19 @@
       <view class="goal-title">{{goal.name}}</view>
       <view class="goal-desc-group">
         <text class="goal-desc">{{goal.description || '暂无描述'}}</text>
-        <text class="goal-desc sub">{{goal.northStar}} · 预期 {{goal.expectedTotalHours}} 小时</text>
+        <view class="goal-progress-container">
+          <text class="goal-desc sub">{{goal.northStar}} · </text>
+          <view class="progress-bar-wrapper" catchtap="showProgressTooltip" data-total-hours="{{goal.totalHours}}">
+             <view class="progress-bar-bg">
+               <view class="progress-bar-fill" style="width: {{goal.progressPercent}}%;"></view>
+             </view>
+             <!-- Tooltip -->
+             <view class="progress-tooltip" wx:if="{{progressTooltip.show}}">
+               {{progressTooltip.text}}
+             </view>
+          </view>
+          <text class="goal-desc sub">  {{goal.expectedTotalHours}} h</text>
+        </view>
       </view>
     </view>
 
