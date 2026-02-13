@@ -193,45 +193,59 @@ page {
 }
 
 /* Swipe Styles */
-.swipe-container {
-  position: relative;
+.milestone-movable-area {
   width: 100%;
-  height: auto;
+  height: 60px; /* Fixed height for consistency */
   overflow: hidden;
 }
 
+.milestone-movable-view {
+  width: calc(100% + 60px); /* 60px for delete button */
+  height: 100%;
+  display: flex;
+}
+
 .timeline-content {
-  position: relative;
-  padding-left: 0; /* Remove padding as no line/marker */
-  background-color: transparent; /* Container is transparent */
-  z-index: 2;
-  transition: transform 0.3s ease;
-  width: 100%;
+  width: calc(100vw - 48px); /* 100vw - padding (24*2) */
+  /* Wait, timeline-container has padding 20px. main-content has padding 24px.
+     Actually timeline-container width is constrained by main-content.
+     timeline-item has margin-right 6px.
+     So the width is available width.
+     Using flex-grow or 100% of parent is better than calc(vw).
+     The parent is movable-view. movable-view width is > 100% of area.
+     We want timeline-content to be exactly the width of movable-area.
+     movable-area width is 100% of timeline-item.
+     So timeline-content width should be calc(100% - 60px) relative to movable-view?
+     No, movable-view is (AreaWidth + 60px).
+     We want timeline-content to be AreaWidth.
+     So width: calc(100% - 60px) of movable-view should work.
+  */
+  width: calc(100% - 60px);
+  flex-shrink: 0;
+  height: 100%;
   box-sizing: border-box;
 }
 
 .swipe-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 120rpx; /* Match JS translation */
+  width: 60px;
+  height: 100%;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
 }
 
 .delete-btn {
   width: 100%;
-  height: 100%; /* Match container height */
+  height: 100%; 
   background-color: #ff4d4f;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  border-radius: 8px; /* Match card radius if desired, or keep square */
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 /* Remove Marker */
@@ -242,11 +256,15 @@ page {
 
 .card {
   background-color: #f9f9f9;
-  padding: 16px;
+  padding: 0 16px; /* Reduced padding for fixed height */
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
+  justify-content: center; /* Center text vertically */
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .desc {

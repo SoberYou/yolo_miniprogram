@@ -88,12 +88,30 @@
 
     <!-- GOAL Zone -->
     <view class="section-goals">
-      <view class="goals-list-wrapper" style="{{goals.length > 3 ? 'height: 260px; overflow-y: auto;' : ''}}">
+      <view class="goals-list-wrapper" style="height: 260px; overflow-y: auto;">
         <block wx:for="{{goals}}" wx:key="id">
-          <view class="goal-card" bindtap="goToGoal" data-id="{{item.id}}">
-            <view class="goal-name">{{item.name}}</view>
-            <view class="goal-time">{{item.timeSpent}}</view>
-          </view>
+          <movable-area class="goal-movable-area">
+            <movable-view 
+              class="goal-movable-view" 
+              direction="horizontal" 
+              out-of-bounds="{{true}}" 
+              damping="40" 
+              x="{{item.x}}" 
+              animation="{{true}}"
+              data-index="{{index}}"
+              bindchange="handleMovableChange"
+              bindtouchend="handleMovableTouchEnd"
+            >
+              <view class="goal-card-content" bindtap="goToGoal" data-id="{{item.id}}">
+                <view class="goal-name">{{item.name}}</view>
+                <view class="goal-time">{{item.timeSpent}}</view>
+              </view>
+              <view class="goal-actions">
+                <view class="action-btn archive-btn" catchtap="archiveGoal" data-id="{{item.id}}" data-index="{{index}}">归档</view>
+                <view class="action-btn delete-btn" catchtap="deleteGoal" data-id="{{item.id}}" data-index="{{index}}">删除</view>
+              </view>
+            </movable-view>
+          </movable-area>
         </block>
       </view>
     </view>

@@ -188,7 +188,8 @@ Page({
           return {
             id: item.id,
             name: item.title,
-            timeSpent: `近7天 ${hours} h`
+            timeSpent: `近7天 ${hours} h`,
+            x: 0
           };
         });
         this.setData({ goals });
@@ -263,6 +264,68 @@ Page({
       'newGoal.expected_total_hours': e.detail.value
     });
   },
+
+  handleMovableChange(e) {
+    const index = e.currentTarget.dataset.index;
+    if (!this.currentXMap) this.currentXMap = {};
+    this.currentXMap[index] = e.detail.x;
+  },
+
+  handleMovableTouchEnd(e) {
+    const index = e.currentTarget.dataset.index;
+    if (!this.currentXMap) return;
+    
+    const x = this.currentXMap[index] || 0;
+    const threshold = -60; // Half of 120
+    let finalX = 0;
+
+    if (x < threshold) {
+      finalX = -120;
+    } else {
+      finalX = 0;
+    }
+
+    this.setData({
+      [`goals[${index}].x`]: finalX
+    });
+  },
+
+  archiveGoal(e) {
+    const id = e.currentTarget.dataset.id;
+    request(`/goals/${id}`, 'GET').then(res => {
+      if (res && res.code === 200) {
+        const goalData = res.data;
+        goalData.status = 'ARCHIVED';
+        
+        request('/goals', 'POST', goalData).then(updateRes => {
+          if (updateRes && updateRes.code === 200) {
+             wx.showToast({ title: '已归档', icon: 'success' });
+             this.fetchGoals();
+          }
+        });
+      }
+    });
+  },
+
+  deleteGoal(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这个目标吗？',
+      success: (res) => {
+        if (res.confirm) {
+          request(`/goals/${id}`, 'DELETE').then(delRes => {
+            if (delRes && delRes.code === 200) {
+              wx.showToast({ title: '已删除', icon: 'success' });
+              this.fetchGoals();
+            }
+          });
+        }
+      }
+    });
+  },
+
+
 
   selectCategory(e) {
     const selectedCategory = e.currentTarget.dataset.value;

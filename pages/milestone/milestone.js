@@ -115,17 +115,18 @@ Page({
     // Use radius for physics
     const radius = size / 2;
 
-    // Composite System Colors (Gradients)
-    // We'll store gradient definitions or colors to create gradients during draw
+    // Matte/Frosted Colors (Stable, Muted Tones)
+    // Using solid colors or subtle gradients for matte look
+    // Palette: Morandi or Earthy tones
     const gradients = [
-      ['#A18CD1', '#FBC2EB'], // Purple to Pink
-      ['#84FAB0', '#8FD3F4'], // Green to Blue
-      ['#FF9A9E', '#FECFEF'], // Pink to Light Pink
-      ['#E0C3FC', '#8EC5FC'], // Light Purple to Blue
-      ['#4FACFE', '#00F2FE'], // Blue Gradient
-      ['#43E97B', '#38F9D7'], // Green Gradient
-      ['#FA709A', '#FEE140'], // Red to Yellow
-      ['#FBAB7E', '#F7CE68']  // Orange to Yellow
+      ['#7D8B98', '#A4B0BE'], // Greyish Blue
+      ['#8E8C84', '#B0AEA6'], // Warm Grey
+      ['#849974', '#A6BD95'], // Sage Green
+      ['#C29B89', '#D9B8A8'], // Muted Clay
+      ['#758A99', '#96ABB8'], // Slate Blue
+      ['#9E8B8B', '#BFADAD'], // Dusty Rose
+      ['#8C987D', '#ADB99F'], // Olive Green
+      ['#988C7D', '#B9AD9F']  // Taupe
     ];
     
     this.ballObjects = milestones.map((item, index) => {
@@ -272,28 +273,27 @@ Page({
       ctx.save();
       ctx.translate(b.x, b.y);
       
-      // Draw Ball (Gradient)
-      // Create radial gradient for 3D glass effect
-      // x0, y0, r0, x1, y1, r1 relative to center (0,0)
+      // Draw Ball (Matte/Frosted)
+      // Use subtle gradient for volume but less shine
       const grad = ctx.createRadialGradient(-b.radius*0.3, -b.radius*0.3, b.radius*0.1, 0, 0, b.radius);
-      // Colors from palette
-      grad.addColorStop(0, '#ffffff'); // Highlight
-      grad.addColorStop(0.3, b.color[0]);
-      grad.addColorStop(1, b.color[1]);
+      // Colors from palette - softer highlights
+      grad.addColorStop(0, '#E0E0E0'); // Softer Highlight (not pure white)
+      grad.addColorStop(0.4, b.color[1]); // Main color body
+      grad.addColorStop(1, b.color[0]); // Darker edge for depth
       
       ctx.beginPath();
       ctx.arc(0, 0, b.radius, 0, Math.PI * 2);
       ctx.fillStyle = grad;
       ctx.fill();
       
-      // Shine/Reflection
+      // Reduce Shine/Reflection opacity for matte look
       ctx.beginPath();
       ctx.ellipse(-b.radius*0.3, -b.radius*0.3, b.radius*0.2, b.radius*0.1, Math.PI/4, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.)'; // Very subtle reflection
       ctx.fill();
       
       // Draw Text
-      ctx.fillStyle = '#333';
+      ctx.fillStyle = '#FFFFFF'; // White text for better contrast on dark matte balls
       ctx.font = '10px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -330,11 +330,17 @@ Page({
   },
 
   showBallDetailsModal(milestone) {
-    wx.showModal({
-      title: milestone.milestoneTitle,
-      content: `日期: ${milestone.milestoneDate}\n\n描述: ${milestone.milestoneDesc || '无'}\n\n感悟: ${milestone.ownFeel || '无'}`,
-      showCancel: false,
-      confirmText: '关闭'
+    this.setData({
+      showModal: true,
+      isEdit: false,
+      isReadOnly: true,
+      formData: {
+        id: milestone.id,
+        milestoneTitle: milestone.milestoneTitle,
+        milestoneDate: milestone.milestoneDate,
+        milestoneDesc: milestone.milestoneDesc || '',
+        ownFeel: milestone.ownFeel || ''
+      }
     });
   },
 
@@ -373,6 +379,7 @@ Page({
     this.setData({
       showModal: true,
       isEdit: false,
+      isReadOnly: false,
       formData: {
         id: null,
         milestoneTitle: '',
@@ -385,24 +392,32 @@ Page({
 
   openEditModal(e) {
     const id = e.currentTarget.dataset.id;
-    const item = this.data.milestones.find(m => m.id === id);
-    if (item) {
-      this.setData({
-        showModal: true,
-        isEdit: true,
-        formData: {
-          id: item.id,
-          milestoneTitle: item.milestoneTitle,
-          milestoneDate: item.milestoneDate,
-          milestoneDesc: item.milestoneDesc || '',
-          ownFeel: item.ownFeel || ''
-        }
-      });
-    }
+    const milestone = this.data.milestones.find(m => m.id === id);
+    if (!milestone) return;
+
+    this.setData({
+      showModal: true,
+      isEdit: true,
+      isReadOnly: false,
+      formData: {
+        id: milestone.id,
+        milestoneTitle: milestone.milestoneTitle,
+        milestoneDate: milestone.milestoneDate,
+        milestoneDesc: milestone.milestoneDesc || '',
+        ownFeel: milestone.ownFeel || ''
+      }
+    });
   },
 
   closeModal() {
-    this.setData({ showModal: false });
+    this.setData({
+      showModal: false,
+      isReadOnly: false
+    });
+  },
+  
+  preventBubble() {
+    // Do nothing, just prevent bubble
   },
 
   handleInput(e) {
@@ -494,39 +509,28 @@ Page({
   },
 
   // Swipe Logic
-  handleTouchStart(e) {
-    this.startX = e.touches[0].clientX;
-    this.startY = e.touches[0].clientY;
-  },
-
-  handleTouchMove(e) {
-    // Optional: add move logic for real-time tracking if needed
-    // For now, rely on End to toggle
-  },
-
-  handleTouchEnd(e) {
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
-    const deltaX = endX - this.startX;
-    const deltaY = endY - this.startY;
-    
-    // Check if horizontal swipe
-    if (Math.abs(deltaY) > Math.abs(deltaX)) return; // Vertical scroll
-
+  handleMovableChange(e) {
     const index = e.currentTarget.dataset.index;
-    const currentX = this.data.milestones[index].x;
+    if (!this.currentXMap) this.currentXMap = {};
+    this.currentXMap[index] = e.detail.x;
+  },
+
+  handleMovableTouchEnd(e) {
+    const index = e.currentTarget.dataset.index;
+    if (!this.currentXMap) return;
     
-    // Threshold for swipe
-    if (deltaX < -30) {
-      // Swipe Left -> Open
-      this.setData({
-        [`milestones[${index}].x`]: -120 // -120rpx
-      });
-    } else if (deltaX > 30) {
-      // Swipe Right -> Close
-      this.setData({
-        [`milestones[${index}].x`]: 0
-      });
+    const x = this.currentXMap[index] || 0;
+    const threshold = -30; // Half of 60
+    let finalX = 0;
+
+    if (x < threshold) {
+      finalX = -60; // Open state (60px)
+    } else {
+      finalX = 0; // Closed state
     }
+
+    this.setData({
+      [`milestones[${index}].x`]: finalX
+    });
   }
 })

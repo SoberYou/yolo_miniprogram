@@ -341,30 +341,77 @@ page {
   margin-bottom: 48px;
 }
 
-.goal-card {
+.goals-list-wrapper {
+  padding-right: 8px; /* Space for scrollbar */
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Goal Item Container for Swipe */
+.goal-movable-area {
+  width: 100%;
+  height: 80px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.goal-movable-view {
+  width: calc(100% + 120px);
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.goal-card-content {
+  width: calc(100vw - 48px - 8px); /* Account for wrapper padding */
+  height: 100%;
   background-color: #f9f9f9;
-  padding: 24px;
-  margin-bottom: 16px;
-  border-radius: 8px;
+  border-radius: 12px;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: opacity 0.2s;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.goal-card:active {
-  opacity: 0.7;
+.goal-actions {
+  width: 120px;
+  height: 100%;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 60px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: white;
+  font-weight: 500;
+}
+
+.archive-btn {
+  background-color: #f0ad4e; /* Orange for Archive */
+}
+
+.delete-btn {
+  background-color: #d9534f; /* Red for Delete */
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .goal-name {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   color: #333;
 }
 
 .goal-time {
   font-size: 14px;
-  color: #888;
+  color: #999;
 }
 
 /* CTA Zone */

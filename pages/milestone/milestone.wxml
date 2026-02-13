@@ -26,27 +26,33 @@
             <text class="day">{{item.milestoneDate}}</text>
           </view>
           
-          <view class="swipe-container">
-            <view class="swipe-actions">
-              <view class="delete-btn" catchtap="deleteMilestone" data-id="{{item.id}}">删除</view>
-            </view>
-            
-            <view 
-              class="timeline-content" 
-              bindtap="openEditModal" 
-              data-id="{{item.id}}"
-              bindtouchstart="handleTouchStart"
-              bindtouchmove="handleTouchMove"
-              bindtouchend="handleTouchEnd"
+          <movable-area class="milestone-movable-area">
+            <movable-view 
+              class="milestone-movable-view" 
+              direction="horizontal" 
+              out-of-bounds="{{true}}" 
+              damping="40" 
+              x="{{item.x}}" 
+              animation="{{true}}"
               data-index="{{index}}"
-              style="transform: translateX({{item.x}}rpx); transition: transform 0.3s;"
+              bindchange="handleMovableChange"
+              bindtouchend="handleMovableTouchEnd"
             >
-              <view class="marker"></view>
-              <view class="card">
-                <text class="title">{{item.milestoneTitle}}</text>
+              <view 
+                class="timeline-content" 
+                bindtap="openEditModal" 
+                data-id="{{item.id}}"
+              >
+                <view class="marker"></view>
+                <view class="card">
+                  <text class="title">{{item.milestoneTitle}}</text>
+                </view>
               </view>
-            </view>
-          </view>
+              <view class="swipe-actions">
+                <view class="delete-btn" catchtap="deleteMilestone" data-id="{{item.id}}">删除</view>
+              </view>
+            </movable-view>
+          </movable-area>
 
         </view>
       </block>
@@ -63,13 +69,13 @@
   </view>
 
   <!-- Add/Edit Modal -->
-  <page-container show="{{showModal}}" position="center" round overlay custom-style="background-color: transparent;">
-    <view class="modal-overlay">
-      <view class="modal-content">
-        <view class="modal-header">{{isEdit ? '编辑里程碑' : '新增里程碑'}}</view>
+  <page-container show="{{showModal}}" position="center" round overlay custom-style="background-color: transparent;" bind:clickoverlay="closeModal">
+    <view class="modal-overlay" bindtap="closeModal">
+      <view class="modal-content" catchtap="preventBubble">
+        <view class="modal-header">{{isReadOnly ? '里程碑详情' : (isEdit ? '编辑里程碑' : '新增里程碑')}}</view>
         
         <view class="form-item">
-          <picker mode="date" value="{{formData.milestoneDate}}" bindchange="handleDateChange">
+          <picker mode="date" value="{{formData.milestoneDate}}" bindchange="handleDateChange" disabled="{{isReadOnly}}">
             <view class="picker-view">
               日期: {{formData.milestoneDate}}
             </view>
@@ -77,18 +83,18 @@
         </view>
 
         <view class="form-item">
-          <input class="modal-input" placeholder="里程碑标题" bindinput="handleInput" data-field="milestoneTitle" value="{{formData.milestoneTitle}}" />
+          <input class="modal-input" placeholder="里程碑标题" bindinput="handleInput" data-field="milestoneTitle" value="{{formData.milestoneTitle}}" disabled="{{isReadOnly}}" />
         </view>
         
         <view class="form-item">
-          <textarea class="modal-textarea" placeholder="描述 (可选)" bindinput="handleInput" data-field="milestoneDesc" value="{{formData.milestoneDesc}}" />
+          <textarea class="modal-textarea" placeholder="描述 (可选)" bindinput="handleInput" data-field="milestoneDesc" value="{{formData.milestoneDesc}}" disabled="{{isReadOnly}}" />
         </view>
 
         <view class="form-item">
-          <textarea class="modal-textarea" placeholder="感悟 (可选)" bindinput="handleInput" data-field="ownFeel" value="{{formData.ownFeel}}" />
+          <textarea class="modal-textarea" placeholder="感悟 (可选)" bindinput="handleInput" data-field="ownFeel" value="{{formData.ownFeel}}" disabled="{{isReadOnly}}" />
         </view>
         
-        <view class="modal-actions">
+        <view class="modal-actions" wx:if="{{!isReadOnly}}">
           <button class="modal-btn cancel" bindtap="closeModal">取消</button>
           <button class="modal-btn confirm" bindtap="saveMilestone">保存</button>
         </view>
