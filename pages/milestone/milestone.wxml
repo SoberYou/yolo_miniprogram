@@ -12,9 +12,13 @@
   <view class="main-content">
     <view class="section-header">
       <view class="add-btn" bindtap="openAddModal">+</view>
+      <view class="tab-switcher">
+        <view class="tab-item {{currentTab === 'date' ? 'active' : ''}}" bindtap="switchTab" data-tab="date">日期</view>
+        <view class="tab-item {{currentTab === 'bottle' ? 'active' : ''}}" bindtap="switchTab" data-tab="bottle">玻璃瓶</view>
+      </view>
     </view>
     
-    <scroll-view scroll-y class="timeline-container">
+    <scroll-view wx:if="{{currentTab === 'date'}}" scroll-y class="timeline-container">
       <view class="timeline">
         <block wx:for="{{milestones}}" wx:key="id">
         <view class="timeline-item">
@@ -50,7 +54,12 @@
         <text>暂无里程碑，点击上方按钮添加</text>
       </view>
     </view>
-  </scroll-view>
+    </scroll-view>
+
+    <!-- Wishing Bottle View -->
+    <view wx:if="{{currentTab === 'bottle'}}" class="bottle-container">
+       <canvas type="2d" id="bottleCanvas" class="bottle-canvas" bindtouchstart="handleCanvasTouch"></canvas>
+    </view>
   </view>
 
   <!-- Add/Edit Modal -->

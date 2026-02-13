@@ -13,7 +13,11 @@ Page({
       milestoneDate: '',
       milestoneDesc: '',
       ownFeel: ''
-    }
+    },
+    currentTab: 'date',
+    balls: [],
+    gravityX: 0,
+    gravityY: 0
   },
 
   onLoad(options) {
@@ -24,6 +28,314 @@ Page({
       });
       this.fetchMilestones(options.goalId);
     }
+  },
+
+  onUnload() {
+    this.stopAccelerometer();
+    if (this.animationFrameId) {
+      this.cancelAnimationFrame(this.animationFrameId);
+    }
+  },
+
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab;
+    this.setData({ currentTab: tab });
+    if (tab === 'bottle') {
+      // Use nextTick to ensure canvas node is available
+      wx.nextTick(() => {
+        this.initBottle();
+        this.startAccelerometer();
+      });
+    } else {
+      this.stopAccelerometer();
+      if (this.animationFrameId) {
+        this.cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    }
+  },
+
+  startAccelerometer() {
+    wx.startAccelerometer({
+      interval: 'ui', // High frequency for smooth animation
+      success: () => {
+        wx.onAccelerometerChange((res) => {
+          // Update instance variable directly for performance
+          this.gravityX = res.x;
+          this.gravityY = res.y;
+        });
+      },
+      fail: (err) => {
+        console.error('Accelerometer failed', err);
+      }
+    });
+  },
+
+  stopAccelerometer() {
+    wx.stopAccelerometer();
+    wx.offAccelerometerChange();
+  },
+
+  initBottle() {
+    const query = wx.createSelectorQuery();
+    query.select('#bottleCanvas')
+      .fields({ node: true, size: true })
+      .exec((res) => {
+        if (!res[0] || !res[0].node) return;
+        
+        const canvas = res[0].node;
+        const ctx = canvas.getContext('2d');
+        const width = res[0].width;
+        const height = res[0].height;
+
+        const dpr = wx.getSystemInfoSync().pixelRatio;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.canvasWidth = width;
+        this.canvasHeight = height;
+
+        this.initBalls(width, height);
+        this.startAnimation();
+      });
+  },
+
+  initBalls(containerWidth, containerHeight) {
+    const milestones = this.data.milestones;
+    const count = milestones.length;
+    
+    // Calculate ball size
+    let size = 70; 
+    if (count > 20) size = 40;
+    else if (count > 10) size = 55;
+    
+    // Use radius for physics
+    const radius = size / 2;
+
+    // Composite System Colors (Gradients)
+    // We'll store gradient definitions or colors to create gradients during draw
+    const gradients = [
+      ['#A18CD1', '#FBC2EB'], // Purple to Pink
+      ['#84FAB0', '#8FD3F4'], // Green to Blue
+      ['#FF9A9E', '#FECFEF'], // Pink to Light Pink
+      ['#E0C3FC', '#8EC5FC'], // Light Purple to Blue
+      ['#4FACFE', '#00F2FE'], // Blue Gradient
+      ['#43E97B', '#38F9D7'], // Green Gradient
+      ['#FA709A', '#FEE140'], // Red to Yellow
+      ['#FBAB7E', '#F7CE68']  // Orange to Yellow
+    ];
+    
+    this.ballObjects = milestones.map((item, index) => {
+        // Random position, avoiding walls if possible
+        const x = radius + Math.random() * (containerWidth - size);
+        const y = containerHeight - radius - Math.random() * (containerHeight / 2); // Start at bottom half
+        
+        // Truncate logic
+        const title = item.milestoneTitle || '';
+        const truncatedTitle = title.length > 4 ? title.substring(0, 4) + '..' : title;
+
+        return {
+            id: item.id,
+            x: x, 
+            y: y,
+            vx: (Math.random() - 0.5) * 2, // Initial random velocity
+            vy: (Math.random() - 0.5) * 2,
+            radius: radius,
+            color: gradients[index % gradients.length],
+            title: item.milestoneTitle,
+            truncatedTitle: truncatedTitle,
+            milestone: item
+        };
+    });
+    
+    // Initial gravity
+    this.gravityX = 0;
+    this.gravityY = 1; // Default gravity down (if phone is vertical)
+  },
+
+  startAnimation() {
+    const render = () => {
+      if (!this.ctx) return;
+      this.updatePhysics();
+      this.draw();
+      // Use canvas native requestAnimationFrame if available, or window
+      this.animationFrameId = this.canvas.requestAnimationFrame(render);
+    };
+    this.animationFrameId = this.canvas.requestAnimationFrame(render);
+  },
+
+  updatePhysics() {
+    const balls = this.ballObjects;
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
+    const friction = 0.98; // Air resistance
+    const wallBounce = 0.6; // Bounciness
+    
+    // Gravity scale
+    // Accelerometer X: -1 (right tilt) to 1 (left tilt) -> standard is different on devices
+    // Usually: holding phone upright:
+    // X: ~0
+    // Y: ~0 (if vertical) ?? No, Y is usually -1 or 1 depending on orientation.
+    // Let's assume standard behavior:
+    // X: negative left, positive right.
+    // Y: negative top, positive bottom.
+    // We want gravity to pull towards the "down" side of the world.
+    // If phone is portrait upright: Y is negative? No, let's just use raw values and tune.
+    // Actually, usually gravity vector is down.
+    // Let's amplify gravity
+    const gX = this.gravityX * 0.5; // Tune direction (inverted from previous)
+    const gY = -this.gravityY * 0.5;  // Tune direction (inverted from previous)
+
+    for (let i = 0; i < balls.length; i++) {
+      let b = balls[i];
+      
+      // Apply gravity
+      b.vx += gX;
+      b.vy += gY;
+      
+      // Apply friction
+      b.vx *= friction;
+      b.vy *= friction;
+      
+      // Update position
+      b.x += b.vx;
+      b.y += b.vy;
+      
+      // Wall collisions
+      if (b.x - b.radius < 0) {
+        b.x = b.radius;
+        b.vx = -b.vx * wallBounce;
+      } else if (b.x + b.radius > width) {
+        b.x = width - b.radius;
+        b.vx = -b.vx * wallBounce;
+      }
+      
+      if (b.y - b.radius < 0) {
+        b.y = b.radius;
+        b.vy = -b.vy * wallBounce;
+      } else if (b.y + b.radius > height) {
+        b.y = height - b.radius;
+        b.vy = -b.vy * wallBounce;
+      }
+    }
+
+    // Simple Ball-Ball Collision
+    for (let i = 0; i < balls.length; i++) {
+      for (let j = i + 1; j < balls.length; j++) {
+        let b1 = balls[i];
+        let b2 = balls[j];
+        
+        const dx = b2.x - b1.x;
+        const dy = b2.y - b1.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const minDist = b1.radius + b2.radius;
+        
+        if (dist < minDist) {
+          // Resolve overlap
+          const angle = Math.atan2(dy, dx);
+          const targetX = b1.x + Math.cos(angle) * minDist;
+          const targetY = b1.y + Math.sin(angle) * minDist;
+          
+          const ax = (targetX - b2.x) * 0.05; // Spring force
+          const ay = (targetY - b2.y) * 0.05;
+          
+          b1.vx -= ax;
+          b1.vy -= ay;
+          b2.vx += ax;
+          b2.vy += ay;
+          
+          // Separate them immediately to prevent sticking
+          const overlap = minDist - dist;
+          const sepX = (dx / dist) * overlap * 0.5;
+          const sepY = (dy / dist) * overlap * 0.5;
+          
+          b1.x -= sepX;
+          b1.y -= sepY;
+          b2.x += sepX;
+          b2.y += sepY;
+        }
+      }
+    }
+  },
+
+  draw() {
+    const ctx = this.ctx;
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    this.ballObjects.forEach(b => {
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      
+      // Draw Ball (Gradient)
+      // Create radial gradient for 3D glass effect
+      // x0, y0, r0, x1, y1, r1 relative to center (0,0)
+      const grad = ctx.createRadialGradient(-b.radius*0.3, -b.radius*0.3, b.radius*0.1, 0, 0, b.radius);
+      // Colors from palette
+      grad.addColorStop(0, '#ffffff'); // Highlight
+      grad.addColorStop(0.3, b.color[0]);
+      grad.addColorStop(1, b.color[1]);
+      
+      ctx.beginPath();
+      ctx.arc(0, 0, b.radius, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      
+      // Shine/Reflection
+      ctx.beginPath();
+      ctx.ellipse(-b.radius*0.3, -b.radius*0.3, b.radius*0.2, b.radius*0.1, Math.PI/4, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fill();
+      
+      // Draw Text
+      ctx.fillStyle = '#333';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(b.truncatedTitle, 0, 0);
+      
+      ctx.restore();
+    });
+  },
+
+  handleCanvasTouch(e) {
+    if (!e.touches[0] || !this.ballObjects) return;
+    const touch = e.touches[0];
+    // Need to account for canvas scaling/position if not full screen?
+    // e.touches coordinates are relative to viewport or canvas? 
+    // Usually relative to viewport. Need to map to canvas.
+    // Since canvas is full width/height of container, we can use e.detail or e.x/y if bound to view
+    // But this is a canvas touch event.
+    // e.touches[0].x / y
+    
+    const x = touch.x;
+    const y = touch.y;
+    
+    // Find clicked ball
+    // Reverse iterate to find top-most
+    for (let i = this.ballObjects.length - 1; i >= 0; i--) {
+      let b = this.ballObjects[i];
+      const dx = x - b.x;
+      const dy = y - b.y;
+      if (dx*dx + dy*dy < b.radius * b.radius) {
+        this.showBallDetailsModal(b.milestone);
+        return;
+      }
+    }
+  },
+
+  showBallDetailsModal(milestone) {
+    wx.showModal({
+      title: milestone.milestoneTitle,
+      content: `日期: ${milestone.milestoneDate}\n\n描述: ${milestone.milestoneDesc || '无'}\n\n感悟: ${milestone.ownFeel || '无'}`,
+      showCancel: false,
+      confirmText: '关闭'
+    });
   },
 
   fetchMilestones(goalId) {
