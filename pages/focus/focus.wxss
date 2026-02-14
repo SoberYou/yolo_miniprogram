@@ -87,6 +87,9 @@ page {
     font-weight: 500;
     border-radius: 8px;
     border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .start-btn::after { border: none; }
 
@@ -128,6 +131,9 @@ page {
     color: #000000;
     font-size: 16px;
     border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .stop-btn::after { border: none; }
 
@@ -203,6 +209,9 @@ page {
   border-radius: 8px;
   font-size: 16px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-btn::after { border: none; }

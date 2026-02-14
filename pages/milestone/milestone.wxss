@@ -350,6 +350,9 @@ page {
   padding: 12px 0;
   line-height: 1.5;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-btn.cancel {

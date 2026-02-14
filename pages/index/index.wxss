@@ -319,6 +319,9 @@ page {
   padding: 12px 0;
   line-height: 1.5;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-btn.cancel {
@@ -447,6 +450,9 @@ page {
   border-radius: 8px;
   padding: 12px 0;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-skip {
@@ -457,6 +463,9 @@ page {
   font-weight: 400;
   padding: 12px 0;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Remove button default borders */

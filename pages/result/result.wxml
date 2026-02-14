@@ -1,7 +1,7 @@
 <!-- pages/result/result.wxml -->
 <view class="container">
   <!-- Custom Header -->
-  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight}}px;">
       <!-- No back button here to encourage moving forward or home -->
   </view>
 

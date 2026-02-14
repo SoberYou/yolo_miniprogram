@@ -30,4 +30,7 @@
   margin-top: 40px;
   background-color: #07c160;
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

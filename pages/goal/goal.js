@@ -344,17 +344,9 @@ Page({
   },
 
   goBack() {
-    const pages = getCurrentPages();
-    const indexPage = pages.find(p => p.route === 'pages/index/index');
-    
-    if (indexPage) {
-        const delta = pages.length - 1 - pages.indexOf(indexPage);
-        wx.navigateBack({ delta: delta });
-    } else {
-        wx.reLaunch({
-            url: '/pages/index/index'
-        });
-    }
+    wx.reLaunch({
+        url: '/pages/index/index'
+    });
   },
 
   startFocus() {
