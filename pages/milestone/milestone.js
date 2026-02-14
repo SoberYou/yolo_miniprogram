@@ -345,7 +345,9 @@ Page({
   },
 
   fetchMilestones(goalId) {
-    request(`/milestones?goalId=${goalId}`, 'GET').then(res => {
+    const user = wx.getStorageSync('user');
+    const userIdParam = (user && user.userId) ? `&userId=${user.userId}` : '';
+    request(`/milestones?goalId=${goalId}${userIdParam}`, 'GET').then(res => {
       if (res && res.code === 200) {
         const list = res.data || [];
         // Add x property for swipe
@@ -447,6 +449,11 @@ Page({
       ownFeel
     };
 
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        payload.userId = user.userId;
+    }
+
     if (this.data.isEdit) {
       payload.id = id;
       request('/milestones', 'PUT', payload).then(res => {
@@ -484,7 +491,10 @@ Page({
       content: '确定要删除这个里程碑吗？',
       success: (res) => {
         if (res.confirm) {
-          request(`/milestones/${id}`, 'DELETE').then(res => {
+          const user = wx.getStorageSync('user');
+          const userIdParam = (user && user.userId) ? `?userId=${user.userId}` : '';
+          
+          request(`/milestones/${id}${userIdParam}`, 'DELETE').then(res => {
              if (res && res.code === 200) {
                wx.showToast({ title: '已删除', icon: 'success' });
                this.fetchMilestones(this.data.goalId);

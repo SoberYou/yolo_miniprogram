@@ -62,7 +62,10 @@ Page({
   },
 
   fetchGoals(initialGoalId) {
-    request('/goals', 'GET').then(res => {
+    const user = wx.getStorageSync('user');
+    const params = user && user.userId ? { userId: user.userId } : {};
+    
+    request('/goals', 'GET', params).then(res => {
       if (res && res.code === 200 && res.data) {
         const goals = res.data;
         let currentIndex = 0;
@@ -126,7 +129,13 @@ Page({
         return;
     }
 
-    request('/focus/start', 'POST', { goalId: parseInt(this.data.goalId) }).then(res => {
+    const payload = { goalId: parseInt(this.data.goalId) };
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        payload.userId = user.userId;
+    }
+
+    request('/focus/start', 'POST', payload).then(res => {
         if (res && res.code === 200) {
             this.setData({ 
                 status: 'running',
@@ -216,6 +225,11 @@ Page({
           payload.memo = this.data.memo;
       }
 
+      const user = wx.getStorageSync('user');
+      if (user && user.userId) {
+          payload.userId = user.userId;
+      }
+
       request('/focus/end', 'POST', payload).then(res => {
           if (res && res.code === 200) {
               const sessionId = res.data.id;
@@ -232,6 +246,19 @@ Page({
   },
 
   goBack() {
-      wx.navigateBack();
+    if (this.data.goalId) {
+        const pages = getCurrentPages();
+        const prevPage = pages.length > 1 ? pages[pages.length - 2] : null;
+        
+        if (prevPage && prevPage.route.includes('pages/goal/goal')) {
+            wx.navigateBack();
+        } else {
+            wx.redirectTo({
+                url: `/pages/goal/goal?id=${this.data.goalId}`
+            });
+        }
+    } else {
+        wx.navigateBack();
+    }
   }
 })

@@ -23,7 +23,7 @@
     <view class="ready-view" wx:if="{{status === 'ready'}}">
         <view class="text-group" bindtap="switchGoal">
             <text class="main-text">你正在为「{{goalTitle}}」</text>
-            <text class="main-text">投入真实时间 <text class="switch-icon">▼</text></text>
+            <text class="main-text">投入真实时间 </text>
         </view>
         <button class="start-btn" bindtap="startFocus">开始专注</button>
     </view>

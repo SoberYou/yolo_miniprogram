@@ -34,7 +34,9 @@ Page({
   },
 
   fetchSessionDetails(sessionId) {
-      request(`/focus/${sessionId}`, 'GET').then(res => {
+      const user = wx.getStorageSync('user');
+      const userIdParam = (user && user.userId) ? `?userId=${user.userId}` : '';
+      request(`/focus/${sessionId}${userIdParam}`, 'GET').then(res => {
           if (res && res.code === 200 && res.data) {
               const { goalTitle, durationMinutes, goalId } = res.data;
               this.setData({

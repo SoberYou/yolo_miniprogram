@@ -43,16 +43,37 @@ Page({
       menuButtonHeight: menuButtonInfo.height,
       menuButtonTop: menuButtonInfo.top
     });
-    this.fetchLifeStatus();
+
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        this.fetchLifeStatus();
+    } else {
+        const app = getApp();
+        app.userLoginCallback = (userData) => {
+            if (userData && userData.userId) {
+                this.fetchLifeStatus();
+                this.fetchGoals();
+            }
+        };
+    }
   },
 
   onShow() {
-    this.fetchLifeStatus();
-    this.fetchGoals();
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        this.fetchLifeStatus();
+        this.fetchGoals();
+    }
   },
 
   fetchRunningSession(goalId) {
     const params = goalId ? { goalId } : {};
+    
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        params.userId = user.userId;
+    }
+
     request('/focus/running', 'GET', params).then(res => {
       if (res && res.code === 200) {
         // If data is null, it means no running session
@@ -67,7 +88,13 @@ Page({
   },
 
   fetchLifeStatus() {
-    request('/life/getLifeStatus', 'GET').then(res => {
+    const user = wx.getStorageSync('user');
+    const userId = user ? user.userId : null;
+    
+    // Even if userId is null, we might want to fetch default status or handle it
+    const params = userId ? { userId } : {};
+
+    request('/life/getLifeStatus', 'GET', params).then(res => {
       if (res && res.code === 200 && res.data) {
         const { lifeClock, usedRatio, energyDays, totalDays, usedDays } = res.data;
         const usedVal = parseFloat(usedRatio);
@@ -181,7 +208,11 @@ Page({
   },
 
   fetchGoals() {
-    request('/goals', 'GET').then(res => {
+    const user = wx.getStorageSync('user');
+    const userId = user ? user.userId : null;
+    const params = userId ? { userId } : {};
+
+    request('/goals', 'GET', params).then(res => {
       if (res && res.code === 200 && res.data) {
         const goals = res.data.map(item => {
           const hours = (item.last7DaysMinutes / 60).toFixed(1);
@@ -297,6 +328,11 @@ Page({
         const goalData = res.data;
         goalData.status = 'ARCHIVED';
         
+        const user = wx.getStorageSync('user');
+        if (user && user.userId) {
+            goalData.userId = user.userId;
+        }
+        
         request('/goals', 'POST', goalData).then(updateRes => {
           if (updateRes && updateRes.code === 200) {
              wx.showToast({ title: '已归档', icon: 'success' });
@@ -314,7 +350,10 @@ Page({
       content: '确定要删除这个目标吗？',
       success: (res) => {
         if (res.confirm) {
-          request(`/goals/${id}`, 'DELETE').then(delRes => {
+          const user = wx.getStorageSync('user');
+          const params = (user && user.userId) ? { userId: user.userId } : {};
+
+          request(`/goals/${id}`, 'DELETE', params).then(delRes => {
             if (delRes && delRes.code === 200) {
               wx.showToast({ title: '已删除', icon: 'success' });
               this.fetchGoals();
@@ -358,6 +397,11 @@ Page({
       northStar: north_star
     };
     
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        payload.userId = user.userId;
+    }
+
     // Support update if ID exists (though currently newGoal doesn't allow setting ID in UI)
     if (this.data.newGoal.id) {
         payload.id = this.data.newGoal.id;
@@ -369,11 +413,13 @@ Page({
         this.closeAddGoalModal();
         this.fetchGoals(); // Refresh list
       } else {
-        wx.showToast({ title: '添加失败', icon: 'none' });
+        const msg = res.message || '添加失败';
+        wx.showToast({ title: msg, icon: 'none' });
       }
     }).catch(err => {
       console.error('Failed to add goal', err);
-      wx.showToast({ title: '网络错误', icon: 'none' });
+      const msg = (err && err.message) ? err.message : '网络错误';
+      wx.showToast({ title: msg, icon: 'none' });
     });
   },
 

@@ -19,26 +19,40 @@ Page({
       statusBarHeight: systemInfo.statusBarHeight
     });
 
-    this.fetchLifeConfig();
+    // const user = wx.getStorageSync('user');
+    // if (user && user.userId) {
+    //     this.fetchLifeConfig();
+    // } else {
+    //     const app = getApp();
+    //     app.userLoginCallback = (userData) => {
+    //          if (userData && userData.userId) {
+    //              this.fetchLifeConfig();
+    //          }
+    //     };
+    // }
   },
 
-  fetchLifeConfig() {
-    request('/life/getLifeConfig', 'GET').then(res => {
-      if (res && res.code === 200 && res.data) {
-        const { expectedLifeYears } = res.data;
-        const years = expectedLifeYears || 80;
-        // Calculation: years * 365.25 / 7
-        const weeks = Math.floor(years * 365.25 / 7);
+  // fetchLifeConfig() {
+  //   const user = wx.getStorageSync('user');
+  //   const userId = user ? user.userId : null;
+  //   if (!userId) return;
+
+  //   request('/life/getLifeConfig', 'GET', { userId }).then(res => {
+  //     if (res && res.code === 200 && res.data) {
+  //       const { expectedLifeYears } = res.data;
+  //       const years = expectedLifeYears || 80;
+  //       // Calculation: years * 365.25 / 7
+  //       const weeks = Math.floor(years * 365.25 / 7);
         
-        this.setData({
-          expectedLifeYears: years,
-          totalWeeks: weeks
-        });
-      }
-    }).catch(err => {
-      console.error('Failed to fetch life config', err);
-    });
-  },
+  //       this.setData({
+  //         expectedLifeYears: years,
+  //         totalWeeks: weeks
+  //       });
+  //     }
+  //   }).catch(err => {
+  //     console.error('Failed to fetch life config', err);
+  //   });
+  // },
 
   goBack() {
     wx.navigateBack();

@@ -17,11 +17,29 @@ Page({
   },
 
   onLoad(options) {
-    this.fetchLifeConfig();
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        this.fetchLifeConfig();
+    } else {
+        const app = getApp();
+        app.userLoginCallback = (userData) => {
+             if (userData && userData.userId) {
+                 this.fetchLifeConfig();
+             }
+        };
+    }
+  },
+
+  getUserId() {
+    const user = wx.getStorageSync('user');
+    return user ? user.userId : null;
   },
 
   fetchLifeConfig() {
-    request('/life/getLifeConfig', 'GET').then(res => {
+    const userId = this.getUserId();
+    if (!userId) return;
+    
+    request('/life/getLifeConfig', 'GET', { userId }).then(res => {
       if (res && res.code === 200 && res.data) {
         const { birthDate, expectedLifeYears, energyLifeYears } = res.data;
         this.setData({
@@ -77,7 +95,17 @@ Page({
         return;
     }
 
+    const userId = this.getUserId();
+    if (!userId) {
+      wx.showToast({
+        title: '用户未登录',
+        icon: 'none'
+      });
+      return;
+    }
+
     request('/life/configLife', 'POST', {
+      userId,
       birthDate,
       expectedLifeYears: parseInt(expectedLifeYears),
       energyLifeYears: parseInt(energyLifeYears)

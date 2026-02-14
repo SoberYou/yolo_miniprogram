@@ -243,7 +243,12 @@ Page({
   },
 
   fetchRunningSession(goalId) {
-    request('/focus/running', 'GET', { goalId }).then(res => {
+    const params = { goalId };
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        params.userId = user.userId;
+    }
+    request('/focus/running', 'GET', params).then(res => {
       if (res && res.code === 200) {
         this.setData({ runningSession: res.data || null });
       } else {
@@ -256,7 +261,9 @@ Page({
   },
 
   fetchGoalDetails(goalId) {
-    request(`/goals/${goalId}`, 'GET').then(res => {
+    const user = wx.getStorageSync('user');
+    const userIdParam = (user && user.userId) ? `?userId=${user.userId}` : '';
+    request(`/goals/${goalId}${userIdParam}`, 'GET').then(res => {
       if (res && res.code === 200 && res.data) {
         const data = res.data;
         
@@ -290,7 +297,12 @@ Page({
   },
 
   fetchFocusStats(goalId) {
-    request(`/focus/statistics?goalId=${goalId}`, 'GET').then(res => {
+    let url = `/focus/statistics?goalId=${goalId}`;
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        url += `&userId=${user.userId}`;
+    }
+    request(url, 'GET').then(res => {
       if (res && res.code === 200 && res.data) {
         const { goalId, goalTitle, totalMinutes, last7DaysMinutes, last30DaysMinutes, dailyRecords } = res.data;
         
@@ -332,7 +344,17 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack();
+    const pages = getCurrentPages();
+    const indexPage = pages.find(p => p.route === 'pages/index/index');
+    
+    if (indexPage) {
+        const delta = pages.length - 1 - pages.indexOf(indexPage);
+        wx.navigateBack({ delta: delta });
+    } else {
+        wx.reLaunch({
+            url: '/pages/index/index'
+        });
+    }
   },
 
   startFocus() {
@@ -402,6 +424,11 @@ Page({
       expectedTotalHours: parseInt(expected_total_hours) || 0,
       northStar: north_star
     };
+
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+        payload.userId = user.userId;
+    }
 
     request('/goals', 'POST', payload).then(res => {
       if (res && res.code === 200) {
