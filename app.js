@@ -12,7 +12,7 @@ App({
         // 发送 res.code 到后台换取 openId, sessionKey, unionId
         if (res.code) {
           wx.request({
-            url: 'http://10.10.55.83:8080/api/auth/login',
+            url: 'http://47.94.94.21/api/auth/login',
             method: 'POST',
             data: {
               code: res.code

@@ -1,4 +1,6 @@
-const BASE_URL = 'http://10.10.55.83:8080/api';
+// const BASE_URL = 'http://10.10.55.83:8080/api';
+// const BASE_URL = 'https://biuat.ibaiqiu.com/yolo/api';
+const BASE_URL = 'http://47.94.94.21/api';
 
 const request = (url, method, data) => {
   return new Promise((resolve, reject) => {
