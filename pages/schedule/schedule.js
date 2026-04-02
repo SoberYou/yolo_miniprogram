@@ -202,7 +202,17 @@ Page({
   },
 
   fetchActivityTypes() {
-    return request('/schedule/getActivityTypes', 'POST', {}).then(res => {
+    let userId = 0;
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+      userId = user.userId;
+    }
+    if (!userId) {
+      wx.showToast({ title: '未获取到用户信息', icon: 'none' });
+      return Promise.reject('No userId');
+    }
+
+    return request(`/schedule/getActivityTypes?userId=${userId}`, 'POST', {}).then(res => {
       if (res && res.code === 200 && res.data) {
         this.setData({
           activityTypes: res.data,
@@ -217,9 +227,19 @@ Page({
 
   fetchRecords() {
     const bizDate = this.data.date;
+    let userId= 0;
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+      userId = user.userId;
+    }
+    if (!userId) {
+      wx.showToast({ title: '未获取到用户信息', icon: 'none' });
+      return;
+    }
+    
     wx.showLoading({ title: '加载中' });
     
-    request(`/schedule/getRecords?bizDate=${bizDate}`, 'POST', {}).then(res => {
+    request(`/schedule/getRecords?bizDate=${bizDate}&userId=${userId}`, 'POST', {}).then(res => {
       wx.hideLoading();
       if (res && res.code === 200 && res.data) {
         const planMap = {};
@@ -294,8 +314,18 @@ Page({
       return;
     }
 
+    let userId= 0;
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+      userId = user.userId;
+    }
+    if (!userId) {
+      wx.showToast({ title: '未获取到用户信息', icon: 'none' });
+      return;
+    }
+
     wx.showLoading({ title: '保存中' });
-    request('/schedule/batchSaveRecords', 'POST', recordsToSave).then(res => {
+    request(`/schedule/batchSaveRecords?userId=${userId}`, 'POST', recordsToSave).then(res => {
       wx.hideLoading();
       if (res && res.code === 200) {
         wx.showToast({ title: '保存成功', icon: 'success' });
