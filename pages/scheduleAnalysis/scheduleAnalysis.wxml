@@ -1,0 +1,136 @@
+<!--pages/scheduleAnalysis/scheduleAnalysis.wxml-->
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box;">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+      <view class="back-btn" bindtap="goBack">
+        <view class="back-arrow"></view>
+      </view>
+      <text class="page-title">日程分析</text>
+    </view>
+  </view>
+
+  <view class="main-content">
+    <!-- Date Range Section -->
+    <view class="date-range-section">
+      <view class="quick-dates">
+        <view class="quick-btn {{currentQuickDate === 'yesterday' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="yesterday">昨天</view>
+        <view class="quick-btn {{currentQuickDate === 'today' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="today">今天</view>
+        <view class="quick-btn {{currentQuickDate === 'tomorrow' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="tomorrow">明天</view>
+        <view class="quick-btn {{currentQuickDate === 'week' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="week">本周</view>
+        <view class="quick-btn {{currentQuickDate === 'month' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="month">本月</view>
+      </view>
+      <view class="date-pickers">
+        <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+          <view class="date-picker-box">
+            <text>{{startDate || '开始日期'}}</text>
+            <view class="arrow-down"></view>
+          </view>
+        </picker>
+        <text class="date-separator">至</text>
+        <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+          <view class="date-picker-box">
+            <text>{{endDate || '结束日期'}}</text>
+            <view class="arrow-down"></view>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- Tabs -->
+    <view class="tabs">
+      <view class="tab {{currentTab === 'tab1' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab1">表格</view>
+      <view class="tab {{currentTab === 'tab2' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab2">饼图分析</view>
+      <view class="tab {{currentTab === 'tab3' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab3">事项时间趋势</view>
+      <view class="tab {{currentTab === 'tab4' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab4">偏差分析</view>
+    </view>
+
+    <scroll-view scroll-y class="tab-content">
+      <!-- Tab 1: Table -->
+      <view class="tab-panel" wx:if="{{currentTab === 'tab1'}}">
+        <view class="filter-section">
+          <view class="filter-btn {{showPlan ? 'active' : ''}}" bindtap="toggleFilter" data-type="plan">
+            <text class="checkbox {{showPlan ? 'checked' : ''}}"></text> 计划
+          </view>
+          <view class="filter-btn {{showActual ? 'active' : ''}}" bindtap="toggleFilter" data-type="actual">
+            <text class="checkbox {{showActual ? 'checked' : ''}}"></text> 实际
+          </view>
+        </view>
+
+        <view class="analysis-table">
+          <view class="tr th">
+            <view class="th-td time-col">时间</view>
+            <view class="th-td data-col" wx:if="{{showPlan}}">计划</view>
+            <view class="th-td data-col" wx:if="{{showActual}}">实际</view>
+          </view>
+          <view class="tr" wx:for="{{mergedRecords}}" wx:key="index">
+            <view class="td time-col">{{item.timeLabel}}</view>
+            <view class="td data-col cell" wx:if="{{showPlan}}" style="background-color: {{item.plan ? item.plan.color : ''}}">
+              <text class="cell-text" wx:if="{{item.plan}}">{{item.plan.typeName}}</text>
+            </view>
+            <view class="td data-col cell" wx:if="{{showActual}}" style="background-color: {{item.actual ? item.actual.color : ''}}">
+              <text class="cell-text" wx:if="{{item.actual}}">{{item.actual.typeName}}</text>
+            </view>
+          </view>
+          <view class="empty-tip" wx:if="{{mergedRecords.length === 0}}">暂无数据</view>
+        </view>
+      </view>
+
+      <!-- Tab 2: Pie Chart Analysis -->
+      <view class="tab-panel" wx:if="{{currentTab === 'tab2'}}">
+        <view class="filter-section">
+          <view class="filter-btn {{showTime ? 'active' : ''}}" bindtap="togglePieFilter" data-type="time">
+            <text class="checkbox {{showTime ? 'checked' : ''}}"></text> 时间
+          </view>
+          <view class="filter-btn {{showPercentage ? 'active' : ''}}" bindtap="togglePieFilter" data-type="percentage">
+            <text class="checkbox {{showPercentage ? 'checked' : ''}}"></text> 占比
+          </view>
+        </view>
+
+        <view class="pie-charts-wrapper">
+          <view class="chart-section">
+            <view class="chart-title">计划时间占比</view>
+            <view class="pie-chart" style="background: {{planPieGradient}}"></view>
+            <view class="legend">
+              <view class="legend-item" wx:for="{{planStats}}" wx:key="typeCode">
+                <view class="color-dot" style="background-color: {{item.color}}"></view>
+                <text>{{item.displayLabel}}</text>
+              </view>
+            </view>
+          </view>
+          
+          <view class="chart-section">
+            <view class="chart-title">实际时间占比</view>
+            <view class="pie-chart" style="background: {{actualPieGradient}}"></view>
+            <view class="legend">
+              <view class="legend-item" wx:for="{{actualStats}}" wx:key="typeCode">
+                <view class="color-dot" style="background-color: {{item.color}}"></view>
+                <text>{{item.displayLabel}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="stats-list">
+          <view class="stats-title">统计列表</view>
+          <view class="stats-card">
+            <view class="stats-row">总体达成率: <text class="highlight">{{overallCompletionRate}}%</text></view>
+            <view class="stats-row">新增事项占整天比例: <text class="highlight">{{newItemsPercentage}}%</text></view>
+          </view>
+          <view class="stats-card">
+            <view class="stats-subtitle">各事项完成率</view>
+            <view class="stats-item" wx:for="{{completionStats}}" wx:key="typeCode">
+              <text>{{item.typeName}}</text>
+              <text>{{item.completionRate}}%</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- Tab 3 & 4 Placeholders -->
+      <view class="tab-panel placeholder" wx:if="{{currentTab === 'tab3' || currentTab === 'tab4'}}">
+        <view class="developing-text">正在开发中...</view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

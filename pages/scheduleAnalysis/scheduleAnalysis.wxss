@@ -1,0 +1,406 @@
+/* pages/scheduleAnalysis/scheduleAnalysis.wxss */
+page {
+  background-color: #f5f6fa;
+  color: #333333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Header */
+.custom-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  position: relative;
+}
+
+.back-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.back-arrow {
+  width: 10px;
+  height: 10px;
+  border-top: 2px solid #000;
+  border-left: 2px solid #000;
+  transform: rotate(-45deg);
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Date Range Section */
+.date-range-section {
+  background-color: #fff;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.quick-dates {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.quick-btn {
+  padding: 6px 12px;
+  border-radius: 16px;
+  background-color: #f0f0f0;
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.quick-btn.active {
+  background-color: #000;
+  color: #fff;
+}
+
+.date-pickers {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date-picker-box {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fafafa;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #666;
+  margin-left: 8px;
+}
+
+.date-separator {
+  color: #999;
+  font-size: 14px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #666;
+  position: relative;
+  min-width: 80px;
+}
+
+.tab.active {
+  color: #000;
+  font-weight: 500;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background-color: #000;
+  border-radius: 2px;
+}
+
+/* Tab Content */
+.tab-content {
+  flex: 1;
+  height: 0;
+}
+
+.tab-panel {
+  padding: 16px;
+}
+
+/* Filter Section */
+.filter-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  background-color: #fff;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 8px;
+  position: relative;
+}
+
+.checkbox.checked {
+  background-color: #000;
+  border-color: #000;
+}
+
+.checkbox.checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Table */
+.analysis-table {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  border: 1px solid #eee;
+}
+
+.tr {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.th {
+  background-color: #fafafa;
+  font-weight: 500;
+  color: #333;
+}
+
+.th-td {
+  padding: 10px 0;
+  font-size: 13px;
+  color: #999;
+  text-align: center;
+  font-weight: 500;
+}
+
+.td {
+  padding: 8px 4px;
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.time-col {
+  width: 90px;
+  flex-shrink: 0;
+  border-right: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.data-col {
+  flex: 1;
+  border-right: 1px solid #eee;
+}
+
+.data-col:last-child {
+  border-right: none;
+}
+
+.cell {
+  position: relative;
+}
+
+.cell-text {
+  color: #fff;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  word-break: break-all;
+}
+
+.empty-tip {
+  padding: 30px;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Pie Charts */
+.pie-charts-wrapper {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-section {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  align-self: flex-start;
+}
+
+.pie-chart {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  background-color: #f0f0f0; /* fallback */
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+/* Stats List */
+.stats-list {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.stats-title {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.stats-card {
+  background-color: #fafafa;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.stats-row {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.highlight {
+  font-weight: bold;
+  color: #000;
+}
+
+.stats-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #eee;
+}
+
+.stats-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+/* Placeholders */
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.developing-text {
+  color: #999;
+  font-size: 14px;
+}

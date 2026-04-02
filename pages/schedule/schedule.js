@@ -336,7 +336,7 @@ Page({
     
     wx.showLoading({ title: '加载中' });
     
-    request(`/schedule/getRecords?bizDate=${bizDate}&userId=${userId}`, 'POST', {}).then(res => {
+    request(`/schedule/getRecords?userId=${userId}&startDate=${bizDate}&endDate=${bizDate}`, 'POST', {}).then(res => {
       wx.hideLoading();
       if (res && res.code === 200 && res.data) {
         const planMap = {};
@@ -445,6 +445,6 @@ Page({
   },
 
   goToScheduleAnalysis() {
-    wx.showToast({ title: '日程分析开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/scheduleAnalysis/scheduleAnalysis' });
   }
 });
