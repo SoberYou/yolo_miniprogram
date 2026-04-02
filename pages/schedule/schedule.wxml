@@ -1,5 +1,5 @@
 <!-- pages/schedule/schedule.wxml -->
-<view class="container">
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
@@ -10,11 +10,25 @@
     </view>
   </view>
 
-  <scroll-view class="main-content" scroll-y style="padding-top: 5px;">
+  <view class="main-content">
+    <scroll-view class="scroll-area" scroll-y bindscroll="onScroll">
     
+    <!-- Top Nav Actions -->
+    <view class="top-nav-actions">
+      <view class="nav-btn" bindtap="goToTypeConfig">
+        <text class="nav-btn-icon">⚙️</text>
+        <text>类型配置</text>
+      </view>
+      <view class="nav-btn" bindtap="goToScheduleAnalysis">
+        <text class="nav-btn-icon">📊</text>
+        <text>日程分析</text>
+      </view>
+    </view>
+
     <!-- Top Controls -->
-    <view class="top-controls">
-      <view class="date-section">
+    <view class="top-controls-wrapper" id="topControlsWrap">
+      <view class="top-controls">
+        <view class="date-section">
         <picker mode="date" value="{{date}}" bindchange="onDateChange">
           <view class="date-picker">
             <text class="date-text">{{date}}</text>
@@ -32,32 +46,40 @@
         <view class="mode-btn {{mode === 'actual' ? 'active' : ''}}" bindtap="switchMode" data-mode="actual">实际</view>
       </view>
     </view>
-
-    <!-- Type Selector -->
-    <view class="type-section" wx:if="{{activityTypes.length > 0}}">
-      <scroll-view scroll-x class="type-scroll">
-        <view class="type-list">
-          <view 
-            class="type-item {{currentType && currentType.id === item.id ? 'selected' : ''}}" 
-            wx:for="{{activityTypes}}" 
-            wx:key="id"
-            bindtap="selectType"
-            data-type="{{item}}"
-          >
-            <view class="type-color" style="background-color: {{item.color}}"></view>
-            <text class="type-name">{{item.typeName}}</text>
-          </view>
-        </view>
-      </scroll-view>
     </view>
 
-    <!-- Table -->
-    <view class="schedule-table">
-      <view class="table-header">
-        <view class="th time-col">时间</view>
-        <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}">计划</view>
-        <view class="th data-col {{mode === 'actual' ? 'active-col' : ''}}">实际</view>
+    <!-- Sticky Area -->
+    <view class="sticky-container {{isFixed ? 'is-fixed' : ''}}" id="stickyArea">
+      <!-- Type Selector -->
+      <view class="type-section" wx:if="{{activityTypes.length > 0}}">
+        <scroll-view scroll-x class="type-scroll">
+          <view class="type-list">
+            <view 
+              class="type-item {{currentType && currentType.id === item.id ? 'selected' : ''}}" 
+              wx:for="{{activityTypes}}" 
+              wx:key="id"
+              bindtap="selectType"
+              data-type="{{item}}"
+            >
+              <view class="type-color" style="background-color: {{item.color}}"></view>
+              <text class="type-name">{{item.typeName}}</text>
+            </view>
+          </view>
+        </scroll-view>
       </view>
+
+      <!-- Table Header -->
+      <view class="schedule-table-header-wrap">
+        <view class="table-header">
+          <view class="th time-col">时间</view>
+          <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}">计划</view>
+          <view class="th data-col {{mode === 'actual' ? 'active-col' : ''}}">实际</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Table Body and Action Area -->
+    <view class="schedule-table" style="{{isFixed ? 'margin-top: ' + stickyHeight + 'px;' : ''}}">
       <view class="table-body">
         <view class="tr" wx:for="{{timeSlots}}" wx:key="index">
           <view class="td time-col">{{item.label}}</view>
@@ -93,5 +115,6 @@
     </view>
     
     <view style="height: 60px;"></view>
-  </scroll-view>
+    </scroll-view>
+  </view>
 </view>

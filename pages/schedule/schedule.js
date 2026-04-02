@@ -27,7 +27,11 @@ Page({
     planMap: {},
     actualMap: {},
     
-    originalRecords: [] // to track what to delete/update if needed
+    originalRecords: [], // to track what to delete/update if needed
+    
+    isFixed: false,
+    stickyTop: 0,
+    stickyHeight: 0
   },
 
   onLoad() {
@@ -56,8 +60,54 @@ Page({
     });
   },
 
+  onReady() {
+    this.calculateStickyTop();
+  },
+
+  calculateStickyTop() {
+    const query = wx.createSelectorQuery();
+    query.select('#topControlsWrap').boundingClientRect();
+    query.select('#stickyArea').boundingClientRect();
+    query.exec((res) => {
+      if (res[0] && res[1]) {
+        // stickyTop = topControls 的高
+        this.setData({
+          stickyTop: res[0].height,
+          stickyHeight: res[1].height
+        });
+      }
+    });
+  },
+
+  onScroll(e) {
+    const scrollTop = e.detail.scrollTop;
+    if (this.data.stickyTop > 0) {
+      if (scrollTop >= this.data.stickyTop && !this.data.isFixed) {
+        this.setData({ isFixed: true });
+      } else if (scrollTop < this.data.stickyTop && this.data.isFixed) {
+        this.setData({ isFixed: false });
+      }
+    }
+  },
+
   goBack() {
     wx.navigateBack();
+  },
+
+  goToTypeConfig() {
+    wx.showToast({
+      title: '类型配置功能开发中',
+      icon: 'none'
+    });
+    // wx.navigateTo({ url: '/pages/typeConfig/typeConfig' });
+  },
+
+  goToScheduleAnalysis() {
+    wx.showToast({
+      title: '日程分析功能开发中',
+      icon: 'none'
+    });
+    // wx.navigateTo({ url: '/pages/scheduleAnalysis/scheduleAnalysis' });
   },
 
   buildTimeSlots() {
