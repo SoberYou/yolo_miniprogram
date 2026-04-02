@@ -1,0 +1,86 @@
+<!-- pages/typeConfig/typeConfig.wxml -->
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box;">
+  <!-- 自定义导航栏 -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+      <view class="back-btn" bindtap="goBack">
+        <view class="back-arrow"></view>
+      </view>
+      <text class="page-title">类型配置</text>
+    </view>
+  </view>
+
+  <view class="main-content">
+    <scroll-view class="type-list-area" scroll-y>
+      <view class="type-list">
+        <view class="type-item" wx:for="{{activityTypes}}" wx:key="id">
+          <view class="type-info">
+            <view class="type-color" style="background-color: {{item.color}}"></view>
+            <view class="type-text">
+              <text class="type-name">{{item.typeName}}</text>
+              <text class="type-code">{{item.typeCode}}</text>
+            </view>
+          </view>
+          <view class="type-actions">
+            <view class="action-btn edit-btn" bindtap="openEditModal" data-item="{{item}}">编辑</view>
+            <view class="action-btn delete-btn" bindtap="deleteType" data-id="{{item.id}}">删除</view>
+          </view>
+        </view>
+      </view>
+      <view style="height: 80px;"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 底部添加按钮 -->
+  <view class="bottom-action">
+    <button class="btn-add" bindtap="openAddModal">新增类型</button>
+  </view>
+
+  <!-- 新增/编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">{{isEdit ? '编辑类型' : '新增类型'}}</text>
+        <view class="close-btn" bindtap="closeModal">×</view>
+      </view>
+      <view class="modal-body">
+        <view class="form-group">
+          <text class="label">类型名称 (中文)</text>
+          <input class="input" placeholder="例如：工作" value="{{formData.typeName}}" bindinput="onInput" data-field="typeName" />
+        </view>
+        <view class="form-group">
+          <text class="label">类型编码 (大写字母)</text>
+          <input class="input" placeholder="例如：WORK" value="{{formData.typeCode}}" bindinput="onInput" data-field="typeCode" />
+        </view>
+        <view class="form-group">
+          <text class="label">颜色代码</text>
+          <view class="color-input-wrap">
+            <input class="input" placeholder="例如：#FF5733" value="{{formData.color}}" bindinput="onInput" data-field="color" />
+            <view class="color-preview" style="background-color: {{formData.color}}" catchtap="toggleColorPicker"></view>
+          </view>
+          
+          <!-- 悬浮颜色选择器 -->
+          <view class="color-picker-panel" wx:if="{{showColorPicker}}" catchtap="stopPropagation">
+            <movable-area class="sv-area" style="background-color: hsl({{hsv.h}}, 100%, 50%);">
+              <view class="sv-overlay-white"></view>
+              <view class="sv-overlay-black"></view>
+              <movable-view class="sv-cursor" direction="all" x="{{svX}}" y="{{svY}}" bindchange="onSVChange" animation="{{false}}"></movable-view>
+            </movable-area>
+            
+            <movable-area class="hue-area">
+              <movable-view class="hue-cursor" direction="vertical" y="{{hueY}}" bindchange="onHueChange" animation="{{false}}"></movable-view>
+            </movable-area>
+          </view>
+        </view>
+        <view class="form-group">
+          <text class="label">排序号</text>
+          <input class="input" type="number" placeholder="例如：1" value="{{formData.sort}}" bindinput="onInput" data-field="sort" />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn-cancel" bindtap="closeModal">取消</button>
+        <button class="btn-confirm" bindtap="submitForm">确定</button>
+      </view>
+    </view>
+  </view>
+</view>
