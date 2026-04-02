@@ -1,0 +1,97 @@
+<!-- pages/schedule/schedule.wxml -->
+<view class="container">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+      <view class="back-btn" bindtap="goBack">
+        <view class="back-arrow"></view>
+      </view>
+      <text class="page-title">日程管理</text>
+    </view>
+  </view>
+
+  <scroll-view class="main-content" scroll-y style="padding-top: 5px;">
+    
+    <!-- Top Controls -->
+    <view class="top-controls">
+      <view class="date-section">
+        <picker mode="date" value="{{date}}" bindchange="onDateChange">
+          <view class="date-picker">
+            <text class="date-text">{{date}}</text>
+            <view class="arrow-down"></view>
+          </view>
+        </picker>
+        <view class="quick-dates">
+          <view class="quick-btn {{isToday ? 'active' : ''}}" bindtap="selectToday">今天</view>
+          <view class="quick-btn {{isTomorrow ? 'active' : ''}}" bindtap="selectTomorrow">明天</view>
+        </view>
+      </view>
+      
+      <view class="mode-switch">
+        <view class="mode-btn {{mode === 'plan' ? 'active' : ''}}" bindtap="switchMode" data-mode="plan">计划</view>
+        <view class="mode-btn {{mode === 'actual' ? 'active' : ''}}" bindtap="switchMode" data-mode="actual">实际</view>
+      </view>
+    </view>
+
+    <!-- Type Selector -->
+    <view class="type-section" wx:if="{{activityTypes.length > 0}}">
+      <scroll-view scroll-x class="type-scroll">
+        <view class="type-list">
+          <view 
+            class="type-item {{currentType && currentType.id === item.id ? 'selected' : ''}}" 
+            wx:for="{{activityTypes}}" 
+            wx:key="id"
+            bindtap="selectType"
+            data-type="{{item}}"
+          >
+            <view class="type-color" style="background-color: {{item.color}}"></view>
+            <text class="type-name">{{item.typeName}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- Table -->
+    <view class="schedule-table">
+      <view class="table-header">
+        <view class="th time-col">时间</view>
+        <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}">计划</view>
+        <view class="th data-col {{mode === 'actual' ? 'active-col' : ''}}">实际</view>
+      </view>
+      <view class="table-body">
+        <view class="tr" wx:for="{{timeSlots}}" wx:key="index">
+          <view class="td time-col">{{item.label}}</view>
+          
+          <!-- Plan Cell -->
+          <view 
+            class="td data-col cell {{mode === 'plan' ? 'editable' : ''}}" 
+            bindtap="onCellTap" 
+            data-index="{{item.index}}" 
+            data-col="plan"
+            style="background-color: {{planMap[item.index] ? planMap[item.index].color : ''}}"
+          >
+            <text class="cell-text" wx:if="{{planMap[item.index]}}">{{planMap[item.index].typeName}}</text>
+          </view>
+          
+          <!-- Actual Cell -->
+          <view 
+            class="td data-col cell {{mode === 'actual' ? 'editable' : ''}}" 
+            bindtap="onCellTap" 
+            data-index="{{item.index}}" 
+            data-col="actual"
+            style="background-color: {{actualMap[item.index] ? actualMap[item.index].color : ''}}"
+          >
+            <text class="cell-text" wx:if="{{actualMap[item.index]}}">{{actualMap[item.index].typeName}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Save Button -->
+    <view class="action-bar">
+      <button class="btn-save" bindtap="saveSchedule">保存记录</button>
+    </view>
+    
+    <view style="height: 60px;"></view>
+  </scroll-view>
+</view>
