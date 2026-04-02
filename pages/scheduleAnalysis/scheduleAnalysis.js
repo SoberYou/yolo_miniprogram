@@ -292,10 +292,12 @@ Page({
           if (currentMerge) {
             const planObj = activityTypes.find(t => t.typeCode === currentMerge.planId);
             const actualObj = activityTypes.find(t => t.typeCode === currentMerge.actualId);
+            const slotCount = currentMerge.endSlot - currentMerge.startSlot + 1;
             mergedList.push({
               timeLabel: `${formatTime(currentMerge.startSlot)}-${formatTime(currentMerge.endSlot + 1)}`,
               plan: planObj || null,
-              actual: actualObj || null
+              actual: actualObj || null,
+              slotCount
             });
           }
 
@@ -317,10 +319,12 @@ Page({
     if (currentMerge) {
       const planObj = activityTypes.find(t => t.typeCode === currentMerge.planId);
       const actualObj = activityTypes.find(t => t.typeCode === currentMerge.actualId);
+      const slotCount = currentMerge.endSlot - currentMerge.startSlot + 1;
       mergedList.push({
         timeLabel: `${formatTime(currentMerge.startSlot)}-${formatTime(currentMerge.endSlot + 1)}`,
         plan: planObj || null,
-        actual: actualObj || null
+        actual: actualObj || null,
+        slotCount
       });
     }
 

@@ -63,7 +63,7 @@
             <view class="th-td data-col" wx:if="{{showPlan}}">计划</view>
             <view class="th-td data-col" wx:if="{{showActual}}">实际</view>
           </view>
-          <view class="tr" wx:for="{{mergedRecords}}" wx:key="index">
+          <view class="tr" wx:for="{{mergedRecords}}" wx:key="index" style="height: {{item.slotCount >= 6 ? item.slotCount * 8 : item.slotCount* 16}}px;">
             <view class="td time-col">{{item.timeLabel}}</view>
             <view class="td data-col cell" wx:if="{{showPlan}}" style="background-color: {{item.plan ? item.plan.color : ''}}">
               <text class="cell-text" wx:if="{{item.plan}}">{{item.plan.typeName}}</text>
