@@ -3,7 +3,7 @@
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
-      <text class="app-title">YOU ONLY LIVE ONCE</text>
+      <text class="app-title" bindtap="goToSchedule">YOU ONLY LIVE ONCE</text>
       <!-- User Icon - Positioned absolute or flex to not overlap title -->
       <view class="user-icon-container" bindtap="goToUser">
          <view class="user-icon"></view>

@@ -251,6 +251,12 @@ Page({
     })
   },
 
+  goToSchedule() {
+    wx.navigateTo({
+      url: '/pages/schedule/schedule'
+    })
+  },
+
   goToUser() {
     wx.navigateTo({
       url: '/pages/user/user'

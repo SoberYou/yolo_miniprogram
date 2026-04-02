@@ -27,6 +27,12 @@ Page({
     planMap: {},
     actualMap: {},
     
+    // History stack for undo/redo
+    historyStack: [],
+    futureStack: [],
+    canUndo: false,
+    canRedo: false,
+    
     originalRecords: [], // to track what to delete/update if needed
     
     isFixed: false,
@@ -54,10 +60,15 @@ Page({
       date: formatDate(today)
     });
     this.updateQuickDates(today);
+  },
 
-    this.fetchActivityTypes().then(() => {
-      this.fetchRecords();
-    });
+  onShow() {
+    // 每次显示页面时刷新数据，确保从类型配置页面返回时能拿到最新数据
+    if (this.data.date) {
+      this.fetchActivityTypes().then(() => {
+        this.fetchRecords();
+      });
+    }
   },
 
   onReady() {
@@ -144,6 +155,7 @@ Page({
     const selectedDateStr = e.detail.value;
     this.setData({ date: selectedDateStr });
     this.updateQuickDates(new Date(selectedDateStr));
+    this.clearHistory();
     this.fetchRecords();
   },
 
@@ -152,6 +164,7 @@ Page({
     const str = formatDate(today);
     this.setData({ date: str });
     this.updateQuickDates(today);
+    this.clearHistory();
     this.fetchRecords();
   },
 
@@ -161,6 +174,7 @@ Page({
     const str = formatDate(tomorrow);
     this.setData({ date: str });
     this.updateQuickDates(tomorrow);
+    this.clearHistory();
     this.fetchRecords();
   },
 
@@ -189,6 +203,9 @@ Page({
     const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
     const map = { ...this.data[mapKey] };
     
+    // Save current state to history before changing
+    this.saveToHistory();
+    
     // If clicking the same type, cancel it (clear the cell)
     if (map[index] && map[index].id === currentType.id) {
       delete map[index];
@@ -198,6 +215,86 @@ Page({
     
     this.setData({
       [mapKey]: map
+    });
+  },
+
+  saveToHistory() {
+    const { planMap, actualMap, historyStack } = this.data;
+    const newState = {
+      planMap: JSON.parse(JSON.stringify(planMap)),
+      actualMap: JSON.parse(JSON.stringify(actualMap))
+    };
+    
+    const newHistory = [...historyStack, newState];
+    // Keep max 20 history states
+    if (newHistory.length > 20) {
+      newHistory.shift();
+    }
+    
+    this.setData({
+      historyStack: newHistory,
+      futureStack: [], // Clear future stack when new action is taken
+      canUndo: true,
+      canRedo: false
+    });
+  },
+
+  undo() {
+    if (!this.data.canUndo) return;
+    
+    const { planMap, actualMap, historyStack, futureStack } = this.data;
+    
+    // Save current state to future stack
+    const currentState = {
+      planMap: JSON.parse(JSON.stringify(planMap)),
+      actualMap: JSON.parse(JSON.stringify(actualMap))
+    };
+    
+    const newFuture = [currentState, ...futureStack];
+    const newHistory = [...historyStack];
+    const previousState = newHistory.pop();
+    
+    this.setData({
+      planMap: previousState.planMap,
+      actualMap: previousState.actualMap,
+      historyStack: newHistory,
+      futureStack: newFuture,
+      canUndo: newHistory.length > 0,
+      canRedo: true
+    });
+  },
+
+  redo() {
+    if (!this.data.canRedo) return;
+    
+    const { planMap, actualMap, historyStack, futureStack } = this.data;
+    
+    // Save current state to history stack
+    const currentState = {
+      planMap: JSON.parse(JSON.stringify(planMap)),
+      actualMap: JSON.parse(JSON.stringify(actualMap))
+    };
+    
+    const newHistory = [...historyStack, currentState];
+    const newFuture = [...futureStack];
+    const nextState = newFuture.shift();
+    
+    this.setData({
+      planMap: nextState.planMap,
+      actualMap: nextState.actualMap,
+      historyStack: newHistory,
+      futureStack: newFuture,
+      canUndo: true,
+      canRedo: newFuture.length > 0
+    });
+  },
+
+  clearHistory() {
+    this.setData({
+      historyStack: [],
+      futureStack: [],
+      canUndo: false,
+      canRedo: false
     });
   },
 
@@ -329,6 +426,7 @@ Page({
       wx.hideLoading();
       if (res && res.code === 200) {
         wx.showToast({ title: '保存成功', icon: 'success' });
+        this.clearHistory(); // 重置历史记录栈
         this.fetchRecords(); // Refresh data
       } else {
         wx.showToast({ title: res.message || '保存失败', icon: 'none' });
@@ -338,5 +436,15 @@ Page({
       console.error('Failed to save records', err);
       wx.showToast({ title: '网络错误', icon: 'none' });
     });
+  },
+
+  goToTypeConfig() {
+    wx.navigateTo({
+      url: '/pages/typeConfig/typeConfig'
+    });
+  },
+
+  goToScheduleAnalysis() {
+    wx.showToast({ title: '日程分析开发中', icon: 'none' });
   }
 });

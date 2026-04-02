@@ -70,6 +70,18 @@
 
       <!-- Table Header -->
       <view class="schedule-table-header-wrap">
+        <!-- History Controls -->
+        <view class="history-controls">
+          <view class="history-btn {{canUndo ? 'active' : 'disabled'}}" bindtap="undo">
+            <text class="icon">↩</text>
+            <text>撤销</text>
+          </view>
+          <view class="history-btn {{canRedo ? 'active' : 'disabled'}}" bindtap="redo">
+            <text class="icon">↪</text>
+            <text>重做</text>
+          </view>
+        </view>
+        
         <view class="table-header">
           <view class="th time-col">时间</view>
           <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}">计划</view>
@@ -80,6 +92,7 @@
 
     <!-- Table Body and Action Area -->
     <view class="schedule-table" style="{{isFixed ? 'margin-top: ' + stickyHeight + 'px;' : ''}}">
+      
       <view class="table-body">
         <view class="tr" wx:for="{{timeSlots}}" wx:key="index">
           <view class="td time-col">{{item.label}}</view>
