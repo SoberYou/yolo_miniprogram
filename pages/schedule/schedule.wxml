@@ -110,22 +110,42 @@
           <view 
             class="td data-col cell {{mode === 'plan' ? 'editable' : ''}}" 
             bindtap="onCellTap" 
+            bindlongpress="onCellLongPress"
             data-index="{{item.index}}" 
             data-col="plan"
-            style="background-color: {{planMap[item.index] ? planMap[item.index].color : ''}}"
           >
-            <text class="cell-text" wx:if="{{planMap[item.index]}}">{{planMap[item.index].typeName}}</text>
+            <block wx:if="{{planMap[item.index] && planMap[item.index].length > 0}}">
+              <view 
+                class="sub-cell" 
+                wx:for="{{planMap[item.index]}}" 
+                wx:for-item="seg" 
+                wx:key="startTime"
+                style="background-color: {{seg.typeObj.color}}; top: {{seg.topPercent}}%; height: {{seg.heightPercent}}%;"
+              >
+                <text class="cell-text" wx:if="{{seg.heightPercent > 20}}">{{seg.typeObj.typeName}}</text>
+              </view>
+            </block>
           </view>
           
           <!-- Actual Cell -->
           <view 
             class="td data-col cell {{mode === 'actual' ? 'editable' : ''}}" 
             bindtap="onCellTap" 
+            bindlongpress="onCellLongPress"
             data-index="{{item.index}}" 
             data-col="actual"
-            style="background-color: {{actualMap[item.index] ? actualMap[item.index].color : ''}}"
           >
-            <text class="cell-text" wx:if="{{actualMap[item.index]}}">{{actualMap[item.index].typeName}}</text>
+            <block wx:if="{{actualMap[item.index] && actualMap[item.index].length > 0}}">
+              <view 
+                class="sub-cell" 
+                wx:for="{{actualMap[item.index]}}" 
+                wx:for-item="seg" 
+                wx:key="startTime"
+                style="background-color: {{seg.typeObj.color}}; top: {{seg.topPercent}}%; height: {{seg.heightPercent}}%;"
+              >
+                <text class="cell-text" wx:if="{{seg.heightPercent > 20}}">{{seg.typeObj.typeName}}</text>
+              </view>
+            </block>
           </view>
         </view>
       </view>
@@ -135,5 +155,36 @@
     
     <view style="height: 60px;"></view>
     </scroll-view>
+  </view>
+
+  <!-- Split Time Modal -->
+  <view class="modal-overlay" wx:if="{{showSplitModal}}" bindtap="closeSplitModal">
+    <view class="modal-content split-modal" catchtap="stopPropagation">
+      <view class="modal-header">细分时间段 - {{splitSlotLabel}}</view>
+      <view class="modal-body">
+        <view class="split-list">
+          <view class="split-item" wx:for="{{splitSegments}}" wx:key="index">
+            <picker mode="time" value="{{item.startTime}}" start="{{splitSlotStart}}" end="{{splitSlotEnd}}" bindchange="onSplitStartChange" data-index="{{index}}">
+              <view class="time-picker">{{item.startTime}}</view>
+            </picker>
+            <text class="split-to">至</text>
+            <picker mode="time" value="{{item.endTime}}" start="{{splitSlotStart}}" end="{{splitSlotEnd}}" bindchange="onSplitEndChange" data-index="{{index}}">
+              <view class="time-picker">{{item.endTime}}</view>
+            </picker>
+            
+            <picker mode="selector" range="{{activityTypes}}" range-key="typeName" bindchange="onSplitTypeChange" data-index="{{index}}">
+              <view class="type-picker" style="background-color: {{item.typeObj ? item.typeObj.color : '#eee'}}; color: {{item.typeObj ? '#fff' : '#333'}}">{{item.typeObj ? item.typeObj.typeName : '选择类型'}}</view>
+            </picker>
+            
+            <view class="del-btn" bindtap="removeSplitSegment" data-index="{{index}}">×</view>
+          </view>
+        </view>
+        <view class="add-split-btn" bindtap="addSplitSegment">+ 新增时间段</view>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="closeSplitModal">取消</view>
+        <view class="btn-confirm" bindtap="confirmSplit">确定</view>
+      </view>
+    </view>
   </view>
 </view>

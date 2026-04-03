@@ -33,6 +33,13 @@ Page({
     canUndo: false,
     canRedo: false,
     
+    showSplitModal: false,
+    splitSlotIndex: -1,
+    splitSlotLabel: '',
+    splitSlotStart: '',
+    splitSlotEnd: '',
+    splitSegments: [],
+    
     originalRecords: [], // to track what to delete/update if needed
     
     isFixed: false,
@@ -105,22 +112,6 @@ Page({
     wx.navigateBack();
   },
 
-  goToTypeConfig() {
-    wx.showToast({
-      title: '类型配置功能开发中',
-      icon: 'none'
-    });
-    // wx.navigateTo({ url: '/pages/typeConfig/typeConfig' });
-  },
-
-  goToScheduleAnalysis() {
-    wx.showToast({
-      title: '日程分析功能开发中',
-      icon: 'none'
-    });
-    // wx.navigateTo({ url: '/pages/scheduleAnalysis/scheduleAnalysis' });
-  },
-
   buildTimeSlots() {
     const timeSlots = [];
     for (let i = 0; i < 48; i++) {
@@ -130,7 +121,7 @@ Page({
       const m2 = ((i + 1) % 2 === 0) ? '00' : '30';
       timeSlots.push({
         index: i,
-        label: `${h1}:${m1}-${h2 === '24' ? '00' : h2}:${m2}`
+        label: `${h1}:${m1}-${h2}:${m2}`
       });
     }
     this.setData({ timeSlots });
@@ -188,33 +179,196 @@ Page({
     this.setData({ currentType: type });
   },
 
+  timeToMins(timeStr) {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  },
+
+  minsToTime(mins) {
+    const h = Math.floor(mins / 60).toString().padStart(2, '0');
+    const m = (mins % 60).toString().padStart(2, '0');
+    return `${h}:${m}`;
+  },
+
   onCellTap(e) {
     const { index, col } = e.currentTarget.dataset;
     const { mode, currentType, planMap, actualMap } = this.data;
     
     // Only allow editing the active column based on mode
     if (col !== mode) return;
+
+    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
+    const map = { ...this.data[mapKey] };
+    const cellData = map[index] || [];
+    
+    // If cell has multiple segments or is a partial segment, open split modal instead
+    if (cellData.length > 1 || (cellData.length === 1 && (cellData[0].topPercent > 0 || cellData[0].heightPercent < 100))) {
+      this.openSplitModal(index);
+      return;
+    }
     
     if (!currentType) {
       wx.showToast({ title: '请先选择左上方的活动类型', icon: 'none' });
       return;
     }
 
-    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
-    const map = { ...this.data[mapKey] };
-    
     // Save current state to history before changing
     this.saveToHistory();
     
+    const slotStartMins = index * 30;
+    const slotEndMins = (index + 1) * 30;
+
     // If clicking the same type, cancel it (clear the cell)
-    if (map[index] && map[index].id === currentType.id) {
-      delete map[index];
+    if (cellData.length === 1 && cellData[0].typeObj.id === currentType.id) {
+      map[index] = [];
     } else {
-      map[index] = currentType;
+      map[index] = [{
+        startTime: this.minsToTime(slotStartMins),
+        endTime: this.minsToTime(slotEndMins),
+        startMins: slotStartMins,
+        endMins: slotEndMins,
+        typeObj: currentType,
+        topPercent: 0,
+        heightPercent: 100
+      }];
     }
     
     this.setData({
       [mapKey]: map
+    });
+  },
+
+  onCellLongPress(e) {
+    const { index, col } = e.currentTarget.dataset;
+    const { mode } = this.data;
+    if (col !== mode) return;
+    this.openSplitModal(index);
+  },
+
+  openSplitModal(index) {
+    const { mode, planMap, actualMap, timeSlots, currentType } = this.data;
+    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
+    const cellData = this.data[mapKey][index] || [];
+    
+    const slotStartMins = index * 30;
+    const slotEndMins = (index + 1) * 30;
+    
+    let segments = [];
+    if (cellData.length > 0) {
+      segments = JSON.parse(JSON.stringify(cellData));
+    } else {
+      segments = [{
+        startTime: this.minsToTime(slotStartMins),
+        endTime: this.minsToTime(slotEndMins),
+        startMins: slotStartMins,
+        endMins: slotEndMins,
+        typeObj: currentType || null
+      }];
+    }
+    
+    this.setData({
+      showSplitModal: true,
+      splitSlotIndex: index,
+      splitSlotLabel: timeSlots[index].label,
+      splitSlotStart: this.minsToTime(slotStartMins),
+      splitSlotEnd: this.minsToTime(slotEndMins),
+      splitSegments: segments
+    });
+  },
+
+  closeSplitModal() {
+    this.setData({ showSplitModal: false });
+  },
+
+  onSplitStartChange(e) {
+    const { index } = e.currentTarget.dataset;
+    const { splitSegments } = this.data;
+    splitSegments[index].startTime = e.detail.value;
+    splitSegments[index].startMins = this.timeToMins(e.detail.value);
+    this.setData({ splitSegments });
+  },
+
+  onSplitEndChange(e) {
+    const { index } = e.currentTarget.dataset;
+    const { splitSegments } = this.data;
+    splitSegments[index].endTime = e.detail.value;
+    splitSegments[index].endMins = this.timeToMins(e.detail.value);
+    this.setData({ splitSegments });
+  },
+
+  onSplitTypeChange(e) {
+    const { index } = e.currentTarget.dataset;
+    const typeIndex = e.detail.value;
+    const { splitSegments, activityTypes } = this.data;
+    splitSegments[index].typeObj = activityTypes[typeIndex];
+    this.setData({ splitSegments });
+  },
+
+  addSplitSegment() {
+    const { splitSegments, splitSlotEnd, currentType } = this.data;
+    const lastEnd = splitSegments.length > 0 ? splitSegments[splitSegments.length - 1].endTime : this.data.splitSlotStart;
+    
+    splitSegments.push({
+      startTime: lastEnd,
+      endTime: splitSlotEnd,
+      startMins: this.timeToMins(lastEnd),
+      endMins: this.timeToMins(splitSlotEnd),
+      typeObj: currentType || null
+    });
+    this.setData({ splitSegments });
+  },
+
+  removeSplitSegment(e) {
+    const { index } = e.currentTarget.dataset;
+    const { splitSegments } = this.data;
+    splitSegments.splice(index, 1);
+    this.setData({ splitSegments });
+  },
+
+  confirmSplit() {
+    const { splitSegments, splitSlotIndex, mode, splitSlotStart, splitSlotEnd } = this.data;
+    const slotStartMins = this.timeToMins(splitSlotStart);
+    const slotEndMins = this.timeToMins(splitSlotEnd);
+    
+    // Validation
+    for (let i = 0; i < splitSegments.length; i++) {
+      const seg = splitSegments[i];
+      if (!seg.typeObj) {
+        return wx.showToast({ title: `第 ${i+1} 段未选择类型`, icon: 'none' });
+      }
+      if (seg.startMins >= seg.endMins) {
+        return wx.showToast({ title: `第 ${i+1} 段结束时间必须大于开始时间`, icon: 'none' });
+      }
+      if (seg.startMins < slotStartMins || seg.endMins > slotEndMins) {
+        return wx.showToast({ title: `时间段必须在 ${splitSlotStart} 到 ${splitSlotEnd} 之间`, icon: 'none' });
+      }
+    }
+    
+    // Check overlaps
+    const sorted = [...splitSegments].sort((a, b) => a.startMins - b.startMins);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (sorted[i].endMins > sorted[i+1].startMins) {
+        return wx.showToast({ title: '时间段存在重叠，请修改', icon: 'none' });
+      }
+    }
+    
+    // Calculate percents and save
+    const finalSegments = sorted.map(seg => ({
+      ...seg,
+      topPercent: ((seg.startMins - slotStartMins) / 30) * 100,
+      heightPercent: ((seg.endMins - seg.startMins) / 30) * 100
+    }));
+    
+    this.saveToHistory();
+    
+    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
+    const map = { ...this.data[mapKey] };
+    map[splitSlotIndex] = finalSegments;
+    
+    this.setData({
+      [mapKey]: map,
+      showSplitModal: false
     });
   },
 
@@ -346,10 +500,35 @@ Page({
         res.data.forEach(record => {
           const typeObj = activityTypes.find(t => t.typeCode === record.activityType);
           if (typeObj) {
-            if (record.recordType === 'plan') {
-              planMap[record.timeSlot] = typeObj;
-            } else if (record.recordType === 'actual') {
-              actualMap[record.timeSlot] = typeObj;
+            const recStartMins = this.timeToMins(record.startTime);
+            const recEndMins = this.timeToMins(record.endTime);
+            
+            for (let i = 0; i < 48; i++) {
+              const slotStartMins = i * 30;
+              const slotEndMins = (i + 1) * 30;
+              
+              if (recStartMins < slotEndMins && recEndMins > slotStartMins) {
+                const overlapStart = Math.max(recStartMins, slotStartMins);
+                const overlapEnd = Math.min(recEndMins, slotEndMins);
+                
+                const seg = {
+                  startTime: this.minsToTime(overlapStart),
+                  endTime: this.minsToTime(overlapEnd),
+                  startMins: overlapStart,
+                  endMins: overlapEnd,
+                  typeObj: typeObj,
+                  topPercent: ((overlapStart - slotStartMins) / 30) * 100,
+                  heightPercent: ((overlapEnd - overlapStart) / 30) * 100
+                };
+                
+                if (record.recordType === 'plan') {
+                  if (!planMap[i]) planMap[i] = [];
+                  planMap[i].push(seg);
+                } else if (record.recordType === 'actual') {
+                  if (!actualMap[i]) actualMap[i] = [];
+                  actualMap[i].push(seg);
+                }
+              }
             }
           }
         });
@@ -371,40 +550,78 @@ Page({
     const { date, planMap, actualMap, originalRecords } = this.data;
     const recordsToSave = [];
     
-    // We will build a list of records based on the current maps.
-    // If an original record was removed, we should send it with an empty activityType.
-    
-    const processMap = (map, recordType) => {
+    const extractAndMergeSegments = (map, recordType) => {
+      // 1. Flatten all segments from the map
+      let allSegments = [];
       for (let i = 0; i < 48; i++) {
-        const typeObj = map[i];
-        const original = originalRecords.find(r => r.timeSlot === i && r.recordType === recordType);
-        
-        if (typeObj) {
-          // If it exists in map, and is different from original or didn't exist in original
-          if (!original || original.activityType !== typeObj.typeCode) {
-            recordsToSave.push({
-              bizDate: date,
-              timeSlot: i,
-              recordType: recordType,
-              activityType: typeObj.typeCode
-            });
-          }
-        } else {
-          // If it doesn't exist in map but existed in original, it means it was cleared
-          if (original) {
-            recordsToSave.push({
-              bizDate: date,
-              timeSlot: i,
-              recordType: recordType,
-              activityType: "" // Empty string to signify deletion/clearing
-            });
-          }
+        if (map[i] && map[i].length > 0) {
+          allSegments.push(...map[i]);
         }
       }
+      
+      // 2. Sort by start time
+      allSegments.sort((a, b) => a.startMins - b.startMins);
+      
+      // 3. Merge adjacent segments of the same type
+      const merged = [];
+      for (const seg of allSegments) {
+        if (merged.length > 0) {
+          const last = merged[merged.length - 1];
+          if (last.endMins === seg.startMins && last.typeObj.typeCode === seg.typeObj.typeCode) {
+            last.endMins = seg.endMins;
+            last.endTime = seg.endTime;
+            continue;
+          }
+        }
+        merged.push({ ...seg });
+      }
+      
+      return merged.map(m => ({
+        bizDate: date,
+        startTime: m.startTime,
+        endTime: m.endTime,
+        recordType: recordType,
+        activityType: m.typeObj.typeCode
+      }));
     };
 
-    processMap(planMap, 'plan');
-    processMap(actualMap, 'actual');
+    const newPlans = extractAndMergeSegments(planMap, 'plan');
+    const newActuals = extractAndMergeSegments(actualMap, 'actual');
+    const allNewRecords = [...newPlans, ...newActuals];
+    
+    // Compare with originalRecords to find inserts, updates, and deletes
+    
+    // 1. Check for inserts and updates
+    allNewRecords.forEach(newRec => {
+      const oldRec = originalRecords.find(r => 
+        r.recordType === newRec.recordType && 
+        r.startTime === newRec.startTime && 
+        r.endTime === newRec.endTime
+      );
+      
+      if (!oldRec || oldRec.activityType !== newRec.activityType) {
+        recordsToSave.push(newRec);
+      }
+    });
+    
+    // 2. Check for deletes (old records that no longer match exactly in time boundaries)
+    originalRecords.forEach(oldRec => {
+      const stillExists = allNewRecords.find(r => 
+        r.recordType === oldRec.recordType && 
+        r.startTime === oldRec.startTime && 
+        r.endTime === oldRec.endTime
+      );
+      
+      if (!stillExists) {
+        recordsToSave.push({
+          bizDate: oldRec.bizDate,
+          startTime: oldRec.startTime,
+          endTime: oldRec.endTime,
+          recordType: oldRec.recordType,
+          activityType: "" // Empty string to signify deletion
+        });
+      }
+    });
 
     if (recordsToSave.length === 0) {
       wx.showToast({ title: '没有修改需要保存', icon: 'none' });
