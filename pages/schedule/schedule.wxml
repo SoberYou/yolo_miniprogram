@@ -52,41 +52,50 @@
     <view class="sticky-container {{isFixed ? 'is-fixed' : ''}}" id="stickyArea">
       <!-- Type Selector -->
       <view class="type-section" wx:if="{{activityTypes.length > 0}}">
-        <scroll-view scroll-x class="type-scroll">
-          <view class="type-list">
-            <view 
-              class="type-item {{currentType && currentType.id === item.id ? 'selected' : ''}}" 
-              wx:for="{{activityTypes}}" 
-              wx:key="id"
-              bindtap="selectType"
-              data-type="{{item}}"
-            >
-              <view class="type-color" style="background-color: {{item.color}}"></view>
-              <text class="type-name">{{item.typeName}}</text>
+        <view class="type-selector-wrapper">
+          <scroll-view scroll-x="true" class="type-scroll" enable-flex="true">
+            <view class="type-list">
+              <view 
+                class="type-item {{currentType && currentType.id === item.id ? 'selected' : ''}}" 
+                wx:for="{{activityTypes}}" 
+                wx:key="id"
+                bindtap="selectType"
+                data-type="{{item}}"
+              >
+                <view class="type-color" style="background-color: {{item.color}}"></view>
+                <text class="type-name">{{item.typeName}}</text>
+              </view>
             </view>
-          </view>
-        </scroll-view>
+          </scroll-view>
+        </view>
       </view>
 
       <!-- Table Header -->
       <view class="schedule-table-header-wrap">
         <!-- History Controls -->
         <view class="history-controls">
-          <view class="history-btn {{canUndo ? 'active' : 'disabled'}}" bindtap="undo">
-            <text class="icon">↩</text>
-            <text>撤销</text>
+          <view class="history-left">
+            <view class="history-btn {{canUndo ? 'active' : 'disabled'}}" bindtap="undo">
+              <text class="icon">↩</text>
+              <text>撤销</text>
+            </view>
+            <view class="history-btn {{canRedo ? 'active' : 'disabled'}}" bindtap="redo">
+              <text class="icon">↪</text>
+              <text>重做</text>
+            </view>
           </view>
-          <view class="history-btn {{canRedo ? 'active' : 'disabled'}}" bindtap="redo">
-            <text class="icon">↪</text>
-            <text>重做</text>
+          <!-- Save Button -->
+          <view class="history-btn save-btn active" bindtap="saveSchedule">
+            <text class="icon">💾</text>
+            <text>保存记录</text>
           </view>
         </view>
         
         <view class="table-header">
-          <view class="th time-col">时间</view>
-          <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}">计划</view>
-          <view class="th data-col {{mode === 'actual' ? 'active-col' : ''}}">实际</view>
-        </view>
+        <view class="th time-col">时间</view>
+        <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}" bindtap="switchMode" data-mode="plan">计划</view>
+        <view class="th data-col {{mode === 'actual' ? 'active-col' : ''}}" bindtap="switchMode" data-mode="actual">实际</view>
+      </view>
       </view>
     </view>
 
@@ -122,10 +131,7 @@
       </view>
     </view>
 
-    <!-- Save Button -->
-    <view class="action-bar">
-      <button class="btn-save" bindtap="saveSchedule">保存记录</button>
-    </view>
+
     
     <view style="height: 60px;"></view>
     </scroll-view>

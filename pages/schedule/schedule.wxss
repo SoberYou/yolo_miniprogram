@@ -206,29 +206,36 @@ page {
 
 /* Type Selector */
 .type-section {
-  padding: 0 0 16px;
+  padding: 0 0 5px;
   border-bottom: 1px solid #eee;
+}
+
+.type-selector-wrapper {
+  padding: 8px 15px;
 }
 
 .type-scroll {
   width: 100%;
-  white-space: nowrap;
 }
 
 .type-list {
-  display: inline-flex;
-  padding: 0 20px;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  height: 80px; /* Approx height for 2 rows */
+  gap: 10px;
+  align-content: flex-start;
 }
 
 .type-item {
   display: flex;
   align-items: center;
-  background-color: #f9f9f9;
   padding: 6px 12px;
+  background-color: #fff;
   border-radius: 20px;
-  border: 1px solid transparent;
-  transition: all 0.2s;
+  border: 1px solid #eee;
+  transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .type-item.selected {
@@ -256,9 +263,14 @@ page {
 
 .history-controls {
   display: flex;
-  justify-content: flex-start;
-  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
+}
+
+.history-left {
+  display: flex;
+  gap: 16px;
 }
 
 .history-btn {
