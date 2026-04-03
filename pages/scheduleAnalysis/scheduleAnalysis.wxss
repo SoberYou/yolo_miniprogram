@@ -67,14 +67,14 @@ page {
 /* Date Range Section */
 .date-range-section {
   background-color: #fff;
-  padding: 12px 16px;
+  padding: 24px 16px 12px;
   margin-bottom: 8px;
 }
 
 .quick-dates {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   overflow-x: auto;
 }
 
@@ -403,4 +403,191 @@ page {
 .developing-text {
   color: #999;
   font-size: 14px;
+}
+
+/* Trend Chart */
+.trend-module-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.trend-types-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.trend-types-section {
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-auto-flow: column;
+  gap: 10px;
+}
+
+.trend-type-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.trend-chart-container {
+  display: flex;
+  height: 250px;
+  background-color: #fff;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 16px 0 16px 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.trend-y-axis {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  width: 30px;
+  padding-bottom: 20px;
+  border-right: 1px solid #eee;
+  position: relative;
+  z-index: 10;
+  background: #fff;
+}
+
+.trend-y-label {
+  font-size: 10px;
+  color: #999;
+  text-align: right;
+  padding-right: 4px;
+  transform: translateY(5px);
+}
+
+.trend-chart-scroll {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.trend-chart-content {
+  height: 100%;
+  display: flex;
+  position: relative;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.trend-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-bottom: 1px dashed #eee;
+  z-index: 1;
+}
+
+.trend-bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+  width: 100%;
+}
+
+.trend-bar {
+  width: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  border-radius: 2px 2px 0 0;
+  overflow: hidden;
+  background-color: transparent !important;
+}
+
+.plan-bar .trend-segment {
+  opacity: 0.5;
+}
+
+.actual-bar .trend-segment {
+  opacity: 1;
+}
+
+.trend-segment {
+  width: 100%;
+}
+
+.trend-x-label {
+  position: absolute;
+  bottom: -20px;
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  width: 100%;
+}
+
+.trend-settings {
+  display: flex;
+  gap: 16px;
+}
+
+.setting-btn {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.trend-line-chart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 230px; /* same as chartHeight in js */
+  pointer-events: none;
+  z-index: 5;
+}
+
+.line-connection {
+  position: absolute;
+  height: 2px;
+  transform-origin: 0 50%;
+}
+
+.plan-line {
+  background-color: #999;
+}
+
+.actual-line {
+  background-color: #000;
+}
+
+.line-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #fff;
+  transform: translate(-3px, 3px);
+}
+
+.plan-dot {
+  border: 2px solid #999;
+}
+
+.actual-dot {
+  border: 2px solid #000;
 }

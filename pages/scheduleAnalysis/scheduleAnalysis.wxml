@@ -17,6 +17,7 @@
         <view class="quick-btn {{currentQuickDate === 'yesterday' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="yesterday">昨天</view>
         <view class="quick-btn {{currentQuickDate === 'today' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="today">今天</view>
         <view class="quick-btn {{currentQuickDate === 'tomorrow' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="tomorrow">明天</view>
+        <view class="quick-btn {{currentQuickDate === 'last7days' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="last7days">近7天</view>
         <view class="quick-btn {{currentQuickDate === 'week' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="week">本周</view>
         <view class="quick-btn {{currentQuickDate === 'month' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="month">本月</view>
       </view>
@@ -41,7 +42,7 @@
     <view class="tabs">
       <view class="tab {{currentTab === 'tab1' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab1">表格</view>
       <view class="tab {{currentTab === 'tab2' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab2">饼图分析</view>
-      <view class="tab {{currentTab === 'tab3' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab3">事项时间趋势</view>
+      <view class="tab {{currentTab === 'tab3' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab3">活动趋势</view>
       <view class="tab {{currentTab === 'tab4' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab4">偏差分析</view>
     </view>
 
@@ -127,8 +128,118 @@
         </view>
       </view>
 
-      <!-- Tab 3 & 4 Placeholders -->
-      <view class="tab-panel placeholder" wx:if="{{currentTab === 'tab3' || currentTab === 'tab4'}}">
+      <!-- Tab 3: Trend Chart -->
+      <view class="tab-panel" wx:if="{{currentTab === 'tab3'}}">
+        <view class="filter-section">
+          <view class="filter-btn {{trendShowPlan ? 'active' : ''}}" bindtap="toggleTrendFilter" data-type="plan">
+            <text class="checkbox {{trendShowPlan ? 'checked' : ''}}"></text> 计划
+          </view>
+          <view class="filter-btn {{trendShowActual ? 'active' : ''}}" bindtap="toggleTrendFilter" data-type="actual">
+            <text class="checkbox {{trendShowActual ? 'checked' : ''}}"></text> 实际
+          </view>
+        </view>
+        <view class="trend-module-card">
+          <scroll-view scroll-x class="trend-types-scroll">
+            <view class="trend-types-section">
+              <view class="trend-type-tag {{isAllTrendTypesSelected ? 'active' : ''}}" 
+                    bindtap="toggleAllTrendTypes" 
+                    style="background-color: {{isAllTrendTypesSelected ? '#000' : '#f0f0f0'}}; color: {{isAllTrendTypesSelected ? '#fff' : '#666'}}">
+                全选
+              </view>
+              <view class="trend-type-tag {{item.selected ? 'active' : ''}}" 
+                    wx:for="{{trendAvailableTypes}}" 
+                    wx:key="typeCode"
+                    bindtap="toggleTrendType" 
+                    data-code="{{item.typeCode}}"
+                    style="background-color: {{item.selected ? item.color : '#f0f0f0'}}; color: {{item.selected ? '#fff' : '#666'}}">
+                {{item.typeName}}
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <!-- Trend Chart Settings -->
+        <view class="trend-module-card trend-settings">
+          <view class="setting-btn {{trendShowBar ? 'active' : ''}}" bindtap="toggleTrendDisplay" data-type="bar">
+            <text class="checkbox {{trendShowBar ? 'checked' : ''}}"></text> 柱状图
+          </view>
+          <view class="setting-btn {{trendShowLine ? 'active' : ''}}" bindtap="toggleTrendDisplay" data-type="line">
+            <text class="checkbox {{trendShowLine ? 'checked' : ''}}"></text> 累计折线图
+          </view>
+          <view class="setting-btn {{trendShowMultiLine ? 'active' : ''}}" bindtap="toggleTrendDisplay" data-type="multiline">
+            <text class="checkbox {{trendShowMultiLine ? 'checked' : ''}}"></text> 多折线图
+          </view>
+        </view>
+
+        <view class="trend-chart-container">
+          <view class="trend-y-axis">
+            <view class="trend-y-label" wx:for="{{trendYLabels}}" wx:key="*this">{{item}}</view>
+          </view>
+          <scroll-view scroll-x class="trend-chart-scroll">
+            <view class="trend-chart-content" style="width: {{trendDates.length * trendDayWidth}}px;">
+              <!-- Grid lines -->
+              <view class="trend-grid-line" wx:for="{{trendYLabels}}" wx:key="*this" style="bottom: {{(item / trendMaxY) * 100}}%"></view>
+              
+              <!-- Bars -->
+              <view class="trend-bar-group" wx:for="{{trendChartData}}" wx:key="date" style="width: {{trendDayWidth}}px;">
+                <view class="trend-bars" wx:if="{{trendShowBar}}">
+                  <!-- Plan Stacked Bar -->
+                  <view wx:if="{{trendShowPlan}}" class="trend-bar plan-bar">
+                    <view wx:for="{{item.planSegments}}" wx:for-item="seg" wx:key="typeCode" 
+                          class="trend-segment" 
+                          style="height: {{(seg.hours / trendMaxY) * 100}}%; background-color: {{seg.color}};">
+                    </view>
+                  </view>
+                  <!-- Actual Stacked Bar -->
+                  <view wx:if="{{trendShowActual}}" class="trend-bar actual-bar">
+                    <view wx:for="{{item.actualSegments}}" wx:for-item="seg" wx:key="typeCode" 
+                          class="trend-segment" 
+                          style="height: {{(seg.hours / trendMaxY) * 100}}%; background-color: {{seg.color}};">
+                    </view>
+                  </view>
+                </view>
+                <view class="trend-x-label">{{item.shortDate}}</view>
+              </view>
+
+              <!-- Line Chart overlay (Canvas/SVG replacement using simple positioning) -->
+              <view class="trend-line-chart" wx:if="{{trendShowLine || trendShowMultiLine}}">
+                <!-- Cumulative Lines -->
+                <block wx:if="{{trendShowLine}}">
+                  <!-- Plan Line Connections -->
+                  <view wx:if="{{trendShowPlan}}" class="line-connection plan-line" 
+                        wx:for="{{trendPlanLines}}" wx:key="index"
+                        style="left: {{item.left}}px; top: {{item.top}}px; width: {{item.width}}px; transform: rotate({{item.angle}}deg);">
+                  </view>
+
+                  <!-- Actual Line Connections -->
+                  <view wx:if="{{trendShowActual}}" class="line-connection actual-line" 
+                        wx:for="{{trendActualLines}}" wx:key="index"
+                        style="left: {{item.left}}px; top: {{item.top}}px; width: {{item.width}}px; transform: rotate({{item.angle}}deg);">
+                  </view>
+                </block>
+
+                <!-- Multi Lines (Individual Categories) -->
+                <block wx:if="{{trendShowMultiLine}}">
+                  <block wx:for="{{trendMultiLines}}" wx:key="typeCode" wx:for-item="multiLine">
+                    <view class="line-connection" 
+                          wx:for="{{multiLine.lines}}" wx:for-item="lineItem" wx:key="index"
+                          style="background-color: {{multiLine.color}}; left: {{lineItem.left}}px; top: {{lineItem.top}}px; width: {{lineItem.width}}px; transform: rotate({{lineItem.angle}}deg);">
+                    </view>
+                    <!-- Optional dots for multiline -->
+                    <view class="line-dot"
+                          wx:for="{{trendChartData}}" wx:for-item="dataItem" wx:key="date"
+                          wx:if="{{dataItem.typeHours[multiLine.typeCode] !== undefined}}"
+                          style="background-color: {{multiLine.color}}; left: {{index * trendDayWidth + trendDayWidth / 2}}px; bottom: {{(dataItem.typeHours[multiLine.typeCode] / trendMaxY) * 100}}%; transform: translate(-2px, 2px); width: 4px; height: 4px; border: none;">
+                    </view>
+                  </block>
+                </block>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+      </view>
+
+      <!-- Tab 4 Placeholders -->
+      <view class="tab-panel placeholder" wx:if="{{currentTab === 'tab4'}}">
         <view class="developing-text">正在开发中...</view>
       </view>
     </scroll-view>

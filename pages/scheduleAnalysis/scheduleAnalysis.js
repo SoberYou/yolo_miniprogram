@@ -59,19 +59,41 @@ Page({
     actualPieGradient: '',
     overallCompletionRate: 0,
     newItemsPercentage: 0,
-    completionStats: []
+    completionStats: [],
+
+    // Tab 3 Data
+    trendShowPlan: false,
+    trendShowActual: true,
+    trendShowBar: true,
+    trendShowLine: false,
+    trendShowMultiLine: false,
+    trendAvailableTypes: [],
+    isAllTrendTypesSelected: false,
+    trendChartData: [],
+    trendDates: [],
+    trendPlanLines: [],
+    trendActualLines: [],
+    trendMultiLines: [],
+    trendYLabels: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+    trendMaxY: 24,
+    trendDayWidth: 50
   },
 
   onLoad() {
     const systemInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
     const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height + systemInfo.statusBarHeight;
-
+    
+    // Calculate trend day width for 7 days per page
+    // Container width = windowWidth - 16px (right margin) - 16px (left padding inside) - 30px (y-axis) = windowWidth - 62
+    const trendDayWidth = (systemInfo.windowWidth - 62) / 7;
+    
     this.setData({
       navBarHeight: 47,
       statusBarHeight: systemInfo.statusBarHeight,
       menuButtonHeight: 45,
-      menuButtonTop: menuButtonInfo.top
+      menuButtonTop: menuButtonInfo.top,
+      trendDayWidth
     });
 
     this.setQuickDate('today');
@@ -89,7 +111,13 @@ Page({
 
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
-    this.setData({ currentTab: tab });
+    if (this.data.currentTab === tab) return;
+    
+    this.setData({ currentTab: tab }, () => {
+      if (tab === 'tab3') {
+        this.selectQuickDate({ currentTarget: { dataset: { type: 'last7days' } } });
+      }
+    });
   },
 
   setQuickDate(type) {
@@ -106,6 +134,10 @@ Page({
         break;
       case 'tomorrow':
         start = end = getRelativeDate(1);
+        break;
+      case 'last7days':
+        start = getRelativeDate(-6);
+        end = today;
         break;
       case 'week':
         start = getStartOfWeek();
@@ -190,6 +222,103 @@ Page({
     }
   },
 
+  toggleTrendFilter(e) {
+    const type = e.currentTarget.dataset.type;
+    let { trendShowPlan, trendShowActual } = this.data;
+    
+    if (type === 'plan') {
+      if (trendShowPlan && !trendShowActual) {
+        wx.showToast({ title: '至少选择一项', icon: 'none' });
+        return;
+      }
+      trendShowPlan = !trendShowPlan;
+    } else {
+      if (trendShowActual && !trendShowPlan) {
+        wx.showToast({ title: '至少选择一项', icon: 'none' });
+        return;
+      }
+      trendShowActual = !trendShowActual;
+    }
+    
+    this.setData({ trendShowPlan, trendShowActual }, () => {
+      this.processTrendData();
+    });
+  },
+
+  toggleTrendDisplay(e) {
+    const type = e.currentTarget.dataset.type;
+    let { trendShowBar, trendShowLine, trendShowMultiLine } = this.data;
+    
+    if (type === 'bar') {
+      if (trendShowBar && !trendShowLine && !trendShowMultiLine) {
+        wx.showToast({ title: '至少选择一项显示方式', icon: 'none' });
+        return;
+      }
+      trendShowBar = !trendShowBar;
+    } else if (type === 'line') {
+      if (trendShowLine && !trendShowBar && !trendShowMultiLine) {
+        wx.showToast({ title: '至少选择一项显示方式', icon: 'none' });
+        return;
+      }
+      trendShowLine = !trendShowLine;
+    } else if (type === 'multiline') {
+      if (trendShowMultiLine && !trendShowBar && !trendShowLine) {
+        wx.showToast({ title: '至少选择一项显示方式', icon: 'none' });
+        return;
+      }
+      trendShowMultiLine = !trendShowMultiLine;
+    }
+    
+    this.setData({ trendShowBar, trendShowLine, trendShowMultiLine });
+  },
+
+  toggleTrendType(e) {
+    const code = e.currentTarget.dataset.code;
+    const trendAvailableTypes = [...this.data.trendAvailableTypes];
+    
+    const typeIndex = trendAvailableTypes.findIndex(t => t.typeCode === code);
+    if (typeIndex > -1) {
+      trendAvailableTypes[typeIndex].selected = !trendAvailableTypes[typeIndex].selected;
+      
+      const hasSelected = trendAvailableTypes.some(t => t.selected);
+      if (!hasSelected) {
+        trendAvailableTypes[typeIndex].selected = !trendAvailableTypes[typeIndex].selected;
+        wx.showToast({ title: '至少选择一项', icon: 'none' });
+        return;
+      }
+      
+      const isAllTrendTypesSelected = trendAvailableTypes.every(t => t.selected);
+      
+      this.setData({ 
+        trendAvailableTypes,
+        isAllTrendTypesSelected
+      }, () => {
+        this.processTrendData();
+      });
+    }
+  },
+
+  toggleAllTrendTypes() {
+    let { trendAvailableTypes, isAllTrendTypesSelected } = this.data;
+    isAllTrendTypesSelected = !isAllTrendTypesSelected;
+    
+    if (isAllTrendTypesSelected) {
+      // Select all
+      trendAvailableTypes.forEach(t => t.selected = true);
+    } else {
+      // Deselect all, but keep the top 1
+      trendAvailableTypes.forEach(t => t.selected = false);
+      if (trendAvailableTypes.length > 0) trendAvailableTypes[0].selected = true;
+    }
+    
+    this.setData({
+      trendAvailableTypes,
+      isAllTrendTypesSelected
+    }, () => {
+      this.processTrendData();
+    });
+  },
+
   fetchData() {
     let userId = 0;
     const user = wx.getStorageSync('user');
@@ -223,7 +352,7 @@ Page({
           records = res2.data;
         }
         this.setData({ activityTypes, records }, () => {
-          this.processData();
+          this.processData(true);
         });
       }).catch(err => {
         wx.hideLoading();
@@ -235,9 +364,10 @@ Page({
     });
   },
 
-  processData() {
+  processData(isNewFetch = false) {
     this.processTableData();
     this.processChartData();
+    this.processTrendData(isNewFetch);
   },
 
   timeToMins(timeStr) {
@@ -521,6 +651,175 @@ Page({
       overallCompletionRate,
       newItemsPercentage,
       completionStats
+    });
+  },
+
+  processTrendData(isNewFetch = false) {
+    const { records, activityTypes, startDate, endDate, trendShowPlan, trendShowActual, trendAvailableTypes } = this.data;
+    
+    let newAvailableTypes = [...trendAvailableTypes];
+    
+    if (isNewFetch) {
+      const typeDurations = {};
+      records.forEach(r => {
+        const dur = this.timeToMins(r.endTime) - this.timeToMins(r.startTime);
+        if (dur > 0 && r.activityType) {
+          if (!typeDurations[r.activityType]) {
+            typeDurations[r.activityType] = 0;
+          }
+          typeDurations[r.activityType] += dur;
+        }
+      });
+      
+      const typeCodes = Object.keys(typeDurations);
+      
+      newAvailableTypes = typeCodes.map(code => {
+        const tInfo = activityTypes.find(t => t.typeCode === code) || { typeName: code, color: '#999' };
+        return {
+          typeCode: code,
+          typeName: tInfo.typeName,
+          color: tInfo.color,
+          duration: typeDurations[code],
+          selected: false
+        };
+      });
+      
+      newAvailableTypes.sort((a, b) => b.duration - a.duration);
+      
+      if (newAvailableTypes.length > 0) newAvailableTypes[0].selected = true;
+        
+        this.setData({ isAllTrendTypesSelected: newAvailableTypes.length === 1 });
+      }
+    
+    const selectedTypes = newAvailableTypes.filter(t => t.selected).map(t => t.typeCode);
+    
+    const startD = new Date(startDate.replace(/-/g, '/'));
+    const endD = new Date(endDate.replace(/-/g, '/'));
+    const dates = [];
+    let currentD = new Date(startD);
+    while (currentD <= endD) {
+      const y = currentD.getFullYear();
+      const m = String(currentD.getMonth() + 1).padStart(2, '0');
+      const d = String(currentD.getDate()).padStart(2, '0');
+      dates.push({ fullDate: `${y}-${m}-${d}`, shortDate: `${m}/${d}` });
+      currentD.setDate(currentD.getDate() + 1);
+    }
+    
+    const chartData = dates.map(d => {
+      const dayRecords = records.filter(r => r.bizDate === d.fullDate && selectedTypes.includes(r.activityType));
+      const planRecords = dayRecords.filter(r => r.recordType === 'plan' || !r.recordType);
+      const actualRecords = dayRecords.filter(r => r.recordType === 'actual');
+      
+      let planSegments = [];
+      let actualSegments = [];
+      let totalPlanHours = 0;
+      let totalActualHours = 0;
+      
+      // Keep track of individual type hours for multiline
+      let typeHours = {};
+      
+      if (trendShowPlan) {
+        selectedTypes.forEach(code => {
+          const typeRecs = planRecords.filter(r => r.activityType === code);
+          let mins = 0;
+          typeRecs.forEach(r => {
+            mins += (this.timeToMins(r.endTime) - this.timeToMins(r.startTime));
+          });
+          if (mins > 0) {
+            const hours = mins / 60;
+            totalPlanHours += hours;
+            const tInfo = newAvailableTypes.find(t => t.typeCode === code);
+            planSegments.push({ typeCode: code, hours, color: tInfo.color });
+            
+            if (!typeHours[code]) typeHours[code] = 0;
+            typeHours[code] += hours;
+          }
+        });
+      }
+      
+      if (trendShowActual) {
+        selectedTypes.forEach(code => {
+          const typeRecs = actualRecords.filter(r => r.activityType === code);
+          let mins = 0;
+          typeRecs.forEach(r => {
+            mins += (this.timeToMins(r.endTime) - this.timeToMins(r.startTime));
+          });
+          if (mins > 0) {
+            const hours = mins / 60;
+            totalActualHours += hours;
+            const tInfo = newAvailableTypes.find(t => t.typeCode === code);
+            actualSegments.push({ typeCode: code, hours, color: tInfo.color });
+            
+            if (!typeHours[code]) typeHours[code] = 0;
+            typeHours[code] += hours;
+          }
+        });
+      }
+      
+      return {
+        date: d.fullDate,
+        shortDate: d.shortDate,
+        planSegments,
+        actualSegments,
+        totalPlanHours,
+        totalActualHours,
+        typeHours
+      };
+    });
+
+    const calculateLines = (data, key) => {
+      const lines = [];
+      const maxY = this.data.trendMaxY;
+      const chartHeight = 230; // approx height of drawing area
+      const dayWidth = this.data.trendDayWidth;
+      
+      for (let i = 0; i < data.length - 1; i++) {
+        const val1 = key.includes('typeHours.') ? (data[i].typeHours[key.split('.')[1]] || 0) : data[i][key];
+        const val2 = key.includes('typeHours.') ? (data[i+1].typeHours[key.split('.')[1]] || 0) : data[i+1][key];
+        
+        const x1 = i * dayWidth + dayWidth / 2;
+        const y1 = chartHeight - (val1 / maxY) * chartHeight;
+        const x2 = (i + 1) * dayWidth + dayWidth / 2;
+        const y2 = chartHeight - (val2 / maxY) * chartHeight;
+        
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const width = Math.sqrt(dx*dx + dy*dy);
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        
+        lines.push({
+          left: x1,
+          top: y1,
+          width,
+          angle
+        });
+      }
+      return lines;
+    };
+
+    const trendPlanLines = calculateLines(chartData, 'totalPlanHours');
+    const trendActualLines = calculateLines(chartData, 'totalActualHours');
+    
+    // Calculate multiline data
+    const trendMultiLines = [];
+    selectedTypes.forEach(code => {
+      const tInfo = newAvailableTypes.find(t => t.typeCode === code);
+      if (tInfo) {
+        trendMultiLines.push({
+          typeCode: code,
+          color: tInfo.color,
+          lines: calculateLines(chartData, `typeHours.${code}`)
+        });
+      }
+    });
+    
+    this.setData({
+      trendAvailableTypes: newAvailableTypes,
+      trendDates: dates,
+      trendChartData: chartData,
+      trendPlanLines,
+      trendActualLines,
+      trendMultiLines
     });
   }
 });
