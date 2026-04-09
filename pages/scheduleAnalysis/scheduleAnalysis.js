@@ -188,20 +188,30 @@ Page({
 
   toggleFilter(e) {
     const type = e.currentTarget.dataset.type;
-    let { showPlan, showActual } = this.data;
+    let { showPlan, showActual, isMultiDay } = this.data;
     
-    if (type === 'plan') {
-      if (showPlan && !showActual) {
-        wx.showToast({ title: '至少选择一项', icon: 'none' });
-        return;
+    if (isMultiDay) {
+      if (type === 'plan') {
+        showPlan = true;
+        showActual = false;
+      } else {
+        showPlan = false;
+        showActual = true;
       }
-      showPlan = !showPlan;
     } else {
-      if (showActual && !showPlan) {
-        wx.showToast({ title: '至少选择一项', icon: 'none' });
-        return;
+      if (type === 'plan') {
+        if (showPlan && !showActual) {
+          wx.showToast({ title: '至少选择一项', icon: 'none' });
+          return;
+        }
+        showPlan = !showPlan;
+      } else {
+        if (showActual && !showPlan) {
+          wx.showToast({ title: '至少选择一项', icon: 'none' });
+          return;
+        }
+        showActual = !showActual;
       }
-      showActual = !showActual;
     }
     
     this.setData({ showPlan, showActual }, () => {
@@ -387,101 +397,226 @@ Page({
     
     const startD = new Date(startDate.replace(/-/g, '/'));
     const endD = new Date(endDate.replace(/-/g, '/'));
-    const mergedList = [];
-
-    for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
-      const dateStr = formatDate(d);
-      
-      const dayRecords = records.filter(r => r.bizDate === dateStr);
-      if (dayRecords.length === 0) continue;
-
-      // 1. Find all unique time boundaries
-      const timePoints = new Set();
-      dayRecords.forEach(r => {
-        timePoints.add(this.timeToMins(r.startTime));
-        timePoints.add(this.timeToMins(r.endTime));
-      });
-      
-      const sortedPoints = Array.from(timePoints).sort((a, b) => a - b);
-      if (sortedPoints.length < 2) continue;
-
-      // 2. Create atomic slices
-      const slices = [];
-      for (let i = 0; i < sortedPoints.length - 1; i++) {
-        const sMins = sortedPoints[i];
-        const eMins = sortedPoints[i + 1];
+    const isMultiDay = startDate !== endDate;
+    
+    if (!isMultiDay) {
+      const mergedList = [];
+      for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+        const dateStr = formatDate(d);
         
-        // Find plan and actual for this slice
-        const planRec = dayRecords.find(r => r.recordType === 'plan' && this.timeToMins(r.startTime) <= sMins && this.timeToMins(r.endTime) >= eMins);
-        const actualRec = dayRecords.find(r => r.recordType === 'actual' && this.timeToMins(r.startTime) <= sMins && this.timeToMins(r.endTime) >= eMins);
+        const dayRecords = records.filter(r => r.bizDate === dateStr);
+        if (dayRecords.length === 0) continue;
+
+        // 1. Find all unique time boundaries
+        const timePoints = new Set();
+        dayRecords.forEach(r => {
+          timePoints.add(this.timeToMins(r.startTime));
+          timePoints.add(this.timeToMins(r.endTime));
+        });
         
-        const planId = planRec ? planRec.activityType : null;
-        const actualId = actualRec ? actualRec.activityType : null;
+        const sortedPoints = Array.from(timePoints).sort((a, b) => a - b);
+        if (sortedPoints.length < 2) continue;
 
-        let hasData = false;
-        if (showPlan && showActual) hasData = planId || actualId;
-        else if (showPlan) hasData = planId;
-        else if (showActual) hasData = actualId;
+        // 2. Create atomic slices
+        const slices = [];
+        for (let i = 0; i < sortedPoints.length - 1; i++) {
+          const sMins = sortedPoints[i];
+          const eMins = sortedPoints[i + 1];
+          
+          // Find plan and actual for this slice
+          const planRec = dayRecords.find(r => r.recordType === 'plan' && this.timeToMins(r.startTime) <= sMins && this.timeToMins(r.endTime) >= eMins);
+          const actualRec = dayRecords.find(r => r.recordType === 'actual' && this.timeToMins(r.startTime) <= sMins && this.timeToMins(r.endTime) >= eMins);
+          
+          const planId = planRec ? planRec.activityType : null;
+          const actualId = actualRec ? actualRec.activityType : null;
 
-        if (hasData) {
-          slices.push({
-            startMins: sMins,
-            endMins: eMins,
-            planId,
-            actualId
+          let hasData = false;
+          if (showPlan && showActual) hasData = planId || actualId;
+          else if (showPlan) hasData = planId;
+          else if (showActual) hasData = actualId;
+
+          if (hasData) {
+            slices.push({
+              startMins: sMins,
+              endMins: eMins,
+              planId,
+              actualId
+            });
+          }
+        }
+
+        // 3. Merge adjacent slices with identical plan and actual
+        let currentMerge = null;
+        for (const slice of slices) {
+          if (currentMerge) {
+            let same = false;
+            if (showPlan && showActual) {
+              same = (currentMerge.planId === slice.planId) && (currentMerge.actualId === slice.actualId);
+            } else if (showPlan) {
+              same = (currentMerge.planId === slice.planId);
+            } else if (showActual) {
+              same = (currentMerge.actualId === slice.actualId);
+            }
+
+            if (same && currentMerge.endMins === slice.startMins) {
+              currentMerge.endMins = slice.endMins;
+            } else {
+              const planObj = activityTypes.find(t => t.typeCode === currentMerge.planId);
+              const actualObj = activityTypes.find(t => t.typeCode === currentMerge.actualId);
+              const slotCount = (currentMerge.endMins - currentMerge.startMins) / 30;
+              
+              mergedList.push({
+                timeLabel: `${this.minsToTime(currentMerge.startMins)}-${this.minsToTime(currentMerge.endMins)}`,
+                plan: planObj || null,
+                actual: actualObj || null,
+                slotCount: Math.max(1, slotCount)
+              });
+              
+              currentMerge = { ...slice };
+            }
+          } else {
+            currentMerge = { ...slice };
+          }
+        }
+
+        if (currentMerge) {
+          const planObj = activityTypes.find(t => t.typeCode === currentMerge.planId);
+          const actualObj = activityTypes.find(t => t.typeCode === currentMerge.actualId);
+          const slotCount = (currentMerge.endMins - currentMerge.startMins) / 30;
+          
+          mergedList.push({
+            timeLabel: `${this.minsToTime(currentMerge.startMins)}-${this.minsToTime(currentMerge.endMins)}`,
+            plan: planObj || null,
+            actual: actualObj || null,
+            slotCount: Math.max(1, slotCount)
           });
         }
       }
+      this.setData({ mergedRecords: mergedList, isMultiDay, multiDayColumns: [] });
+    } else {
+      // Multi-day logic
+      const multiDayColumns = [];
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+        const dateStr = formatDate(d);
+        const monthDay = dateStr.substring(5); // MM-DD
+        const weekday = weekdays[d.getDay()];
+        multiDayColumns.push({ dateStr, label: `${monthDay} ${weekday}` });
+      }
 
-      // 3. Merge adjacent slices with identical plan and actual
-      let currentMerge = null;
-      for (const slice of slices) {
-        if (currentMerge) {
-          let same = false;
-          if (showPlan && showActual) {
-            same = (currentMerge.planId === slice.planId) && (currentMerge.actualId === slice.actualId);
-          } else if (showPlan) {
-            same = (currentMerge.planId === slice.planId);
-          } else if (showActual) {
-            same = (currentMerge.actualId === slice.actualId);
-          }
+      // Filter records by selected type (plan or actual)
+      // When multiDay is true, if both are true (shouldn't happen with our updated toggleFilter, but fallback to showActual)
+      let targetType = 'actual';
+      let needUpdateFilters = false;
+      if (showPlan && !showActual) targetType = 'plan';
+      else if (!showPlan && showActual) targetType = 'actual';
+      else if (showPlan && showActual) {
+        // Fallback
+        targetType = 'actual';
+        needUpdateFilters = true;
+      }
 
-          if (same && currentMerge.endMins === slice.startMins) {
-            currentMerge.endMins = slice.endMins;
-          } else {
-            const planObj = activityTypes.find(t => t.typeCode === currentMerge.planId);
-            const actualObj = activityTypes.find(t => t.typeCode === currentMerge.actualId);
-            const slotCount = (currentMerge.endMins - currentMerge.startMins) / 30;
-            
-            mergedList.push({
-              timeLabel: `${this.minsToTime(currentMerge.startMins)}-${this.minsToTime(currentMerge.endMins)}`,
-              plan: planObj || null,
-              actual: actualObj || null,
-              slotCount: Math.max(1, slotCount)
+      const validRecords = records.filter(r => r.recordType === targetType);
+
+      const timePoints = new Set();
+      validRecords.forEach(r => {
+        timePoints.add(this.timeToMins(r.startTime));
+        timePoints.add(this.timeToMins(r.endTime));
+      });
+      const sortedPoints = Array.from(timePoints).sort((a, b) => a - b);
+      
+      const mergedList = [];
+      if (sortedPoints.length >= 2) {
+        const slices = [];
+        for (let i = 0; i < sortedPoints.length - 1; i++) {
+          const sMins = sortedPoints[i];
+          const eMins = sortedPoints[i + 1];
+          
+          const dayData = {};
+          let hasData = false;
+          
+          multiDayColumns.forEach(col => {
+            const dayRec = validRecords.find(r => r.bizDate === col.dateStr && this.timeToMins(r.startTime) <= sMins && this.timeToMins(r.endTime) >= eMins);
+            if (dayRec) {
+              hasData = true;
+              dayData[col.dateStr] = dayRec.activityType;
+            } else {
+              dayData[col.dateStr] = null;
+            }
+          });
+          
+          if (hasData) {
+            slices.push({
+              startMins: sMins,
+              endMins: eMins,
+              dayData
             });
+          }
+        }
+        
+        let currentMerge = null;
+        for (const slice of slices) {
+          if (currentMerge) {
+            let same = true;
+            for (const col of multiDayColumns) {
+              if (currentMerge.dayData[col.dateStr] !== slice.dayData[col.dateStr]) {
+                same = false;
+                break;
+              }
+            }
             
+            if (same && currentMerge.endMins === slice.startMins) {
+              currentMerge.endMins = slice.endMins;
+            } else {
+              const slotCount = (currentMerge.endMins - currentMerge.startMins) / 30;
+              const daysData = multiDayColumns.map(col => {
+                const typeCode = currentMerge.dayData[col.dateStr];
+                const typeObj = activityTypes.find(t => t.typeCode === typeCode);
+                return {
+                  dateStr: col.dateStr,
+                  data: typeObj || null
+                };
+              });
+              
+              mergedList.push({
+                timeLabel: `${this.minsToTime(currentMerge.startMins)}-${this.minsToTime(currentMerge.endMins)}`,
+                slotCount: Math.max(1, slotCount),
+                daysData
+              });
+              
+              currentMerge = { ...slice };
+            }
+          } else {
             currentMerge = { ...slice };
           }
-        } else {
-          currentMerge = { ...slice };
+        }
+        
+        if (currentMerge) {
+          const slotCount = (currentMerge.endMins - currentMerge.startMins) / 30;
+          const daysData = multiDayColumns.map(col => {
+            const typeCode = currentMerge.dayData[col.dateStr];
+            const typeObj = activityTypes.find(t => t.typeCode === typeCode);
+            return {
+              dateStr: col.dateStr,
+              data: typeObj || null
+            };
+          });
+          
+          mergedList.push({
+            timeLabel: `${this.minsToTime(currentMerge.startMins)}-${this.minsToTime(currentMerge.endMins)}`,
+            slotCount: Math.max(1, slotCount),
+            daysData
+          });
         }
       }
-
-      if (currentMerge) {
-        const planObj = activityTypes.find(t => t.typeCode === currentMerge.planId);
-        const actualObj = activityTypes.find(t => t.typeCode === currentMerge.actualId);
-        const slotCount = (currentMerge.endMins - currentMerge.startMins) / 30;
-        
-        mergedList.push({
-          timeLabel: `${this.minsToTime(currentMerge.startMins)}-${this.minsToTime(currentMerge.endMins)}`,
-          plan: planObj || null,
-          actual: actualObj || null,
-          slotCount: Math.max(1, slotCount)
-        });
+      
+      const payload = { mergedRecords: mergedList, isMultiDay, multiDayColumns };
+      if (needUpdateFilters) {
+        payload.showPlan = false;
+        payload.showActual = true;
       }
+      this.setData(payload);
     }
-
-    this.setData({ mergedRecords: mergedList });
   },
 
   processChartData() {

@@ -75,6 +75,10 @@
         <!-- History Controls -->
         <view class="history-controls">
           <view class="history-left">
+            <view class="history-btn" bindtap="resetSleepTime">
+              <text class="icon">🌙</text>
+              <text>睡眠</text>
+            </view>
             <view class="history-btn {{canUndo ? 'active' : 'disabled'}}" bindtap="undo">
               <text class="icon">↩</text>
               <text>撤销</text>
@@ -87,7 +91,7 @@
           <!-- Save Button -->
           <view class="history-btn save-btn active" bindtap="saveSchedule">
             <text class="icon">💾</text>
-            <text>保存记录</text>
+            <text>保存</text>
           </view>
         </view>
         

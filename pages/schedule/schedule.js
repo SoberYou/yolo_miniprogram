@@ -546,6 +546,54 @@ Page({
     });
   },
 
+  // 睡眠重置逻辑
+  resetSleepTime() {
+    const { activityTypes, planMap, actualMap, mode } = this.data;
+    
+    // 查找包含“睡眠”关键字的活动类型
+    const sleepType = activityTypes.find(t => t.typeName && t.typeName.includes('睡眠'));
+    if (!sleepType) {
+      wx.showToast({ title: '未找到睡眠相关活动类型', icon: 'none' });
+      return;
+    }
+
+    const currentMap = mode === 'plan' ? { ...planMap } : { ...actualMap };
+    
+    // 睡眠时间: 23:00(第46个slot) 到 次日 07:00(第14个slot)
+    // 也就是当前的 00:00-07:00 (index: 0-13) 和 23:00-24:00 (index: 46-47)
+    
+    // 清空这些时间段的现有记录并填充睡眠类型
+    const fillSlots = [
+      ...Array.from({length: 14}, (_, i) => i), // 0-13
+      46, 47 // 23:00-24:00
+    ];
+
+    fillSlots.forEach(index => {
+      const slotStartMins = index * 30;
+      const slotEndMins = (index + 1) * 30;
+      
+      currentMap[index] = [{
+        startTime: this.minsToTime(slotStartMins),
+        endTime: this.minsToTime(slotEndMins),
+        startMins: slotStartMins,
+        endMins: slotEndMins,
+        typeObj: sleepType,
+        topPercent: 0,
+        heightPercent: 100
+      }];
+    });
+
+    this.saveToHistory();
+    
+    if (mode === 'plan') {
+      this.setData({ planMap: currentMap });
+    } else {
+      this.setData({ actualMap: currentMap });
+    }
+    
+    wx.showToast({ title: '已重置睡眠时间', icon: 'success' });
+  },
+
   saveSchedule() {
     const { date, planMap, actualMap, originalRecords } = this.data;
     const recordsToSave = [];

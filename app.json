@@ -6,7 +6,10 @@
     "pages/focus/focus",
     "pages/result/result",
     "pages/life/life",
-    "pages/milestone/milestone"
+    "pages/milestone/milestone",
+    "pages/schedule/schedule",
+    "pages/typeConfig/typeConfig",
+    "pages/scheduleAnalysis/scheduleAnalysis"
   ],
   "window": {
     "backgroundTextStyle": "light",
