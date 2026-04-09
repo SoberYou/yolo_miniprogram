@@ -4,91 +4,107 @@
   <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
       <text class="app-title" bindtap="goToSchedule">YOU ONLY LIVE ONCE</text>
-      <!-- User Icon - Positioned absolute or flex to not overlap title -->
-      <view class="user-icon-container" bindtap="goToUser">
-         <view class="user-icon"></view>
-      </view>
     </view>
   </view>
 
   <!-- Main Content -->
-  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px;" bindtap="hideTooltip">
+  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px; padding-bottom: 20px;" bindtap="hideTooltip">
     
-    <!-- A Zone: Life Time -->
-    <view class="section-life" bindtap="goToLife" >
-      <view class="life-bar-wrapper">
-         <view class="bar-tooltip" wx:if="{{tooltip.show}}" style="left: {{tooltip.left}};">
-            {{tooltip.text}}
-         </view>
-         <view class="life-bar-container">
-            <view class="life-bar-energy" style="width: {{lifeTime.energyPercentage}}" catchtap="showEnergyTooltip"></view>
-            <view class="life-bar-fill" style="width: {{lifeTime.usedPercentage}}" catchtap="showUsedTooltip"></view>
-            <view class="life-bar-empty" catchtap="showLeftTooltip"></view>
-         </view>
-      </view>
-      <view class="life-info">
-        <view class="life-text-group">
-          <text class="life-label">你的人生，现在是</text>
-          <text class="life-time">{{lifeTime.currentTime}}</text>
+    <!-- GOAL Tab -->
+    <view wx:if="{{currentTab === 'GOAL'}}" class="goal-tab-container">
+      
+      <!-- Entry Buttons -->
+      <view class="entry-modules">
+        <view class="entry-module" catchtap="goToUser">
+          <text class="icon">⚙️</text>
+          <text>用户配置</text>
         </view>
-        <view class="life-stats">
-          <text>已用 {{lifeTime.usedPercentage}}</text>
-          <text class="separator">|</text>
-          <text>剩余 {{lifeTime.leftPercentage}}</text>
+        <view class="entry-module" catchtap="goToNorthStar">
+          <text class="icon">⭐</text>
+          <text>北极星配置</text>
+        </view>
+        <view class="entry-module" catchtap="goToGuide">
+          <text class="icon">❔</text>
+          <text>用户指引</text>
         </view>
       </view>
-    </view>
 
-    <!-- B Zone: North Star List -->
-    <view class="section-header-b">
-      <text class="section-title">北极星列表</text>
-      <view class="add-btn" bindtap="openAddGoalModal">+</view>
-    </view>
+      <!-- A Zone: Life Time -->
+      <view class="card-module section-life" bindtap="goToLife">
+        <view class="life-bar-wrapper">
+           <view class="bar-tooltip" wx:if="{{tooltip.show}}" style="left: {{tooltip.left}};">
+              {{tooltip.text}}
+           </view>
+           <view class="life-bar-container">
+              <view class="life-bar-energy" style="width: {{lifeTime.energyPercentage}}" catchtap="showEnergyTooltip"></view>
+              <view class="life-bar-fill" style="width: {{lifeTime.usedPercentage}}" catchtap="showUsedTooltip"></view>
+              <view class="life-bar-empty" catchtap="showLeftTooltip"></view>
+           </view>
+        </view>
+        <view class="life-info">
+          <view class="life-text-group">
+            <text class="life-label">你的人生，现在是</text>
+            <text class="life-time">{{lifeTime.currentTime}}</text>
+          </view>
+          <view class="life-stats">
+            <text>已用 {{lifeTime.usedPercentage}}</text>
+            <text class="separator">|</text>
+            <text>剩余 {{lifeTime.leftPercentage}}</text>
+          </view>
+        </view>
+      </view>
 
-    <!-- Modal for Adding Goal -->
-    <page-container show="{{showAddGoalModal}}" position="center" round overlay custom-style="background-color: transparent;">
-      <view class="modal-overlay">
-        <view class="modal-content">
-          <view class="modal-header">新增目标</view>
-          
-          <view class="form-item">
-            <input class="modal-input" placeholder="目标名称 (Title)" bindinput="handleTitleInput" value="{{newGoal.title}}" />
-          </view>
-          
-          <view class="form-item">
-            <textarea class="modal-textarea" placeholder="描述 (Description)" bindinput="handleDescriptionInput" value="{{newGoal.description}}" />
-          </view>
-          
-          <view class="form-item">
-            <input class="modal-input" type="number" placeholder="预期投入小时数" bindinput="handleHoursInput" value="{{newGoal.expected_total_hours}}" />
-          </view>
-          
-          <view class="form-item category-selection">
-            <text class="category-label">北极星</text>
-            <view class="category-chips">
-              <block wx:for="{{categories}}" wx:key="*this">
-                <view 
-                  class="category-chip {{newGoal.north_star === item ? 'selected' : ''}}" 
-                  bindtap="selectCategory" 
-                  data-value="{{item}}"
-                >
-                  {{item}}
+      <!-- B Zone: North Star List -->
+      <view class="card-module section-north-star">
+        <view class="section-header-b">
+          <text class="section-title">北极星列表</text>
+          <view class="add-btn" bindtap="openAddGoalModal">+</view>
+        </view>
+
+        <!-- Modal for Adding Goal -->
+        <page-container show="{{showAddGoalModal}}" position="center" round overlay custom-style="background-color: transparent;">
+          <view class="modal-overlay">
+            <view class="modal-content">
+              <view class="modal-header">新增目标</view>
+              
+              <view class="form-item">
+                <input class="modal-input" placeholder="目标名称 (Title)" bindinput="handleTitleInput" value="{{newGoal.title}}" />
+              </view>
+              
+              <view class="form-item">
+                <textarea class="modal-textarea" placeholder="描述 (Description)" bindinput="handleDescriptionInput" value="{{newGoal.description}}" />
+              </view>
+              
+              <view class="form-item">
+                <input class="modal-input" type="number" placeholder="预期投入小时数" bindinput="handleHoursInput" value="{{newGoal.expected_total_hours}}" />
+              </view>
+              
+              <view class="form-item category-selection">
+                <text class="category-label">北极星</text>
+                <view class="category-chips">
+                  <block wx:for="{{categories}}" wx:key="*this">
+                    <view 
+                      class="category-chip {{newGoal.north_star === item ? 'selected' : ''}}" 
+                      bindtap="selectCategory" 
+                      data-value="{{item}}"
+                    >
+                      {{item}}
+                    </view>
+                  </block>
                 </view>
-              </block>
+              </view>
+              
+              <view class="modal-actions">
+                <button class="modal-btn cancel" bindtap="closeAddGoalModal">取消</button>
+                <button class="modal-btn confirm" bindtap="submitGoal">确认添加</button>
+              </view>
             </view>
           </view>
-          
-          <view class="modal-actions">
-            <button class="modal-btn cancel" bindtap="closeAddGoalModal">取消</button>
-            <button class="modal-btn confirm" bindtap="submitGoal">确认添加</button>
-          </view>
-        </view>
-      </view>
-    </page-container>
+        </page-container>
 
-    <!-- GOAL Zone -->
-    <view class="section-goals">
-      <view class="goals-list-wrapper" style="height: 260px; overflow-y: auto;">
+        <!-- GOAL Zone -->
+        <view class="section-goals">
+          <view class="goals-list-wrapper" style="height: 300px; overflow-y: auto;">
         <block wx:for="{{goals}}" wx:key="id">
           <movable-area class="goal-movable-area">
             <movable-view 
@@ -115,20 +131,39 @@
         </block>
       </view>
     </view>
-
-    <!-- CTA Zone -->
-    <view class="section-cta">
-      <view class="cta-header">今天只需要做一件事</view>
-      <view class="cta-suggestion" bindtap="switchCtaSuggestion">{{cta.suggestion}}</view>
-      
-      <view class="cta-actions">
-        <button class="btn-start" bindtap="startFocus">{{runningSession && goals.length > 0 && runningSession.goalId === goals[currentCtaIndex].id ? '进行中' : '开始'}}</button>
-        <button class="btn-skip" bindtap="handleSkip">今天不做</button>
-      </view>
     </view>
 
-    <!-- Footer Padding -->
-    <view style="height: 40px;"></view>
+    </view>
+
+    <!-- TODO Tab -->
+    <view wx:if="{{currentTab === 'TODO'}}" class="tab-placeholder">
+      <text>TODO 页面开发中</text>
+    </view>
+
+    <!-- SCHEDULE Tab -->
+    <view wx:if="{{currentTab === 'SCHEDULE'}}" class="tab-placeholder">
+      <text>SCHEDULE 页面开发中</text>
+    </view>
+
+    <!-- Analysis Tab -->
+    <view wx:if="{{currentTab === 'Analysis'}}" class="tab-placeholder">
+      <text>Analysis 页面开发中</text>
+    </view>
+
+    <!-- SOP Tab -->
+    <view wx:if="{{currentTab === 'SOP'}}" class="tab-placeholder">
+      <text>SOP 页面开发中</text>
+    </view>
 
   </scroll-view>
+
+  <!-- Bottom Navigation -->
+  <view class="bottom-nav">
+    <view class="nav-item {{currentTab === 'GOAL' ? 'active' : ''}}" bindtap="switchTab" data-tab="GOAL">GOAL</view>
+    <view class="nav-item {{currentTab === 'TODO' ? 'active' : ''}}" bindtap="switchTab" data-tab="TODO">TODO</view>
+    <view class="nav-item {{currentTab === 'SCHEDULE' ? 'active' : ''}}" bindtap="switchTab" data-tab="SCHEDULE">SCHEDULE</view>
+    <view class="nav-item {{currentTab === 'ANALYSIS' ? 'active' : ''}}" bindtap="switchTab" data-tab="ANALYSIS">ANALYSIS</view>
+    <view class="nav-item {{currentTab === 'SOP' ? 'active' : ''}}" bindtap="switchTab" data-tab="SOP">SOP</view>
+  </view>
+
 </view>

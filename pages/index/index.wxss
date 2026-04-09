@@ -1,6 +1,6 @@
 /** pages/index/index.wxss */
 page {
-  background-color: #ffffff;
+  background-color: #f5f6f8;
   color: #333333;
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
 }
@@ -36,49 +36,6 @@ page {
   color: #000000;
 }
 
-.user-icon-container {
-  position: absolute;
-  right: 100px; /* Approximate safe zone left of capsule */
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.user-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: #f0f0f0;
-  border: 1px solid #e0e0e0;
-  position: relative;
-}
-
-/* Simple user icon graphic (head and body) */
-.user-icon::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 8px;
-  height: 8px;
-  background-color: #ccc;
-  border-radius: 50%;
-}
-
-.user-icon::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 14px;
-  height: 8px;
-  background-color: #ccc;
-  border-radius: 8px 8px 0 0;
-}
-
-
 /* Main Content */
 .main-content {
   width: 100%;
@@ -86,13 +43,65 @@ page {
 }
 
 /* Section A: Life Time */
+.goal-tab-container {
+  padding: 16px 16px;
+}
+
+.card-module {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.card-module:last-child {
+  margin-bottom: 0;
+}
+
+.entry-modules {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.entry-module {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #eeeeee;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  margin-right: 12px;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.entry-module .icon {
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.entry-module:last-child {
+  margin-right: 0;
+}
+
+.entry-module:active {
+  opacity: 0.7;
+}
+
 .section-life {
-  padding: 20px 24px;
+  /* Padding handled by card-module */
 }
 
 .life-bar-wrapper {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .life-bar-container {
@@ -195,29 +204,34 @@ page {
   color: #ddd;
 }
 
+.section-north-star {
+  /* Padding handled by card-module */
+}
+
 /* Section B: North Star List Header */
 .section-header-b {
-  padding: 0 24px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .section-title {
   font-size: 16px;
-  color: #666;
+  font-weight: bold;
+  color: #000;
 }
 
 .add-btn {
-  width: 24px;
-  height: 24px;
-  background-color: #f0f0f0;
+  width: 28px;
+  height: 28px;
+  background-color: #2b68ff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  color: #999;
+  font-size: 20px;
+  color: #ffffff;
   line-height: 1;
 }
 
@@ -340,8 +354,8 @@ page {
 
 /* GOAL Zone */
 .section-goals {
-  padding: 0 24px;
-  margin-bottom: 48px;
+  padding: 0;
+  margin-bottom: 0;
 }
 
 .goals-list-wrapper {
@@ -366,11 +380,11 @@ page {
 }
 
 .goal-card-content {
-  width: calc(100vw - 48px - 8px); /* Account for wrapper padding */
+  width: calc(100vw - 80px); /* 100vw - 32px(tab) - 40px(card) - 8px(wrapper) */
   height: 100%;
   background-color: #f9f9f9;
   border-radius: 12px;
-  padding: 0 24px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -407,8 +421,8 @@ page {
 }
 
 .goal-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 400;
   color: #333;
 }
 
@@ -417,58 +431,46 @@ page {
   color: #999;
 }
 
-/* CTA Zone */
-.section-cta {
-  padding: 0 24px;
-}
-
-.cta-header {
-  font-size: 14px;
-  color: #999;
-  margin-bottom: 12px;
-}
-
-.cta-suggestion {
-  font-size: 20px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 32px;
-  line-height: 1.4;
-}
-
-.cta-actions {
-  display: flex;
-  gap: 16px;
-}
-
-.btn-start {
-  flex: 2;
-  background-color: #000000;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 8px;
-  padding: 12px 0;
-  line-height: 1.5;
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
+  border-top: 1px solid #eeeeee;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-.btn-skip {
+.nav-item {
   flex: 1;
-  background-color: transparent;
+  text-align: center;
+  font-size: 12px;
   color: #999999;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 12px 0;
-  line-height: 1.5;
+  font-weight: 500;
+  padding: 10px 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-/* Remove button default borders */
-.btn-start::after, .btn-skip::after {
-  border: none;
+.nav-item.active {
+  color: #000000;
+  font-weight: bold;
+}
+
+/* Tab Placeholders */
+.tab-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-size: 16px;
+  color: #999;
 }

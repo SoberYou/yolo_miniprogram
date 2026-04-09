@@ -3,17 +3,13 @@ const { request } = require('../../utils/request');
 
 Page({
   data: {
+    currentTab: 'GOAL',
     lifeTime: {
       currentTime: '--:--',
       usedPercentage: '0%',
       leftPercentage: '0%'
     },
     goals: [],
-    currentCtaIndex: 0,
-    runningSession: null,
-    cta: {
-      suggestion: '加载中...'
-    },
     tooltip: {
       show: false,
       text: '',
@@ -66,25 +62,9 @@ Page({
     }
   },
 
-  fetchRunningSession(goalId) {
-    const params = goalId ? { goalId } : {};
-    
-    const user = wx.getStorageSync('user');
-    if (user && user.userId) {
-        params.userId = user.userId;
-    }
-
-    request('/focus/running', 'GET', params).then(res => {
-      if (res && res.code === 200) {
-        // If data is null, it means no running session
-        this.setData({ runningSession: res.data || null });
-      } else {
-        this.setData({ runningSession: null });
-      }
-    }).catch(err => {
-      console.error('Failed to fetch running session', err);
-      this.setData({ runningSession: null });
-    });
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab;
+    this.setData({ currentTab: tab });
   },
 
   fetchLifeStatus() {
@@ -263,6 +243,14 @@ Page({
     })
   },
 
+  goToNorthStar() {
+    wx.showToast({ title: '北极星配置开发中', icon: 'none' });
+  },
+
+  goToGuide() {
+    wx.showToast({ title: '用户指引开发中', icon: 'none' });
+  },
+
   // Modal Methods
   openAddGoalModal() {
     this.setData({ showAddGoalModal: true });
@@ -433,50 +421,6 @@ Page({
     const goalId = e.currentTarget.dataset.id;
     wx.navigateTo({
       url: `/pages/goal/goal?id=${goalId}`
-    })
-  },
-
-  switchCtaSuggestion() {
-    const goals = this.data.goals;
-    if (!goals || goals.length === 0) return;
-
-    let nextIndex = (this.data.currentCtaIndex + 1) % goals.length;
-    
-    this.setData({
-      currentCtaIndex: nextIndex,
-      'cta.suggestion': `为「${goals[nextIndex].name}」再投入 25 分钟`
-    });
-    this.fetchRunningSession(goals[nextIndex].id);
-  },
-
-  startFocus() {
-    const goals = this.data.goals;
-    if (goals && goals.length > 0) {
-      const currentGoal = goals[this.data.currentCtaIndex];
-      const runningSession = this.data.runningSession;
-      
-      // If there's a running session for this goal, pass the session ID to resume
-      let url = `/pages/focus/focus?goalId=${currentGoal.id}&title=${encodeURIComponent(currentGoal.name)}`;
-      if (runningSession && runningSession.goalId === currentGoal.id) {
-        url += `&sessionId=${runningSession.id}&startTime=${encodeURIComponent(runningSession.startTime)}`;
-      } else {
-        url += '&autoStart=true';
-      }
-      
-      wx.navigateTo({ url });
-    } else {
-      wx.showToast({
-        title: '请先添加目标',
-        icon: 'none'
-      });
-    }
-  },
-
-  handleSkip() {
-    wx.showToast({
-      title: '没关系，你还在路上',
-      icon: 'none',
-      duration: 3000
     })
   }
 })
