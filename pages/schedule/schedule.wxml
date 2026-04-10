@@ -1,8 +1,8 @@
 <!-- pages/schedule/schedule.wxml -->
 <view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
   <!-- Custom Header -->
-  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
       <text class="app-title">YOU ONLY LIVE ONCE</text>
     </view>
   </view>

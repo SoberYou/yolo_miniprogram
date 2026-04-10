@@ -29,13 +29,11 @@ Page({
     const systemInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
 
-    console.log(menuButtonInfo)
-
-    //const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height + systemInfo.statusBarHeight;
-    const navBarHeight = "2px";
+    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height;
+    
     this.setData({
       navBarHeight: navBarHeight,
-      statusBarHeight: menuButtonInfo.top,
+      statusBarHeight: systemInfo.statusBarHeight,
       menuButtonHeight: menuButtonInfo.height,
       menuButtonTop: menuButtonInfo.top
     });

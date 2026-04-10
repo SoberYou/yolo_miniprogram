@@ -44,7 +44,7 @@ page {
 
 /* Section A: Life Time */
 .goal-tab-container {
-  padding: 16px 16px;
+  padding: 16px;
 }
 
 .card-module {

@@ -1,14 +1,14 @@
 <!-- pages/index/index.wxml -->
-<view class="container">
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
   <!-- Custom Header -->
-  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
       <text class="app-title">YOU ONLY LIVE ONCE</text>
     </view>
   </view>
 
   <!-- Main Content -->
-  <scroll-view scroll-y class="main-content" style="padding-top: {{navBarHeight}}px; padding-bottom: 80px;" bindtap="hideTooltip">
+  <scroll-view scroll-y class="main-content" style="padding-bottom: 20px;" bindtap="hideTooltip">
     
     <!-- GOAL Tab -->
     <view wx:if="{{currentTab === 'GOAL'}}" class="goal-tab-container">
@@ -104,7 +104,7 @@
 
         <!-- GOAL Zone -->
         <view class="section-goals">
-          <view class="goals-list-wrapper" style="height: 330px; overflow-y: auto;">
+          <view class="goals-list-wrapper" style="height: 320px; overflow-y: auto;">
         <block wx:for="{{goals}}" wx:key="id">
           <movable-area class="goal-movable-area">
             <movable-view 
