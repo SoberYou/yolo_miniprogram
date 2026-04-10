@@ -3,53 +3,46 @@
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
-      <view class="back-btn" bindtap="goBack">
-        <view class="back-arrow"></view>
-      </view>
-      <text class="page-title">日程管理</text>
+      <text class="app-title">YOU ONLY LIVE ONCE</text>
     </view>
   </view>
 
-  <view class="main-content">
+  <view class="main-content" style="padding-bottom: 10px;">
+    <!-- Mask to hide scrolling content in the gap -->
+    <view class="sticky-mask" wx:if="{{isFixed}}" style="top: {{navBarHeight + statusBarHeight}}px;"></view>
+    
     <scroll-view class="scroll-area" scroll-y bindscroll="onScroll">
     
-    <!-- Top Nav Actions -->
-    <view class="top-nav-actions">
-      <view class="nav-btn" bindtap="goToTypeConfig">
-        <text class="nav-btn-icon">⚙️</text>
-        <text>类型配置</text>
-      </view>
-      <view class="nav-btn" bindtap="goToScheduleAnalysis">
-        <text class="nav-btn-icon">📊</text>
-        <text>日程分析</text>
-      </view>
-    </view>
-
-    <!-- Top Controls -->
-    <view class="top-controls-wrapper" id="topControlsWrap">
-      <view class="top-controls">
+    <view class="top-modules-row" id="topControlsWrap">
+      <!-- Date Module (Left) -->
+      <view class="card-module date-module">
         <view class="date-section">
-        <picker mode="date" value="{{date}}" bindchange="onDateChange">
-          <view class="date-picker">
-            <text class="date-text">{{date}}</text>
-            <view class="arrow-down"></view>
+          <view class="left-controls">
+            <picker mode="date" value="{{date}}" bindchange="onDateChange">
+              <view class="date-picker">
+                <text class="date-text">{{date}}</text>
+                <view class="arrow-down"></view>
+              </view>
+            </picker>
           </view>
-        </picker>
-        <view class="quick-dates">
-          <view class="quick-btn {{isToday ? 'active' : ''}}" bindtap="selectToday">今天</view>
-          <view class="quick-btn {{isTomorrow ? 'active' : ''}}" bindtap="selectTomorrow">明天</view>
+          <view class="quick-dates">
+            <view class="quick-btn {{isYesterday ? 'active' : ''}}" bindtap="selectYesterday">昨天</view>
+            <view class="quick-btn {{isToday ? 'active' : ''}}" bindtap="selectToday">今天</view>
+            <view class="quick-btn {{isTomorrow ? 'active' : ''}}" bindtap="selectTomorrow">明天</view>
+          </view>
         </view>
       </view>
-      
-      <view class="mode-switch">
-        <view class="mode-btn {{mode === 'plan' ? 'active' : ''}}" bindtap="switchMode" data-mode="plan">计划</view>
-        <view class="mode-btn {{mode === 'actual' ? 'active' : ''}}" bindtap="switchMode" data-mode="actual">实际</view>
+
+      <!-- Config Module (Right) -->
+      <view class="card-module config-module" bindtap="goToTypeConfig">
+        <text class="icon">⚙️</text>
+        <text>活动</text>
       </view>
-    </view>
     </view>
 
     <!-- Sticky Area -->
-    <view class="sticky-container {{isFixed ? 'is-fixed' : ''}}" id="stickyArea">
+    <view class="card-module schedule-table-module">
+      <view class="sticky-container {{isFixed ? 'is-fixed' : ''}}" id="stickyArea">
       <!-- Type Selector -->
       <view class="type-section" wx:if="{{activityTypes.length > 0}}">
         <view class="type-selector-wrapper">
@@ -97,8 +90,8 @@
         
         <view class="table-header">
         <view class="th time-col">时间</view>
-        <view class="th data-col {{mode === 'plan' ? 'active-col' : ''}}" bindtap="switchMode" data-mode="plan">计划</view>
-        <view class="th data-col {{mode === 'actual' ? 'active-col' : ''}}" bindtap="switchMode" data-mode="actual">实际</view>
+        <view class="th data-col">计划</view>
+        <view class="th data-col">实际</view>
       </view>
       </view>
     </view>
@@ -112,7 +105,7 @@
           
           <!-- Plan Cell -->
           <view 
-            class="td data-col cell {{mode === 'plan' ? 'editable' : ''}}" 
+            class="td data-col cell editable" 
             bindtap="onCellTap" 
             bindlongpress="onCellLongPress"
             data-index="{{item.index}}" 
@@ -133,7 +126,7 @@
           
           <!-- Actual Cell -->
           <view 
-            class="td data-col cell {{mode === 'actual' ? 'editable' : ''}}" 
+            class="td data-col cell editable" 
             bindtap="onCellTap" 
             bindlongpress="onCellLongPress"
             data-index="{{item.index}}" 
@@ -154,9 +147,9 @@
         </view>
       </view>
     </view>
+    <!-- End schedule-table-module -->
+    </view>
 
-
-    
     <view style="height: 60px;"></view>
     </scroll-view>
   </view>

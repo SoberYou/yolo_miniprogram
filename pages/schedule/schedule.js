@@ -16,9 +16,9 @@ Page({
     menuButtonTop: 0,
     
     date: '',
+    isYesterday: false,
     isToday: true,
     isTomorrow: false,
-    mode: 'plan', // 'plan' | 'actual'
     
     activityTypes: [],
     currentType: null,
@@ -51,12 +51,12 @@ Page({
     // Navigation Bar Calculation
     const systemInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
-    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height + systemInfo.statusBarHeight;
+    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height;
 
     this.setData({
-      navBarHeight: 47,
+      navBarHeight: navBarHeight,
       statusBarHeight: systemInfo.statusBarHeight,
-      menuButtonHeight: 45,
+      menuButtonHeight: menuButtonInfo.height,
       menuButtonTop: menuButtonInfo.top
     });
 
@@ -70,10 +70,18 @@ Page({
   },
 
   onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        selected: 2
+      });
+    }
     // 每次显示页面时刷新数据，确保从类型配置页面返回时能拿到最新数据
     if (this.data.date) {
       this.fetchActivityTypes().then(() => {
         this.fetchRecords();
+        setTimeout(() => {
+          this.calculateStickyTop();
+        }, 100);
       });
     }
   },
@@ -83,14 +91,17 @@ Page({
   },
 
   calculateStickyTop() {
+    if (this.data.isFixed) return;
     const query = wx.createSelectorQuery();
-    query.select('#topControlsWrap').boundingClientRect();
+    query.select('.scroll-area').boundingClientRect();
     query.select('#stickyArea').boundingClientRect();
+    query.select('.scroll-area').scrollOffset();
     query.exec((res) => {
-      if (res[0] && res[1]) {
-        // stickyTop = topControls 的高
+      if (res[0] && res[1] && res[2]) {
+        const currentScrollTop = res[2].scrollTop;
+        const stickyTop = res[1].top - res[0].top + currentScrollTop;
         this.setData({
-          stickyTop: res[0].height,
+          stickyTop: stickyTop,
           stickyHeight: res[1].height
         });
       }
@@ -99,10 +110,12 @@ Page({
 
   onScroll(e) {
     const scrollTop = e.detail.scrollTop;
+    // When fixed, top is navBarHeight + 10px, so we need to offset the trigger point by 10px
+    const offset = 10;
     if (this.data.stickyTop > 0) {
-      if (scrollTop >= this.data.stickyTop && !this.data.isFixed) {
+      if (scrollTop >= (this.data.stickyTop - offset) && !this.data.isFixed) {
         this.setData({ isFixed: true });
-      } else if (scrollTop < this.data.stickyTop && this.data.isFixed) {
+      } else if (scrollTop < (this.data.stickyTop - offset) && this.data.isFixed) {
         this.setData({ isFixed: false });
       }
     }
@@ -131,12 +144,16 @@ Page({
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
     
     const selectedStr = formatDate(selectedDate);
     const todayStr = formatDate(today);
     const tomorrowStr = formatDate(tomorrow);
+    const yesterdayStr = formatDate(yesterday);
     
     this.setData({
+      isYesterday: selectedStr === yesterdayStr,
       isToday: selectedStr === todayStr,
       isTomorrow: selectedStr === tomorrowStr
     });
@@ -146,6 +163,16 @@ Page({
     const selectedDateStr = e.detail.value;
     this.setData({ date: selectedDateStr });
     this.updateQuickDates(new Date(selectedDateStr));
+    this.clearHistory();
+    this.fetchRecords();
+  },
+
+  selectYesterday() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const str = formatDate(yesterday);
+    this.setData({ date: str });
+    this.updateQuickDates(yesterday);
     this.clearHistory();
     this.fetchRecords();
   },
@@ -169,11 +196,6 @@ Page({
     this.fetchRecords();
   },
 
-  switchMode(e) {
-    const mode = e.currentTarget.dataset.mode;
-    this.setData({ mode });
-  },
-
   selectType(e) {
     const type = e.currentTarget.dataset.type;
     this.setData({ currentType: type });
@@ -193,18 +215,15 @@ Page({
 
   onCellTap(e) {
     const { index, col } = e.currentTarget.dataset;
-    const { mode, currentType, planMap, actualMap } = this.data;
+    const { currentType, planMap, actualMap } = this.data;
     
-    // Only allow editing the active column based on mode
-    if (col !== mode) return;
-
-    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
+    const mapKey = col === 'plan' ? 'planMap' : 'actualMap';
     const map = { ...this.data[mapKey] };
     const cellData = map[index] || [];
     
     // If cell has multiple segments or is a partial segment, open split modal instead
     if (cellData.length > 1 || (cellData.length === 1 && (cellData[0].topPercent > 0 || cellData[0].heightPercent < 100))) {
-      this.openSplitModal(index);
+      this.openSplitModal(index, col);
       return;
     }
     
@@ -241,14 +260,12 @@ Page({
 
   onCellLongPress(e) {
     const { index, col } = e.currentTarget.dataset;
-    const { mode } = this.data;
-    if (col !== mode) return;
-    this.openSplitModal(index);
+    this.openSplitModal(index, col);
   },
 
-  openSplitModal(index) {
-    const { mode, planMap, actualMap, timeSlots, currentType } = this.data;
-    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
+  openSplitModal(index, col) {
+    const { planMap, actualMap, timeSlots, currentType } = this.data;
+    const mapKey = col === 'plan' ? 'planMap' : 'actualMap';
     const cellData = this.data[mapKey][index] || [];
     
     const slotStartMins = index * 30;
@@ -270,6 +287,7 @@ Page({
     this.setData({
       showSplitModal: true,
       splitSlotIndex: index,
+      splitSlotCol: col,
       splitSlotLabel: timeSlots[index].label,
       splitSlotStart: this.minsToTime(slotStartMins),
       splitSlotEnd: this.minsToTime(slotEndMins),
@@ -327,7 +345,7 @@ Page({
   },
 
   confirmSplit() {
-    const { splitSegments, splitSlotIndex, mode, splitSlotStart, splitSlotEnd } = this.data;
+    const { splitSegments, splitSlotIndex, splitSlotCol, splitSlotStart, splitSlotEnd } = this.data;
     const slotStartMins = this.timeToMins(splitSlotStart);
     const slotEndMins = this.timeToMins(splitSlotEnd);
     
@@ -362,7 +380,7 @@ Page({
     
     this.saveToHistory();
     
-    const mapKey = mode === 'plan' ? 'planMap' : 'actualMap';
+    const mapKey = splitSlotCol === 'plan' ? 'planMap' : 'actualMap';
     const map = { ...this.data[mapKey] };
     map[splitSlotIndex] = finalSegments;
     
@@ -548,7 +566,7 @@ Page({
 
   // 睡眠重置逻辑
   resetSleepTime() {
-    const { activityTypes, planMap, actualMap, mode } = this.data;
+    const { activityTypes, planMap, actualMap } = this.data;
     
     // 查找包含“睡眠”关键字的活动类型
     const sleepType = activityTypes.find(t => t.typeName && t.typeName.includes('睡眠'));
@@ -557,7 +575,8 @@ Page({
       return;
     }
 
-    const currentMap = mode === 'plan' ? { ...planMap } : { ...actualMap };
+    const currentPlanMap = { ...planMap };
+    const currentActualMap = { ...actualMap };
     
     // 睡眠时间: 23:00(第46个slot) 到 次日 07:00(第14个slot)
     // 也就是当前的 00:00-07:00 (index: 0-13) 和 23:00-24:00 (index: 46-47)
@@ -568,11 +587,13 @@ Page({
       46, 47 // 23:00-24:00
     ];
 
+    this.saveToHistory();
+
     fillSlots.forEach(index => {
       const slotStartMins = index * 30;
       const slotEndMins = (index + 1) * 30;
       
-      currentMap[index] = [{
+      const segment = [{
         startTime: this.minsToTime(slotStartMins),
         endTime: this.minsToTime(slotEndMins),
         startMins: slotStartMins,
@@ -581,15 +602,15 @@ Page({
         topPercent: 0,
         heightPercent: 100
       }];
+
+      currentPlanMap[index] = segment;
+      currentActualMap[index] = segment;
     });
 
-    this.saveToHistory();
-    
-    if (mode === 'plan') {
-      this.setData({ planMap: currentMap });
-    } else {
-      this.setData({ actualMap: currentMap });
-    }
+    this.setData({ 
+      planMap: currentPlanMap,
+      actualMap: currentActualMap
+    });
     
     wx.showToast({ title: '已重置睡眠时间', icon: 'success' });
   },

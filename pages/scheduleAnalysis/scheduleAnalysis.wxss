@@ -23,36 +23,22 @@ page {
   width: 100%;
   background-color: #ffffff;
   z-index: 100;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  padding-left: 16px;
+  padding-left: 24px; /* Align with content */
   position: relative;
 }
 
-.back-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
-}
 
-.back-arrow {
-  width: 10px;
-  height: 10px;
-  border-top: 2px solid #000;
-  border-left: 2px solid #000;
-  transform: rotate(-45deg);
-}
 
-.page-title {
-  font-size: 16px;
-  font-weight: 500;
+.app-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   color: #000000;
 }
 

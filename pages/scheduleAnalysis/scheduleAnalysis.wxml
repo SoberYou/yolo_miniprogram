@@ -1,16 +1,13 @@
 <!--pages/scheduleAnalysis/scheduleAnalysis.wxml-->
-<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box;">
+<view class="container">
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
-      <view class="back-btn" bindtap="goBack">
-        <view class="back-arrow"></view>
-      </view>
-      <text class="page-title">日程分析</text>
+      <text class="app-title">YOU ONLY LIVE ONCE</text>
     </view>
   </view>
 
-  <view class="main-content">
+  <view class="main-content" style="padding-bottom: 80px;">
     <!-- Date Range Section -->
     <view class="date-range-section">
       <view class="quick-dates">

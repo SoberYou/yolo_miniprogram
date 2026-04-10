@@ -9,7 +9,9 @@
     "pages/milestone/milestone",
     "pages/schedule/schedule",
     "pages/typeConfig/typeConfig",
-    "pages/scheduleAnalysis/scheduleAnalysis"
+    "pages/scheduleAnalysis/scheduleAnalysis",
+    "pages/todo/todo",
+    "pages/sop/sop"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -17,6 +19,31 @@
     "navigationBarTitleText": "YOLO",
     "navigationBarTextStyle": "black",
     "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "GOAL"
+      },
+      {
+        "pagePath": "pages/todo/todo",
+        "text": "TODO"
+      },
+      {
+        "pagePath": "pages/schedule/schedule",
+        "text": "SCHEDULE"
+      },
+      {
+        "pagePath": "pages/scheduleAnalysis/scheduleAnalysis",
+        "text": "ANALYSIS"
+      },
+      {
+        "pagePath": "pages/sop/sop",
+        "text": "SOP"
+      }
+    ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

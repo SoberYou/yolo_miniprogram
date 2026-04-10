@@ -1,12 +1,21 @@
 /** pages/schedule/schedule.wxss */
 page {
-  background-color: #ffffff;
+  background-color: #f5f6f8;
   color: #333333;
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
+
+.card-module {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 16px 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
 
 /* Split Modal */
 .modal-overlay {
@@ -124,6 +133,7 @@ page {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Header */
@@ -134,37 +144,20 @@ page {
   width: 100%;
   background-color: #ffffff;
   z-index: 100;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  height:47px;
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  padding-left: 16px;
+  padding-left: 24px; /* Align with content */
   position: relative;
 }
 
-.back-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
-}
-
-.back-arrow {
-  width: 10px;
-  height: 10px;
-  border-top: 2px solid #000;
-  border-left: 2px solid #000;
-  transform: rotate(-45deg);
-}
-
-.page-title {
-  font-size: 16px;
-  font-weight: 500;
+.app-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   color: #000000;
 }
 
@@ -174,77 +167,109 @@ page {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .scroll-area {
   flex: 1;
-  height: 0;
+  height: 100%;
   width: 100%;
+  min-height: 0;
+}
+
+.schedule-table-module {
+  margin: 0 16px 16px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .sticky-container {
   background-color: #fff;
-  padding-top: 16px;
+  padding-top: 2px;
   width: 100%;
   box-sizing: border-box;
+  transition: box-shadow 0.3s ease;
 }
 
 .sticky-container.is-fixed {
   position: fixed;
-  top: var(--nav-height, 47px);
-  left: 0;
+  top: calc(var(--nav-height, 47px) + 10px);
+  left: 16px;
+  right: 16px;
+  width: auto;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
+  border-radius: 12px 12px 0 0;
+}
+
+.sticky-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background-color: #f5f6f8;
+  z-index: 99;
 }
 
 .schedule-table-header-wrap {
-  padding: 16px 20px 0;
+  padding: 16px 16px 0;
   background-color: #fff;
   box-sizing: border-box;
 }
 
-/* Top Nav Actions */
-.top-nav-actions {
+/* Top Modules Row */
+.top-modules-row {
   display: flex;
-  justify-content: space-around;
-  padding: 16px 20px 16px;
-  background-color: #fff;
-  gap: 16px;
-  border-bottom: 1px solid #eee;
+  margin: 16px;
+  gap: 12px;
 }
 
-.nav-btn {
+/* Date Module */
+.date-module {
   flex: 1;
+  margin: 0;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f9f9f9;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.nav-btn-icon {
-  margin-right: 6px;
-  font-size: 16px;
-}
-
-/* Top Controls */
-.top-controls {
-  padding: 16px 20px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background-color: #fff;
+  overflow: hidden;
 }
 
 .date-section {
   display: flex;
+  width: 100%;
   justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Config Module */
+.config-module {
+  margin: 0;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.config-module .icon {
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.config-module:active {
+  opacity: 0.7;
+}
+
+.left-controls {
+  display: flex;
   align-items: center;
 }
 
@@ -252,37 +277,43 @@ page {
   display: flex;
   align-items: center;
   background-color: #f5f5f5;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 5px 8px;
+  border-radius: 16px;
+  white-space: nowrap;
 }
 
 .date-text {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: #333;
-  margin-right: 6px;
+  margin-right: 4px;
 }
 
 .arrow-down {
   width: 0;
   height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid #333;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid #333;
 }
 
 .quick-dates {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  overflow: hidden;
 }
 
 .quick-btn {
-  font-size: 14px;
+  font-size: 12px;
   color: #666;
   background-color: #f5f5f5;
-  padding: 6px 12px;
+  padding: 5px 6px;
   border-radius: 16px;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .quick-btn.active {
@@ -290,39 +321,16 @@ page {
   color: #fff;
 }
 
-/* Mode Switch */
-.mode-switch {
-  display: flex;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  padding: 4px;
-}
 
-.mode-btn {
-  flex: 1;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
-  padding: 8px 0;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.mode-btn.active {
-  background-color: #fff;
-  color: #000;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
 
 /* Type Selector */
 .type-section {
-  padding: 0 0 5px;
+  padding: 0;
   border-bottom: 1px solid #eee;
 }
 
 .type-selector-wrapper {
-  padding: 8px 15px;
+  padding: 6px 12px;
 }
 
 .type-scroll {
@@ -333,15 +341,15 @@ page {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  height: 80px; /* Approx height for 2 rows */
-  gap: 10px;
+  height: 64px; /* Approx height for 2 rows */
+  gap: 8px;
   align-content: flex-start;
 }
 
 .type-item {
   display: flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 4px 10px;
   background-color: #fff;
   border-radius: 20px;
   border: 1px solid #eee;
@@ -368,7 +376,8 @@ page {
 
 /* Table */
 .schedule-table {
-  padding: 0 20px 16px;
+  padding: 0 16px 20px;
+  background-color: #fff;
   box-sizing: border-box;
 }
 
@@ -445,10 +454,7 @@ page {
   border-right: none;
 }
 
-.active-col {
-  color: #000;
-  font-weight: 600;
-}
+
 
 .table-body {
   border: 1px solid #eee;

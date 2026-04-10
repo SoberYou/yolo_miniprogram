@@ -1,0 +1,12 @@
+<view class="container">
+  <!-- Custom Header -->
+  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+      <text class="app-title">YOU ONLY LIVE ONCE</text>
+    </view>
+  </view>
+  
+  <view class="main-content" style="padding-top: {{navBarHeight}}px;">
+    SOP
+  </view>
+</view>

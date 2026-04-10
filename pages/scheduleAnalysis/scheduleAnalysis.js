@@ -82,16 +82,16 @@ Page({
   onLoad() {
     const systemInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
-    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height + systemInfo.statusBarHeight;
+    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height;
     
     // Calculate trend day width for 7 days per page
     // Container width = windowWidth - 16px (right margin) - 16px (left padding inside) - 30px (y-axis) = windowWidth - 62
     const trendDayWidth = (systemInfo.windowWidth - 62) / 7;
     
     this.setData({
-      navBarHeight: 47,
+      navBarHeight: navBarHeight,
       statusBarHeight: systemInfo.statusBarHeight,
-      menuButtonHeight: 45,
+      menuButtonHeight: menuButtonInfo.height,
       menuButtonTop: menuButtonInfo.top,
       trendDayWidth
     });
@@ -100,6 +100,11 @@ Page({
   },
 
   onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        selected: 3
+      });
+    }
     if (this.data.startDate && this.data.endDate) {
       this.fetchData();
     }
