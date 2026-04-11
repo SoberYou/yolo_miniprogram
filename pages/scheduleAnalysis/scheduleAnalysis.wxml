@@ -1,51 +1,64 @@
 <!--pages/scheduleAnalysis/scheduleAnalysis.wxml-->
-<view class="container">
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
   <!-- Custom Header -->
-  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
       <text class="app-title">YOU ONLY LIVE ONCE</text>
     </view>
   </view>
 
-  <view class="main-content" style="padding-bottom: 80px;">
-    <!-- Date Range Section -->
-    <view class="date-range-section">
-      <view class="quick-dates">
-        <view class="quick-btn {{currentQuickDate === 'yesterday' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="yesterday">昨天</view>
-        <view class="quick-btn {{currentQuickDate === 'today' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="today">今天</view>
-        <view class="quick-btn {{currentQuickDate === 'tomorrow' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="tomorrow">明天</view>
-        <view class="quick-btn {{currentQuickDate === 'last7days' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="last7days">近7天</view>
-        <view class="quick-btn {{currentQuickDate === 'week' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="week">本周</view>
-        <view class="quick-btn {{currentQuickDate === 'month' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="month">本月</view>
-      </view>
-      <view class="date-pickers">
-        <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
-          <view class="date-picker-box">
-            <text>{{startDate || '开始日期'}}</text>
-            <view class="arrow-down"></view>
+  <scroll-view class="main-content" scroll-y="true" style="padding-bottom: 80px; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: 0;" bounces="{{false}}">
+    <view class="scroll-container">
+      <!-- Date Range Section -->
+      <view class="card-module date-module">
+      <view class="date-section-vertical">
+        <scroll-view scroll-x="true" class="quick-dates-scroll" enable-flex="true">
+          <view class="quick-dates">
+            <view class="quick-btn {{currentQuickDate === 'yesterday' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="yesterday">昨天</view>
+            <view class="quick-btn {{currentQuickDate === 'today' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="today">今天</view>
+            <view class="quick-btn {{currentQuickDate === 'tomorrow' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="tomorrow">明天</view>
+            <view class="quick-btn {{currentQuickDate === 'last7days' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="last7days">近7天</view>
+            <view class="quick-btn {{currentQuickDate === 'week' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="week">本周</view>
+            <view class="quick-btn {{currentQuickDate === 'month' ? 'active' : ''}}" bindtap="selectQuickDate" data-type="month">本月</view>
           </view>
-        </picker>
-        <text class="date-separator">至</text>
-        <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
-          <view class="date-picker-box">
-            <text>{{endDate || '结束日期'}}</text>
-            <view class="arrow-down"></view>
+        </scroll-view>
+        <view class="left-controls">
+          <view class="date-pickers">
+            <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+              <view class="date-picker">
+                <text class="date-text">{{startDate || '开始日期'}}</text>
+                <view class="arrow-down"></view>
+              </view>
+            </picker>
+            <text class="date-separator">-</text>
+            <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+              <view class="date-picker">
+                <text class="date-text">{{endDate || '结束日期'}}</text>
+                <view class="arrow-down"></view>
+              </view>
+            </picker>
           </view>
-        </picker>
+        </view>
       </view>
     </view>
+
+    <!-- Sticky Mask for gap -->
+    <view class="sticky-mask"></view>
 
     <!-- Tabs -->
-    <view class="tabs">
-      <view class="tab {{currentTab === 'tab1' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab1">表格</view>
-      <view class="tab {{currentTab === 'tab2' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab2">饼图分析</view>
-      <view class="tab {{currentTab === 'tab3' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab3">活动趋势</view>
-      <view class="tab {{currentTab === 'tab4' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab4">偏差分析</view>
+    <view class="card-module tabs-module sticky-tabs" style="top: 10px;">
+      <scroll-view scroll-x="true" class="tabs" enable-flex="true">
+        <view class="tab {{currentTab === 'tab1' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab1">表格</view>
+        <view class="tab {{currentTab === 'tab2' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab2">饼图分析</view>
+        <view class="tab {{currentTab === 'tab3' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab3">活动趋势</view>
+        <view class="tab {{currentTab === 'tab4' ? 'active' : ''}}" bindtap="switchTab" data-tab="tab4">偏差分析</view>
+      </scroll-view>
     </view>
 
-    <scroll-view scroll-y class="tab-content">
+    <view class="tab-content">
       <!-- Tab 1: Table -->
       <view class="tab-panel" wx:if="{{currentTab === 'tab1'}}">
+        <view class="mega-sticky-mask"></view>
         <view class="filter-section">
           <view class="filter-btn {{showPlan ? 'active' : ''}}" bindtap="toggleFilter" data-type="plan">
             <text class="checkbox {{showPlan ? 'checked' : ''}}"></text> 计划
@@ -56,38 +69,55 @@
         </view>
 
         <view class="analysis-table">
-          <block wx:if="{{!isMultiDay}}">
-            <view class="tr th">
-              <view class="th-td time-col">时间</view>
-              <view class="th-td data-col" wx:if="{{showPlan}}">计划</view>
-              <view class="th-td data-col" wx:if="{{showActual}}">实际</view>
-            </view>
-            <view class="tr" wx:for="{{mergedRecords}}" wx:key="index" style="height: {{item.slotCount >= 6 ? item.slotCount * 8 : item.slotCount* 16}}px;">
-              <view class="td time-col">{{item.timeLabel}}</view>
-              <view class="td data-col cell" wx:if="{{showPlan}}" style="background-color: {{item.plan ? item.plan.color : ''}}">
-                <text class="cell-text" wx:if="{{item.plan}}">{{item.plan.typeName}}</text>
-              </view>
-              <view class="td data-col cell" wx:if="{{showActual}}" style="background-color: {{item.actual ? item.actual.color : ''}}">
-                <text class="cell-text" wx:if="{{item.actual}}">{{item.actual.typeName}}</text>
-              </view>
-            </view>
-          </block>
-
-          <block wx:if="{{isMultiDay}}">
-            <scroll-view scroll-x class="multi-day-scroll" style="width: 100%;" enhanced="{{true}}" bounces="{{false}}">
-              <view class="multi-day-table-content" style="width: {{90 + multiDayColumns.length * 80}}px; min-width: 100%;">
-                <view class="tr th">
-                  <view class="th-td time-col">时间</view>
-                  <view class="th-td data-col multi-day-col" wx:for="{{multiDayColumns}}" wx:key="dateStr">{{item.label}}</view>
+          <block wx:if="{{mergedRecords.length > 0}}">
+            <block wx:if="{{!isMultiDay}}">
+              <view class="table-container">
+                <view class="table-header-bg"></view>
+                <view class="table-header">
+                  <view class="th time-col">时间</view>
+                  <view class="th data-col" wx:if="{{showPlan}}">计划</view>
+                  <view class="th data-col" wx:if="{{showActual}}">实际</view>
                 </view>
-                <view class="tr" wx:for="{{mergedRecords}}" wx:key="index" style="height: {{item.slotCount >= 6 ? item.slotCount * 8 : item.slotCount* 16}}px;">
-                  <view class="td time-col">{{item.timeLabel}}</view>
-                  <view class="td data-col cell multi-day-col" wx:for="{{item.daysData}}" wx:for-item="dayItem" wx:key="dateStr" style="background-color: {{dayItem.data ? dayItem.data.color : ''}}">
-                    <text class="cell-text" wx:if="{{dayItem.data}}">{{dayItem.data.typeName}}</text>
+                <view class="table-body">
+                  <view class="tr" wx:for="{{mergedRecords}}" wx:key="index" style="height: {{item.slotCount >= 6 ? item.slotCount * 8 : item.slotCount* 16}}px;">
+                    <view class="td time-col">{{item.timeLabel}}</view>
+                    <view class="td data-col cell" wx:if="{{showPlan}}" style="background-color: {{item.plan ? item.plan.color : ''}}">
+                      <text class="cell-text" wx:if="{{item.plan}}">{{item.plan.typeName}}</text>
+                    </view>
+                    <view class="td data-col cell" wx:if="{{showActual}}" style="background-color: {{item.actual ? item.actual.color : ''}}">
+                      <text class="cell-text" wx:if="{{item.actual}}">{{item.actual.typeName}}</text>
+                    </view>
                   </view>
                 </view>
               </view>
-            </scroll-view>
+            </block>
+
+            <block wx:if="{{isMultiDay}}">
+              <view class="table-container">
+                <view class="table-header-bg"></view>
+                <scroll-view scroll-x class="multi-day-header-scroll" scroll-left="{{multiDayScrollLeft}}" enhanced="{{true}}" show-scrollbar="{{false}}" bounces="{{false}}">
+                  <view class="multi-day-table-content" style="width: {{90 + multiDayColumns.length * 80}}px; min-width: 100%;">
+                    <view class="table-header multi-day-header">
+                      <view class="th time-col">时间</view>
+                      <view class="th data-col multi-day-col" wx:for="{{multiDayColumns}}" wx:key="dateStr">{{item.label}}</view>
+                    </view>
+                  </view>
+                </scroll-view>
+
+                <scroll-view scroll-x class="multi-day-scroll" bindscroll="onMultiDayScroll" scroll-left="{{multiDayScrollLeft}}" enhanced="{{true}}" show-scrollbar="{{false}}" bounces="{{false}}">
+                  <view class="multi-day-table-content" style="width: {{90 + multiDayColumns.length * 80}}px; min-width: 100%;">
+                    <view class="table-body">
+                      <view class="tr" wx:for="{{mergedRecords}}" wx:key="index" style="height: {{item.slotCount >= 6 ? item.slotCount * 8 : item.slotCount* 16}}px;">
+                        <view class="td time-col">{{item.timeLabel}}</view>
+                        <view class="td data-col cell multi-day-col" wx:for="{{item.daysData}}" wx:for-item="dayItem" wx:key="dateStr" style="background-color: {{dayItem.data ? dayItem.data.color : ''}}">
+                          <text class="cell-text" wx:if="{{dayItem.data}}">{{dayItem.data.typeName}}</text>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </scroll-view>
+              </view>
+            </block>
           </block>
 
           <view class="empty-tip" wx:if="{{mergedRecords.length === 0}}">暂无数据</view>
@@ -96,6 +126,7 @@
 
       <!-- Tab 2: Pie Chart Analysis -->
       <view class="tab-panel" wx:if="{{currentTab === 'tab2'}}">
+        <view class="mega-sticky-mask"></view>
         <view class="filter-section">
           <view class="filter-btn {{showTime ? 'active' : ''}}" bindtap="togglePieFilter" data-type="time">
             <text class="checkbox {{showTime ? 'checked' : ''}}"></text> 时间
@@ -147,6 +178,7 @@
 
       <!-- Tab 3: Trend Chart -->
       <view class="tab-panel" wx:if="{{currentTab === 'tab3'}}">
+        <view class="mega-sticky-mask"></view>
         <view class="filter-section">
           <view class="filter-btn {{trendShowPlan ? 'active' : ''}}" bindtap="toggleTrendFilter" data-type="plan">
             <text class="checkbox {{trendShowPlan ? 'checked' : ''}}"></text> 计划
@@ -259,6 +291,7 @@
       <view class="tab-panel placeholder" wx:if="{{currentTab === 'tab4'}}">
         <view class="developing-text">正在开发中...</view>
       </view>
-    </scroll-view>
-  </view>
+      </view>
+    </view>
+  </scroll-view>
 </view>

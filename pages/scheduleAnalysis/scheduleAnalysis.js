@@ -49,6 +49,9 @@ Page({
     
     // Processed Data
     mergedRecords: [],
+    multiDayColumns: [],
+    isMultiDay: false,
+    multiDayScrollLeft: 0,
     
     // Tab 2 Data
     planStats: [],
@@ -961,5 +964,11 @@ Page({
       trendActualLines,
       trendMultiLines
     });
+  },
+
+  onMultiDayScroll(e) {
+    if (this.data.multiDayScrollLeft !== e.detail.scrollLeft) {
+      this.setData({ multiDayScrollLeft: e.detail.scrollLeft });
+    }
   }
 });
