@@ -36,6 +36,12 @@ Page({
     focusId: null,
     editTodoContent: '',
     
+    // ====== 做不做清单 State ======
+    doList: [],
+    notDoList: [],
+    newDoContent: '',
+    newNotDoContent: '',
+    
     // Drag to sort state
     isDragging: false,
     draggingId: null,
@@ -116,6 +122,8 @@ Page({
       this.updateAnalysisDateDisplay(true, this.analysisStartDateObj);
       this.updateAnalysisDateDisplay(false, this.analysisEndDateObj);
       this.fetchAnalysisTodos();
+    } else if (tab === 'donotdo') {
+      this.fetchDoNotDoList();
     } else {
       const today = new Date();
       this.currentSelectedDate = today;
@@ -431,6 +439,79 @@ Page({
     });
   },
 
+  // ========== 做不做清单逻辑 ==========
+  fetchDoNotDoList() {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    wx.showNavigationBarLoading();
+    request('/donotdo/getItems', 'GET', { userId }).then(res => {
+      wx.hideNavigationBarLoading();
+      if (res && res.code === 200) {
+        const data = res.data || [];
+        const doList = data.filter(item => item.itemType === 'DO').sort((a, b) => a.sortOrder - b.sortOrder);
+        const notDoList = data.filter(item => item.itemType === 'NOT_DO').sort((a, b) => a.sortOrder - b.sortOrder);
+        this.setData({ doList, notDoList });
+      } else {
+        wx.showToast({ title: '加载失败', icon: 'none' });
+      }
+    }).catch(err => {
+      wx.hideNavigationBarLoading();
+      console.error('Fetch donotdo failed', err);
+      wx.showToast({ title: '网络错误', icon: 'none' });
+    });
+  },
+
+  onNewDoInput(e) {
+    this.setData({ newDoContent: e.detail.value });
+  },
+
+  onNewNotDoInput(e) {
+    this.setData({ newNotDoContent: e.detail.value });
+  },
+
+  addDoItem() {
+    this.createDoNotDoItem('DO', this.data.newDoContent, this.data.doList.length + 1, () => {
+      this.setData({ newDoContent: '' });
+    });
+  },
+
+  addNotDoItem() {
+    this.createDoNotDoItem('NOT_DO', this.data.newNotDoContent, this.data.notDoList.length + 1, () => {
+      this.setData({ newNotDoContent: '' });
+    });
+  },
+
+  createDoNotDoItem(itemType, contentStr, sortOrder, onSuccess) {
+    const content = (contentStr || '').trim();
+    if (!content) {
+      wx.showToast({ title: '内容不能为空', icon: 'none' });
+      return;
+    }
+
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    wx.showLoading({ title: '添加中' });
+    request(`/donotdo/createItem?userId=${userId}`, 'POST', {
+      itemType,
+      content,
+      sortOrder
+    }).then(res => {
+      wx.hideLoading();
+      if (res && res.code === 200) {
+        onSuccess();
+        this.fetchDoNotDoList();
+      } else {
+        wx.showToast({ title: '添加失败', icon: 'none' });
+      }
+    }).catch(err => {
+      wx.hideLoading();
+      console.error('Create donotdo failed', err);
+      wx.showToast({ title: '网络错误', icon: 'none' });
+    });
+  },
+
   // ========== 日期快捷切换与滑动交互 ==========
   prevDate() {
     this.shiftDate(-1);
@@ -569,7 +650,9 @@ Page({
 
   longPress(e) {
     const index = e.currentTarget.dataset.index;
-    const item = this.data.todos[index];
+    const listtype = e.currentTarget.dataset.listtype;
+    const targetList = listtype === 'DO' ? this.data.doList : (listtype === 'NOT_DO' ? this.data.notDoList : this.data.todos);
+    const item = targetList[index];
     
     // 如果正在编辑，禁止拖拽
     if (this.data.editingTodoId) return;
@@ -581,7 +664,8 @@ Page({
       draggingId: item.id,
       dragStartIndex: index,
       dragCurrentIndex: index,
-      dragTranslateY: 0
+      dragTranslateY: 0,
+      dragListType: listtype
     });
   },
 
@@ -589,6 +673,9 @@ Page({
     if (this.data.isDragging) {
       const currentY = e.touches[0].clientY;
       const deltaY = currentY - this.touchStartY;
+      const listtype = this.data.dragListType;
+      const listKey = listtype === 'DO' ? 'doList' : (listtype === 'NOT_DO' ? 'notDoList' : 'todos');
+      const targetList = this.data[listKey];
       
       // 假设每个 todo-item 的大致高度 (包含 margin-bottom 12px)
       const ITEM_HEIGHT = 68; 
@@ -598,15 +685,15 @@ Page({
       let newIndex = this.data.dragStartIndex + offsetSteps;
       
       // 边界限制
-      newIndex = Math.max(0, Math.min(newIndex, this.data.todos.length - 1));
+      newIndex = Math.max(0, Math.min(newIndex, targetList.length - 1));
       
-      let todos = this.data.todos;
+      let updatedList = targetList;
       
       // 如果跨越了索引，进行数据交换
       if (newIndex !== this.data.dragCurrentIndex) {
-        todos = [...this.data.todos];
-        const [movedItem] = todos.splice(this.data.dragCurrentIndex, 1);
-        todos.splice(newIndex, 0, movedItem);
+        updatedList = [...targetList];
+        const [movedItem] = updatedList.splice(this.data.dragCurrentIndex, 1);
+        updatedList.splice(newIndex, 0, movedItem);
       }
       
       // 保持被拖拽的元素视觉上始终跟手 (抵消因为改变了数组顺序而造成的原点跳变)
@@ -614,7 +701,7 @@ Page({
       
       this.setData({
         dragTranslateY,
-        ...(newIndex !== this.data.dragCurrentIndex ? { todos, dragCurrentIndex: newIndex } : {})
+        ...(newIndex !== this.data.dragCurrentIndex ? { [listKey]: updatedList, dragCurrentIndex: newIndex } : {})
       });
       
       return; // 如果在拖拽，阻止执行横向滑动逻辑
@@ -629,7 +716,9 @@ Page({
       // Only handle horizontal swipe
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         const index = e.currentTarget.dataset.index;
-        const item = this.data.todos[index];
+        const listtype = e.currentTarget.dataset.listtype;
+        const listKey = listtype === 'DO' ? 'doList' : (listtype === 'NOT_DO' ? 'notDoList' : 'todos');
+        const targetList = this.data[listKey];
         
         let slideOffset = deltaX;
         // Limit slide to left (delete button width)
@@ -639,28 +728,33 @@ Page({
           slideOffset = 0;
         }
 
-        const todos = this.data.todos;
-        todos[index].slideOffset = slideOffset;
-        this.setData({ todos });
+        const updatedList = [...targetList];
+        updatedList[index].slideOffset = slideOffset;
+        this.setData({ [listKey]: updatedList });
       }
     }
   },
 
   touchEnd(e) {
     if (this.data.isDragging) {
+      const listtype = this.data.dragListType;
       this.setData({
         isDragging: false,
         draggingId: null,
-        dragTranslateY: 0
+        dragTranslateY: 0,
+        dragListType: null
       });
       // 拖拽结束，调用接口保存新排序的列表
-      this.syncOrderToServer();
+      this.syncOrderToServer(listtype);
       return;
     }
 
     if (e.changedTouches.length === 1) {
       const index = e.currentTarget.dataset.index;
-      const item = this.data.todos[index];
+      const listtype = e.currentTarget.dataset.listtype;
+      const listKey = listtype === 'DO' ? 'doList' : (listtype === 'NOT_DO' ? 'notDoList' : 'todos');
+      const targetList = this.data[listKey];
+      const item = targetList[index];
       
       let slideOffset = item.slideOffset || 0;
       
@@ -672,24 +766,27 @@ Page({
       }
 
       // Close all other items
-      const todos = this.data.todos.map((todo, i) => {
+      const updatedList = targetList.map((todo, i) => {
         if (i === index) {
           return { ...todo, slideOffset };
         }
         return { ...todo, slideOffset: 0 };
       });
 
-      this.setData({ todos });
+      this.setData({ [listKey]: updatedList });
     }
   },
 
   // Sync the reordered list to server
-  syncOrderToServer() {
+  syncOrderToServer(listtype) {
     const userId = this.getUserId();
-    if (!userId || !this.data.todos.length) return;
+    const listKey = listtype === 'DO' ? 'doList' : (listtype === 'NOT_DO' ? 'notDoList' : 'todos');
+    const targetList = this.data[listKey];
+
+    if (!userId || !targetList || !targetList.length) return;
 
     // 构造批量更新排序的 Payload 数组
-    const sortPayload = this.data.todos.map((todo, index) => {
+    const sortPayload = targetList.map((todo, index) => {
       return {
         id: todo.id,
         sortOrder: index + 1
@@ -698,7 +795,12 @@ Page({
 
     wx.showNavigationBarLoading();
     
-    request(`/todo/batchUpdateSort?userId=${userId}`, 'PUT', sortPayload)
+    let url = `/todo/batchUpdateSort?userId=${userId}`;
+    if (listtype === 'DO' || listtype === 'NOT_DO') {
+      url = `/donotdo/batchUpdateSort?userId=${userId}`;
+    }
+    
+    request(url, 'PUT', sortPayload)
       .then(res => {
         wx.hideNavigationBarLoading();
         if (res && res.code === 200) {
@@ -718,38 +820,57 @@ Page({
 
   promptDelete(e) {
     const item = e.currentTarget.dataset.item;
+    const listtype = e.currentTarget.dataset.listtype; // undefined for normal todo
     wx.showModal({
-      title: '删除待办',
+      title: '删除确认',
       content: `确定要删除"${item.content}"吗？`,
       confirmColor: '#ff0000',
       success: (res) => {
         if (res.confirm) {
-          this.deleteTodo(item.id);
+          this.deleteTodoItem(item.id, listtype);
         } else {
           // Reset slide offset if cancelled
-          const todos = this.data.todos.map(todo => ({ ...todo, slideOffset: 0 }));
-          this.setData({ todos });
+          if (listtype === 'DO') {
+            const doList = this.data.doList.map(t => ({ ...t, slideOffset: 0 }));
+            this.setData({ doList });
+          } else if (listtype === 'NOT_DO') {
+            const notDoList = this.data.notDoList.map(t => ({ ...t, slideOffset: 0 }));
+            this.setData({ notDoList });
+          } else {
+            const todos = this.data.todos.map(t => ({ ...t, slideOffset: 0 }));
+            this.setData({ todos });
+          }
         }
       }
     });
   },
 
-  deleteTodo(id) {
+  deleteTodoItem(id, listtype) {
     const userId = this.getUserId();
     if (!userId) return;
 
     wx.showLoading({ title: '删除中' });
-    request(`/todo/deleteTodo/${id}?userId=${userId}`, 'DELETE').then(res => {
+    
+    let url = `/todo/deleteTodo/${id}?userId=${userId}`;
+    if (listtype === 'DO' || listtype === 'NOT_DO') {
+      url = `/donotdo/deleteItem/${id}?userId=${userId}`;
+    }
+
+    request(url, 'DELETE').then(res => {
       wx.hideLoading();
       if (res && res.code === 200) {
         wx.showToast({ title: '删除成功', icon: 'success' });
-        this.fetchTodos();
+        if (listtype === 'DO' || listtype === 'NOT_DO') {
+          this.fetchDoNotDoList();
+        } else {
+          this.fetchTodos();
+        }
       } else {
         wx.showToast({ title: '删除失败', icon: 'none' });
       }
     }).catch(err => {
       wx.hideLoading();
-      console.error('Delete todo failed', err);
+      console.error('Delete failed', err);
       wx.showToast({ title: '网络错误', icon: 'none' });
     });
   },
@@ -761,6 +882,7 @@ Page({
   // Inline editing handlers
   startEdit(e) {
     const item = e.currentTarget.dataset.item;
+    const listtype = e.currentTarget.dataset.listtype;
     
     // 如果当前正在编辑同一个 item，则不处理
     if (this.data.editingTodoId === item.id) {
@@ -770,6 +892,7 @@ Page({
     // 记录当前正在编辑的旧数据
     const oldEditingId = this.data.editingTodoId;
     const oldEditingContent = this.data.editTodoContent;
+    const oldListtype = this.data.editingListtype;
 
     // 记录开始编辑的时间戳，用于过滤由于重排或键盘弹起引起的虚假 blur 事件
     this.editStartTime = Date.now();
@@ -778,6 +901,7 @@ Page({
     this.setData({
       editingTodoId: item.id,
       editTodoContent: item.content,
+      editingListtype: listtype,
       focusId: null
     }, () => {
       // 核心修复：等 DOM 节点完全渲染出来，并稍微等待布局稳定后再聚焦
@@ -788,7 +912,7 @@ Page({
 
     // 如果之前有正在编辑的项，立即执行保存
     if (oldEditingId) {
-      this.saveTodoContent(oldEditingId, oldEditingContent);
+      this.saveTodoContent(oldEditingId, oldEditingContent, oldListtype);
     }
   },
 
@@ -804,6 +928,7 @@ Page({
     }
 
     const currentEditId = e.currentTarget.dataset.item.id;
+    const listtype = e.currentTarget.dataset.listtype;
     const contentToSave = this.data.editTodoContent;
     
     setTimeout(() => {
@@ -817,19 +942,24 @@ Page({
       this.setData({
         editingTodoId: null,
         focusId: null,
-        editTodoContent: ''
+        editTodoContent: '',
+        editingListtype: null
       });
 
-      this.saveTodoContent(currentEditId, contentToSave);
+      this.saveTodoContent(currentEditId, contentToSave, listtype);
     }, 50); // 50ms 足够让紧随其后的 tap 事件（如果有）改变 editingTodoId
   },
 
-  saveTodoContent(todoId, newContentStr) {
+  saveTodoContent(todoId, newContentStr, listtype) {
     if (!todoId) return;
 
     const newContent = (newContentStr || '').trim();
-    const item = this.data.todos.find(t => t.id === todoId);
+    const listKey = listtype === 'DO' ? 'doList' : (listtype === 'NOT_DO' ? 'notDoList' : 'todos');
+    const targetList = this.data[listKey];
     
+    if (!targetList) return;
+
+    const item = targetList.find(t => t.id === todoId);
     if (!item) return;
 
     // 如果内容没有改变或者为空，不触发网络请求
@@ -841,32 +971,52 @@ Page({
     if (!userId) return;
 
     // Optimistic update
-    const todos = this.data.todos.map(todo => {
+    const updatedList = targetList.map(todo => {
       if (todo.id === todoId) {
         return { ...todo, content: newContent };
       }
       return todo;
     });
-    this.setData({ todos });
+    this.setData({ [listKey]: updatedList });
 
     wx.showNavigationBarLoading();
-    request(`/todo/updateTodo/${todoId}?userId=${userId}`, 'PUT', {
+
+    let url = `/todo/updateTodo/${todoId}?userId=${userId}`;
+    let payload = {
       isCompleted: item.isCompleted,
       priority: item.priority || 'MEDIUM',
       content: newContent
-    }).then(res => {
+    };
+
+    if (listtype === 'DO' || listtype === 'NOT_DO') {
+      url = `/donotdo/updateItem/${todoId}?userId=${userId}`;
+      payload = {
+        content: newContent,
+        sortOrder: item.sortOrder
+      };
+    }
+
+    request(url, 'PUT', payload).then(res => {
       wx.hideNavigationBarLoading();
       if (res && res.code === 200) {
         // Success
       } else {
         wx.showToast({ title: '修改失败', icon: 'none' });
-        this.fetchTodos(); // Revert
+        if (listtype === 'DO' || listtype === 'NOT_DO') {
+           this.fetchDoNotDoList();
+        } else {
+           this.fetchTodos(); // Revert
+        }
       }
     }).catch(err => {
       wx.hideNavigationBarLoading();
-      console.error('Update todo failed', err);
+      console.error('Update failed', err);
       wx.showToast({ title: '网络错误', icon: 'none' });
-      this.fetchTodos(); // Revert
+      if (listtype === 'DO' || listtype === 'NOT_DO') {
+         this.fetchDoNotDoList();
+      } else {
+         this.fetchTodos(); // Revert
+      }
     });
   }
 })

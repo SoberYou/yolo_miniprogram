@@ -421,6 +421,52 @@ page {
   transform: rotate(45deg);
 }
 
+.icon-do {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #07c160;
+  position: relative;
+  margin-right: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.icon-do::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 7px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.icon-not-do {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ff4d4f;
+  border-radius: 50%;
+  position: relative;
+  margin-right: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  box-sizing: border-box;
+}
+
+.icon-not-do::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 2px;
+  background-color: #ff4d4f;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 .todo-content {
   font-size: 15px;
   color: #333;
