@@ -1,12 +1,12 @@
 <!-- pages/goal/goal.wxml -->
-<view class="container" bindtap="hideLegendTip">
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;" bindtap="hideLegendTip">
   <!-- Custom Header -->
-  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
       <view class="back-btn" bindtap="goBack">
         <view class="back-arrow"></view>
       </view>
-      <text class="page-title">{{goal.name}}</text>
+      <text class="page-title">目标详情</text>
     </view>
   </view>
 
@@ -52,110 +52,140 @@
   </page-container>
 
   <!-- Main Content -->
-  <scroll-view scroll-y class="main-content" style="padding-top: {{statusBarHeight}}px;">
+  <scroll-view scroll-y class="main-content" style="padding-bottom: 20px;">
     
-    <!-- Title & Description -->
-    <view class="section-header">
-      <view class="goal-title">{{goal.name}}</view>
-      <view class="goal-desc-group">
-        <text class="goal-desc">{{goal.description || '暂无描述'}}</text>
-        <view class="goal-progress-container">
-          <text class="goal-desc sub">{{goal.northStar}} · </text>
-          <view class="progress-bar-wrapper" catchtap="showProgressTooltip" data-total-hours="{{goal.totalHours}}">
-             <view class="progress-bar-bg">
-               <view class="progress-bar-fill" style="width: {{goal.progressPercent}}%;"></view>
-             </view>
-             <!-- Tooltip -->
-             <view class="progress-tooltip" wx:if="{{progressTooltip.show}}">
-               {{progressTooltip.text}}
-             </view>
+    <!-- Title & Description Module -->
+    <view class="card-module">
+      <view class="section-header" style="padding: 0; margin-bottom: 16px;">
+        <view class="goal-title">{{goal.name}}</view>
+        <view class="goal-desc-group">
+          <text class="goal-desc">{{goal.description || '暂无描述'}}</text>
+          <view class="goal-progress-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; width: 100%;">
+            <view class="goal-progress-container">
+              <text class="goal-desc sub">{{goal.northStar}} · </text>
+              <view class="progress-bar-wrapper" catchtap="showProgressTooltip" data-total-hours="{{goal.totalHours}}">
+                 <view class="progress-bar-bg">
+                   <view class="progress-bar-fill" style="width: {{goal.progressPercent}}%;"></view>
+                 </view>
+                 <!-- Tooltip -->
+                 <view class="progress-tooltip" wx:if="{{progressTooltip.show}}">
+                   {{progressTooltip.text}}
+                 </view>
+              </view>
+              <text class="goal-desc sub" style="margin-left: 4px;">{{goal.expectedTotalHours}} h</text>
+            </view>
+            <view class="inline-edit-btn" bindtap="editGoal" style="font-size: 12px; color: #666; padding: 4px 10px; background-color: #f5f5f5; border-radius: 12px;">编辑目标</view>
           </view>
-          <text class="goal-desc sub">  {{goal.expectedTotalHours}} h</text>
         </view>
       </view>
     </view>
 
-    <!-- Time Investment Stats -->
-    <view class="section-stats">
-      <view class="stat-card">
-        <text class="stat-label">近 7 天</text>
-        <text class="stat-value">{{goal.stats.last7Days}}</text>
+    <!-- Time Investment Stats & History List Module -->
+    <view class="card-module">
+      <!-- Time Investment Stats -->
+      <view class="section-stats" style="margin-bottom: 24px;">
+        <view class="stat-card">
+          <text class="stat-label">近 7 天</text>
+          <text class="stat-value">{{goal.stats.last7Days}}</text>
+        </view>
+        <view class="stat-card">
+          <text class="stat-label">近 30 天</text>
+          <text class="stat-value">{{goal.stats.last30Days}}</text>
+        </view>
       </view>
-      <view class="stat-card">
-        <text class="stat-label">近 30 天</text>
-        <text class="stat-value">{{goal.stats.last30Days}}</text>
+
+      <!-- History List (Heatmap) -->
+      <view class="section-history">
+        <view class="history-header">
+          <view class="history-label">专注分布</view>
+          <view class="milestone-btn" bindtap="goToMilestone">
+             <text class="milestone-text">里程碑</text>
+             <view class="milestone-arrow"></view>
+          </view>
+        </view>
+        
+        <view class="heatmap-container">
+          <!-- Left Labels (Mon-Sun) -->
+          <view class="weekday-labels">
+            <text class="weekday-label">1</text>
+            <text class="weekday-label">2</text>
+            <text class="weekday-label">3</text>
+            <text class="weekday-label">4</text>
+            <text class="weekday-label">5</text>
+            <text class="weekday-label">6</text>
+            <text class="weekday-label">7</text>
+          </view>
+
+          <!-- Scrollable Heatmap -->
+          <scroll-view scroll-x class="heatmap-scroll" scroll-left="{{scrollLeft}}">
+            <view class="heatmap-content">
+              <!-- Month Labels -->
+              <view class="months-row">
+                <block wx:for="{{goal.heatmap}}" wx:key="index">
+                  <view class="month-col">
+                    <text class="month-text" wx:if="{{item.month}}">{{item.month}}</text>
+                  </view>
+                </block>
+              </view>
+
+              <!-- Grid -->
+              <view class="weeks-row">
+                <block wx:for="{{goal.heatmap}}" wx:key="index" wx:for-item="week">
+                  <view class="week-col">
+                    <block wx:for="{{week.days}}" wx:key="date" wx:for-item="day">
+                      <view class="day-cell level-{{day.level}}"></view>
+                    </block>
+                  </view>
+                </block>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+
+        <!-- Legend -->
+        <view class="heatmap-legend">
+          <text class="legend-text">Less</text>
+          <view class="legend-items">
+            <view class="legend-tooltip" wx:if="{{legendTip.show}}" style="left: {{legendTip.left}}px;">
+              {{legendTip.text}}
+            </view>
+            <view class="day-cell level-0" catchtap="showLegendTip" data-level="0"></view>
+            <view class="day-cell level-1" catchtap="showLegendTip" data-level="1"></view>
+            <view class="day-cell level-2" catchtap="showLegendTip" data-level="2"></view>
+            <view class="day-cell level-3" catchtap="showLegendTip" data-level="3"></view>
+            <view class="day-cell level-4" catchtap="showLegendTip" data-level="4"></view>
+          </view>
+          <text class="legend-text">More</text>
+        </view>
       </view>
     </view>
 
-    <!-- History List (Heatmap) -->
-    <view class="section-history">
-      <view class="history-header">
-        <view class="history-label">专注分布</view>
-        <view class="milestone-btn" bindtap="goToMilestone">
-           <text class="milestone-text">里程碑</text>
-           <view class="milestone-arrow"></view>
+    <!-- 配置关联活动类型 Module -->
+    <view class="card-module">
+      <view class="activity-types-container">
+        <block wx:for="{{activityTypes}}" wx:key="id">
+          <view 
+            wx:if="{{isActivityEditMode || item.selected}}"
+            class="activity-type-chip {{item.selected ? 'selected' : ''}}" 
+            style="background-color: {{item.selected ? item.color : '#f5f5f5'}}; color: {{item.selected ? '#fff' : '#666'}}; border-color: {{item.selected ? item.color : '#e0e0e0'}};"
+            bindtap="toggleActivityType" 
+            data-code="{{item.typeCode}}"
+          >
+            {{item.typeName}}
+          </view>
+        </block>
+        <view wx:if="{{activityTypes.length === 0}}" class="empty-tip" style="font-size: 14px; color: #999; text-align: center; padding: 20px 0;">
+          暂无活动类型，请先前往配置
+        </view>
+        <view wx:elif="{{!isActivityEditMode && !hasSelectedActivityType}}" class="empty-tip" style="font-size: 14px; color: #999; text-align: center; padding: 20px 0;">
+          暂未关联任何活动类型
         </view>
       </view>
       
-      <view class="heatmap-container">
-        <!-- Left Labels (Mon-Sun) -->
-        <view class="weekday-labels">
-          <text class="weekday-label">1</text>
-          <text class="weekday-label">2</text>
-          <text class="weekday-label">3</text>
-          <text class="weekday-label">4</text>
-          <text class="weekday-label">5</text>
-          <text class="weekday-label">6</text>
-          <text class="weekday-label">7</text>
-        </view>
-
-        <!-- Scrollable Heatmap -->
-        <scroll-view scroll-x class="heatmap-scroll" scroll-left="{{scrollLeft}}">
-          <view class="heatmap-content">
-            <!-- Month Labels -->
-            <view class="months-row">
-              <block wx:for="{{goal.heatmap}}" wx:key="index">
-                <view class="month-col">
-                  <text class="month-text" wx:if="{{item.month}}">{{item.month}}</text>
-                </view>
-              </block>
-            </view>
-
-            <!-- Grid -->
-            <view class="weeks-row">
-              <block wx:for="{{goal.heatmap}}" wx:key="index" wx:for-item="week">
-                <view class="week-col">
-                  <block wx:for="{{week.days}}" wx:key="date" wx:for-item="day">
-                    <view class="day-cell level-{{day.level}}"></view>
-                  </block>
-                </view>
-              </block>
-            </view>
-          </view>
-        </scroll-view>
+      <view class="section-actions" style="margin-top: 24px;" wx:if="{{activityTypes.length > 0}}">
+        <button wx:if="{{isActivityEditMode}}" class="btn-primary" bindtap="saveActivityRelations" style="margin: 0; width: 100%;">保存</button>
+        <button wx:else class="btn-secondary" bindtap="enterActivityEditMode" style="margin: 0; width: 100%; border: 1px solid #f0f0f0; background-color: #f9f9f9; color: #333; border-radius: 8px;">编辑</button>
       </view>
-
-      <!-- Legend -->
-      <view class="heatmap-legend">
-        <text class="legend-text">Less</text>
-        <view class="legend-items">
-          <view class="legend-tooltip" wx:if="{{legendTip.show}}" style="left: {{legendTip.left}}px;">
-            {{legendTip.text}}
-          </view>
-          <view class="day-cell level-0" catchtap="showLegendTip" data-level="0"></view>
-          <view class="day-cell level-1" catchtap="showLegendTip" data-level="1"></view>
-          <view class="day-cell level-2" catchtap="showLegendTip" data-level="2"></view>
-          <view class="day-cell level-3" catchtap="showLegendTip" data-level="3"></view>
-          <view class="day-cell level-4" catchtap="showLegendTip" data-level="4"></view>
-        </view>
-        <text class="legend-text">More</text>
-      </view>
-    </view>
-
-    <!-- Actions -->
-    <view class="section-actions">
-      <button class="btn-primary" bindtap="startFocus">{{runningSession ? '进行中' : '开始专注'}}</button>
-      <button class="btn-secondary" bindtap="editGoal">编辑目标</button>
     </view>
 
     <!-- Footer Padding -->

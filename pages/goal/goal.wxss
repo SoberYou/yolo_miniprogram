@@ -1,6 +1,6 @@
 /** pages/goal/goal.wxss */
 page {
-  background-color: #ffffff;
+  background-color: #f5f6f8;
   color: #333333;
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
 }
@@ -46,16 +46,31 @@ page {
 }
 
 .page-title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   color: #000000;
-  opacity: 0; /* Hidden initially, maybe shown on scroll in future, keeping layout stable */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Main Content */
 .main-content {
-  width: 80%;
+  width: 100%;
   box-sizing: border-box;
+  padding: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-module {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
 /* Section Header */
@@ -138,6 +153,26 @@ page {
   border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
 }
 
+
+/* Activity Types Module */
+.activity-types-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.activity-type-chip {
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.empty-tip {
+  width: 100%;
+}
 
 /* Modal Styles - Reuse from index */
 .modal-overlay {
@@ -270,10 +305,9 @@ page {
   background-color: #e0e0e0;
 }
 .section-stats {
-  padding: 0 24px;
   display: flex;
   gap: 16px;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
@@ -299,7 +333,7 @@ page {
 
 /* History List (Heatmap) */
 .section-history {
-  padding: 0 24px 24px;
+  padding: 0;
 }
 
 .history-header {
@@ -483,7 +517,6 @@ page {
 
 /* Actions Zone */
 .section-actions {
-  padding: 0 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;

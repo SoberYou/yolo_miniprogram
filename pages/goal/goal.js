@@ -144,7 +144,9 @@ Page({
       expected_total_hours: '',
       north_star: ''
     },
-    runningSession: null,
+    activityTypes: [],
+    isActivityEditMode: false,
+    hasSelectedActivityType: false,
     legendTip: {
       show: false,
       text: '',
@@ -226,7 +228,7 @@ Page({
     // Navigation Bar Calculation
     const systemInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
-    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height + systemInfo.statusBarHeight;
+    const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height;
     
     this.setData({
       navBarHeight: navBarHeight,
@@ -238,25 +240,98 @@ Page({
     if (options.id) {
        this.fetchFocusStats(options.id);
        this.fetchGoalDetails(options.id);
-       this.fetchRunningSession(options.id);
+       this.fetchActivityData(options.id);
     }
   },
 
-  fetchRunningSession(goalId) {
-    const params = { goalId };
+  fetchActivityData(goalId) {
     const user = wx.getStorageSync('user');
-    if (user && user.userId) {
-        params.userId = user.userId;
-    }
-    request('/focus/running', 'GET', params).then(res => {
+    const userId = user && user.userId ? user.userId : 0;
+    
+    // Fetch all activity types and bound types concurrently
+    Promise.all([
+      request(`/schedule/getActivityTypes?userId=${userId}`, 'POST', {}),
+      request(`/goals/getGoalActivityRelations/${goalId}`, 'GET', {}, { 'X-User-Id': userId })
+    ]).then(([allRes, boundRes]) => {
+      let types = [];
+      let boundCodes = [];
+      
+      if (allRes && allRes.code === 200 && allRes.data) {
+        types = allRes.data;
+      }
+      
+      if (boundRes && boundRes.code === 200 && boundRes.data) {
+        boundCodes = boundRes.data;
+      }
+      
+      // Merge selection state
+      let hasSelected = false;
+      types = types.map(t => {
+        const isSelected = boundCodes.includes(t.typeCode);
+        if (isSelected) hasSelected = true;
+        return {
+          ...t,
+          selected: isSelected
+        };
+      });
+      
+      this.setData({ activityTypes: types, hasSelectedActivityType: hasSelected });
+    }).catch(err => {
+      console.error('Failed to fetch activity data', err);
+    });
+  },
+
+  toggleActivityType(e) {
+    if (!this.data.isActivityEditMode) return;
+    const code = e.currentTarget.dataset.code;
+    let hasSelected = false;
+    const types = this.data.activityTypes.map(t => {
+      let isSelected = t.selected;
+      if (t.typeCode === code) {
+        isSelected = !isSelected;
+      }
+      if (isSelected) hasSelected = true;
+      return { ...t, selected: isSelected };
+    });
+    this.setData({ activityTypes: types, hasSelectedActivityType: hasSelected });
+  },
+
+  enterActivityEditMode() {
+    this.setData({ isActivityEditMode: true });
+  },
+
+  saveActivityRelations() {
+    const user = wx.getStorageSync('user');
+    const userId = user && user.userId ? user.userId : 0;
+    const goalId = this.data.goal.id;
+    
+    if (!goalId) return;
+    
+    const selectedCodes = this.data.activityTypes
+      .filter(t => t.selected)
+      .map(t => t.typeCode);
+      
+    wx.showLoading({ title: '保存中' });
+    request('/goals/configureGoalActivityRelations', 'POST', {
+      goalId: goalId,
+      typeCodes: selectedCodes
+    }, { 'X-User-Id': userId }).then(res => {
+      wx.hideLoading();
       if (res && res.code === 200) {
-        this.setData({ runningSession: res.data || null });
+        wx.showToast({ title: '保存成功', icon: 'success' });
+        this.setData({ isActivityEditMode: false });
+        
+        // 刷新界面数据
+        this.fetchActivityData(goalId);
+        this.fetchGoalDetails(goalId);
+        this.fetchFocusStats(goalId);
       } else {
-        this.setData({ runningSession: null });
+        wx.showToast({ title: '保存失败', icon: 'none' });
       }
     }).catch(err => {
-      console.error('Failed to fetch running session', err);
-      this.setData({ runningSession: null });
+      wx.hideLoading();
+      console.error('Failed to save relations', err);
+      wx.showToast({ title: '保存失败', icon: 'none' });
     });
   },
 

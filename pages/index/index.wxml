@@ -58,7 +58,7 @@
       <view class="card-module section-north-star">
         <view class="section-header-b">
           <text class="section-title">目标列表</text>
-          <view class="add-btn" bindtap="openAddGoalModal">+</view>
+          <view class="add-btn" bindtap="openAddGoalModal">新增目标</view>
         </view>
 
         <!-- Modal for Adding Goal -->
