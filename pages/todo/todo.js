@@ -8,31 +8,40 @@ Page({
     menuButtonTop: 0,
     currentTopTab: 'config',
     currentPeriod: 'day',
-    currentDateStr: '2024-03-24',
+    currentDateStr: '', // picker 绑定的值
+    dateDisplayText: '', // 页面显示的值
+    prevDateText: '', // 左侧前一阶段文案
+    nextDateText: '', // 右侧后一阶段文案
+    pickerFields: 'day', // date picker 的层级: day, month, year
     todos: [],
     newTodoContent: '',
     showEditModal: false,
     editTodoId: null,
     editingTodoId: null,
     focusId: null,
-    editTodoContent: ''
+    editTodoContent: '',
+    
+    // Drag to sort state
+    isDragging: false,
+    draggingId: null,
+    dragTranslateY: 0,
+    dragStartIndex: 0,
+    dragCurrentIndex: 0
   },
   onLoad() {
     const systemInfo = wx.getSystemInfoSync();
     const menuButtonInfo = wx.getMenuButtonBoundingClientRect();
     const navBarHeight = (menuButtonInfo.top - systemInfo.statusBarHeight) * 2 + menuButtonInfo.height;
     
-    // Set initial date string to today
-    const today = new Date();
-    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
     this.setData({
       navBarHeight: navBarHeight,
       statusBarHeight: systemInfo.statusBarHeight,
       menuButtonHeight: menuButtonInfo.height,
-      menuButtonTop: menuButtonInfo.top,
-      currentDateStr: dateStr
+      menuButtonTop: menuButtonInfo.top
     });
+
+    this.currentSelectedDate = new Date();
+    this.updateDateDisplayAndRange(this.data.currentPeriod, this.currentSelectedDate);
   },
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -58,14 +67,13 @@ Page({
     if (!userId) return;
 
     const dateType = this.getDateType();
-    const dateStr = this.data.currentDateStr;
     
     wx.showNavigationBarLoading();
     request('/todo/getTodos', 'GET', {
       userId,
       dateType,
-      startDate: dateStr,
-      endDate: dateStr
+      startDate: this.currentStartDate,
+      endDate: this.currentEndDate
     }).then(res => {
       wx.hideNavigationBarLoading();
       if (res && res.code === 200) {
@@ -86,14 +94,192 @@ Page({
   },
   switchPeriod(e) {
     const period = e.currentTarget.dataset.period;
-    this.setData({ currentPeriod: period }, () => {
-      this.fetchTodos();
-    });
+    if (this.data.currentPeriod === period) return;
+
+    this.updateDateDisplayAndRange(period, this.currentSelectedDate);
+    this.fetchTodos();
   },
+
   onDateChange(e) {
-    this.setData({ currentDateStr: e.detail.value }, () => {
-      this.fetchTodos();
+    const val = e.detail.value;
+    let dateObj;
+    
+    // picker 返回的可能是 YYYY, YYYY-MM, 或 YYYY-MM-DD
+    if (this.data.pickerFields === 'year') {
+      dateObj = new Date(`${val}-01-01`);
+    } else if (this.data.pickerFields === 'month') {
+      dateObj = new Date(`${val}-01`);
+    } else {
+      dateObj = new Date(val);
+    }
+    
+    this.currentSelectedDate = dateObj;
+    this.updateDateDisplayAndRange(this.data.currentPeriod, dateObj);
+    this.fetchTodos();
+  },
+
+  formatDate(dateObj) {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  },
+
+  updateDateDisplayAndRange(period, dateObj) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    
+    let currentDateStr = '';
+    let dateDisplayText = '';
+    let prevDateText = '';
+    let nextDateText = '';
+    let startDate = '';
+    let endDate = '';
+    let pickerFields = 'day';
+    
+    // 辅助函数：格式化简单展示
+    const getSimpleFormat = (date) => {
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${m}.${d}`;
+    };
+    
+    if (period === 'day') {
+      currentDateStr = `${year}-${month}-${day}`;
+      dateDisplayText = currentDateStr;
+      startDate = currentDateStr;
+      endDate = currentDateStr;
+      pickerFields = 'day';
+      
+      const prevDate = new Date(dateObj);
+      prevDate.setDate(prevDate.getDate() - 1);
+      const nextDate = new Date(dateObj);
+      nextDate.setDate(nextDate.getDate() + 1);
+      
+      prevDateText = `${getSimpleFormat(prevDate)}`;
+      nextDateText = `${getSimpleFormat(nextDate)}`;
+      
+    } else if (period === 'week') {
+      currentDateStr = `${year}-${month}-${day}`;
+      pickerFields = 'day';
+      
+      const dayOfWeek = dateObj.getDay();
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      
+      const monday = new Date(dateObj);
+      monday.setDate(dateObj.getDate() + diffToMonday);
+      
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      
+      startDate = this.formatDate(monday);
+      endDate = this.formatDate(sunday);
+      
+      dateDisplayText = `${getSimpleFormat(monday)} - ${getSimpleFormat(sunday)}`;
+      
+      // 前一周
+      const prevMonday = new Date(monday);
+      prevMonday.setDate(prevMonday.getDate() - 7);
+      const prevSunday = new Date(sunday);
+      prevSunday.setDate(prevSunday.getDate() - 7);
+      prevDateText = `${getSimpleFormat(prevMonday)}-${getSimpleFormat(prevSunday)}`;
+      
+      // 后一周
+      const nextMonday = new Date(monday);
+      nextMonday.setDate(nextMonday.getDate() + 7);
+      const nextSunday = new Date(sunday);
+      nextSunday.setDate(nextSunday.getDate() + 7);
+      nextDateText = `${getSimpleFormat(nextMonday)}-${getSimpleFormat(nextSunday)}`;
+      
+    } else if (period === 'month') {
+      currentDateStr = `${year}-${month}`;
+      dateDisplayText = `${year}年${month}月`;
+      pickerFields = 'month';
+      
+      const firstDay = new Date(year, dateObj.getMonth(), 1);
+      const lastDay = new Date(year, dateObj.getMonth() + 1, 0);
+      startDate = this.formatDate(firstDay);
+      endDate = this.formatDate(lastDay);
+      
+      const prevMonthDate = new Date(year, dateObj.getMonth() - 1, 1);
+      prevDateText = `${prevMonthDate.getFullYear()}.${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      const nextMonthDate = new Date(year, dateObj.getMonth() + 1, 1);
+      nextDateText = `${nextMonthDate.getFullYear()}.${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
+      
+    } else if (period === 'year') {
+      currentDateStr = `${year}`;
+      dateDisplayText = `${year}年`;
+      pickerFields = 'year';
+      
+      startDate = `${year}-01-01`;
+      endDate = `${year}-12-31`;
+      
+      prevDateText = `${year - 1}年`;
+      nextDateText = `${year + 1}年`;
+    }
+    
+    this.setData({
+      currentPeriod: period,
+      currentDateStr,
+      dateDisplayText,
+      prevDateText,
+      nextDateText,
+      pickerFields
     });
+    
+    this.currentStartDate = startDate;
+    this.currentEndDate = endDate;
+  },
+
+  // ========== 日期快捷切换与滑动交互 ==========
+  prevDate() {
+    this.shiftDate(-1);
+  },
+  
+  nextDate() {
+    this.shiftDate(1);
+  },
+
+  shiftDate(direction) {
+    // direction: -1 为前一天/周/月/年，1 为后一天/周/月/年
+    let newDate = new Date(this.currentSelectedDate);
+    const period = this.data.currentPeriod;
+
+    if (period === 'day') {
+      newDate.setDate(newDate.getDate() + direction);
+    } else if (period === 'week') {
+      newDate.setDate(newDate.getDate() + (direction * 7));
+    } else if (period === 'month') {
+      newDate.setMonth(newDate.getMonth() + direction);
+    } else if (period === 'year') {
+      newDate.setFullYear(newDate.getFullYear() + direction);
+    }
+
+    this.currentSelectedDate = newDate;
+    this.updateDateDisplayAndRange(period, newDate);
+    this.fetchTodos();
+  },
+
+  dateTouchStart(e) {
+    this.dateTouchStartX = e.touches[0].clientX;
+  },
+
+  dateTouchEnd(e) {
+    if (!this.dateTouchStartX) return;
+    const dateTouchEndX = e.changedTouches[0].clientX;
+    const deltaX = dateTouchEndX - this.dateTouchStartX;
+
+    // 滑动阈值设为 50px
+    if (deltaX > 50) {
+      // 向右滑动，切换到前一阶段
+      this.prevDate();
+    } else if (deltaX < -50) {
+      // 向左滑动，切换到后一阶段
+      this.nextDate();
+    }
+    this.dateTouchStartX = null;
   },
 
   onNewTodoInput(e) {
@@ -111,15 +297,14 @@ Page({
     if (!userId) return;
 
     const dateType = this.getDateType();
-    const dateStr = this.data.currentDateStr;
 
     const payload = {
       dateType,
-      startDate: dateStr,
-      endDate: dateStr,
+      startDate: this.currentStartDate,
+      endDate: this.currentEndDate,
       content,
       priority: 'MEDIUM',
-      sortOrder: this.data.todos.length + 1
+      sortOrder: this.data.todos.length + 1 // 新增在末尾
     };
 
     wx.showLoading({ title: '添加中' });
@@ -172,18 +357,71 @@ Page({
     });
   },
 
-  // Touch handlers for swipe to delete
+  // Touch handlers for swipe to delete & Drag-to-Sort
   touchStartX: 0,
   touchStartY: 0,
   
   touchStart(e) {
+    if (this.data.isDragging) return; // Prevent new touches if already dragging
     if (e.touches.length === 1) {
       this.touchStartX = e.touches[0].clientX;
       this.touchStartY = e.touches[0].clientY;
     }
   },
 
+  longPress(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.todos[index];
+    
+    // 如果正在编辑，禁止拖拽
+    if (this.data.editingTodoId) return;
+
+    wx.vibrateShort(); // 触觉反馈
+    
+    this.setData({
+      isDragging: true,
+      draggingId: item.id,
+      dragStartIndex: index,
+      dragCurrentIndex: index,
+      dragTranslateY: 0
+    });
+  },
+
   touchMove(e) {
+    if (this.data.isDragging) {
+      const currentY = e.touches[0].clientY;
+      const deltaY = currentY - this.touchStartY;
+      
+      // 假设每个 todo-item 的大致高度 (包含 margin-bottom 12px)
+      const ITEM_HEIGHT = 68; 
+      
+      // 计算偏移的步数
+      let offsetSteps = Math.round(deltaY / ITEM_HEIGHT);
+      let newIndex = this.data.dragStartIndex + offsetSteps;
+      
+      // 边界限制
+      newIndex = Math.max(0, Math.min(newIndex, this.data.todos.length - 1));
+      
+      let todos = this.data.todos;
+      
+      // 如果跨越了索引，进行数据交换
+      if (newIndex !== this.data.dragCurrentIndex) {
+        todos = [...this.data.todos];
+        const [movedItem] = todos.splice(this.data.dragCurrentIndex, 1);
+        todos.splice(newIndex, 0, movedItem);
+      }
+      
+      // 保持被拖拽的元素视觉上始终跟手 (抵消因为改变了数组顺序而造成的原点跳变)
+      const dragTranslateY = deltaY - (newIndex - this.data.dragStartIndex) * ITEM_HEIGHT;
+      
+      this.setData({
+        dragTranslateY,
+        ...(newIndex !== this.data.dragCurrentIndex ? { todos, dragCurrentIndex: newIndex } : {})
+      });
+      
+      return; // 如果在拖拽，阻止执行横向滑动逻辑
+    }
+
     if (e.touches.length === 1) {
       const touchMoveX = e.touches[0].clientX;
       const touchMoveY = e.touches[0].clientY;
@@ -211,6 +449,17 @@ Page({
   },
 
   touchEnd(e) {
+    if (this.data.isDragging) {
+      this.setData({
+        isDragging: false,
+        draggingId: null,
+        dragTranslateY: 0
+      });
+      // 拖拽结束，调用接口保存新排序的列表
+      this.syncOrderToServer();
+      return;
+    }
+
     if (e.changedTouches.length === 1) {
       const index = e.currentTarget.dataset.index;
       const item = this.data.todos[index];
@@ -234,6 +483,39 @@ Page({
 
       this.setData({ todos });
     }
+  },
+
+  // Sync the reordered list to server
+  syncOrderToServer() {
+    const userId = this.getUserId();
+    if (!userId || !this.data.todos.length) return;
+
+    // 构造批量更新排序的 Payload 数组
+    const sortPayload = this.data.todos.map((todo, index) => {
+      return {
+        id: todo.id,
+        sortOrder: index + 1
+      };
+    });
+
+    wx.showNavigationBarLoading();
+    
+    request(`/todo/batchUpdateSort?userId=${userId}`, 'PUT', sortPayload)
+      .then(res => {
+        wx.hideNavigationBarLoading();
+        if (res && res.code === 200) {
+          // Success
+          console.log('Batch sort order updated successfully');
+        } else {
+          console.warn('Batch sort order update failed', res);
+          wx.showToast({ title: '排序保存失败', icon: 'none' });
+        }
+      })
+      .catch(err => {
+        wx.hideNavigationBarLoading();
+        console.error('Sync order failed', err);
+        wx.showToast({ title: '网络错误', icon: 'none' });
+      });
   },
 
   promptDelete(e) {

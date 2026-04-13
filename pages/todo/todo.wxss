@@ -119,23 +119,49 @@ page {
 
 /* Date Picker Module */
 .date-picker-module {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 16px;
+  margin-bottom: 16px;
+}
+
+.date-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.current-date-picker {
+  flex: 1;
+  text-align: center;
 }
 
 .date-display {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  font-size: 16px;
-  color: #333;
-  font-weight: 500;
+  justify-content: center;
 }
 
-.calendar-icon {
-  margin-left: 8px;
+.date-text {
   font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.side-date {
+  flex: 0 0 80px;
+  font-size: 13px;
+  color: #aaa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prev-date {
+  text-align: left;
+}
+
+.next-date {
+  text-align: right;
 }
 
 /* Todo List Module */
@@ -180,8 +206,17 @@ page {
 
 .todo-item-container {
   position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid #f5f5f5;
+  width: 100%;
+  margin-bottom: 12px;
+  overflow: visible; /* 修改为 visible 允许滑动层露出 */
+  border-radius: 8px;
+  background: #ff4d4f; /* 底层红色，用于滑动删除 */
+  transition: transform 0.2s ease;
+}
+
+.todo-item-container.dragging-item {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  transition: none; /* 拖拽时取消过渡，跟随手指 */
 }
 
 .todo-item-container:last-child {

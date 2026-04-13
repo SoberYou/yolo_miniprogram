@@ -1,3 +1,4 @@
+<page-meta page-style="{{isDragging ? 'overflow: hidden;' : ''}}" />
 <view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box;">
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
@@ -23,13 +24,24 @@
       </view>
 
       <!-- 日期选择模块 -->
-      <view class="card-module date-picker-module">
-        <picker mode="date" value="{{currentDateStr}}" bindchange="onDateChange">
-          <view class="date-display">
-            <text class="calendar-icon">📅</text>
-            <text class="date-text">{{currentDateStr}}</text>            
+      <view class="card-module date-picker-module" 
+            bindtouchstart="dateTouchStart" 
+            bindtouchend="dateTouchEnd">
+        <view class="date-navigation">
+          <view class="side-date prev-date" bindtap="prevDate">
+            <text>{{prevDateText}}</text>
           </view>
-        </picker>
+          
+          <picker class="current-date-picker" mode="date" fields="{{pickerFields}}" value="{{currentDateStr}}" bindchange="onDateChange">
+            <view class="date-display">
+              <text class="date-text">{{dateDisplayText}}</text>            
+            </view>
+          </picker>
+          
+          <view class="side-date next-date" bindtap="nextDate">
+            <text>{{nextDateText}}</text>
+          </view>
+        </view>
       </view>
 
       <!-- TODO 事项列表 -->
@@ -42,12 +54,16 @@
         </view>
 
         <block wx:if="{{todos.length > 0}}">
-          <view class="todo-item-container" wx:for="{{todos}}" wx:key="id">
+          <view class="todo-item-container {{draggingId === item.id ? 'dragging-item' : ''}}" 
+                wx:for="{{todos}}" 
+                wx:key="id"
+                style="{{draggingId === item.id ? 'transform: translateY(' + dragTranslateY + 'px); z-index: 99;' : 'transform: translateY(0px); z-index: 1;'}}">
             <view class="todo-item-wrapper" 
                   style="transform: translateX({{item.slideOffset || 0}}px);" 
                   bindtouchstart="touchStart" 
                   bindtouchmove="touchMove" 
                   bindtouchend="touchEnd" 
+                  bindlongpress="longPress"
                   data-index="{{index}}"
                   data-item="{{item}}">
               
@@ -76,7 +92,7 @@
               删除
             </view>
           </view>
-          <view class="action-tip">点击文字修改待办，左滑删除待办</view>
+          <view class="action-tip">点击修改，左滑删除，长按拖拽排序</view>
         </block>
         <view class="empty-tip" wx:else>暂无待办事项</view>
       </view>
