@@ -27,7 +27,7 @@ page {
 .header-content {
   display: flex;
   align-items: center;
-  padding-left: 16px;
+  padding-left: 24px; /* Align with content */
   position: relative;
 }
 
@@ -121,6 +121,141 @@ page {
 .date-picker-module {
   padding: 16px;
   margin-bottom: 16px;
+}
+
+/* Date Range Module (Analysis) */
+.date-range-module {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.range-picker {
+  flex: 1;
+  text-align: center;
+}
+
+.range-separator {
+  color: #999;
+  font-size: 14px;
+  margin: 0 10px;
+}
+
+/* Analysis Chart Module */
+.analysis-chart-module {
+  padding: 20px 16px;
+  margin-bottom: 16px;
+}
+
+.chart-header {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.chart-body {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.pie-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.pie-chart {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  /* background comes from inline style */
+}
+
+.pie-center {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 90px;
+  height: 90px;
+  background-color: #fff;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.pie-total {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.pie-label {
+  font-size: 12px;
+  color: #999;
+}
+
+.legend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.legend-item.active-legend {
+  background-color: #f0f0f0;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.legend-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Analysis List Module */
+.analysis-list-module {
+  padding: 16px;
+}
+
+.list-header {
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.todo-date-tag {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #999;
+}
+
+.analysis-list-module .todo-item {
+  padding-right: 80px; /* space for date tag */
 }
 
 .date-navigation {

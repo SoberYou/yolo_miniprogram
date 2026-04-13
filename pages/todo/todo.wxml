@@ -1,5 +1,5 @@
 <page-meta page-style="{{isDragging ? 'overflow: hidden;' : ''}}" />
-<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box;">
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
   <!-- Custom Header -->
   <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
     <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
@@ -23,8 +23,8 @@
         <view class="period-btn {{currentPeriod === 'year' ? 'active' : ''}}" bindtap="switchPeriod" data-period="year">年</view>
       </view>
 
-      <!-- 日期选择模块 -->
-      <view class="card-module date-picker-module" 
+      <!-- 日期选择模块 (配置Tab下显示) -->
+      <view class="card-module date-picker-module" wx:if="{{currentTopTab === 'config'}}"
             bindtouchstart="dateTouchStart" 
             bindtouchend="dateTouchEnd">
         <view class="date-navigation">
@@ -44,8 +44,64 @@
         </view>
       </view>
 
+      <!-- 分析模块：日期范围选择 -->
+      <view class="card-module date-range-module" wx:if="{{currentTopTab === 'analysis'}}">
+        <picker class="range-picker" mode="date" fields="{{pickerFields}}" value="{{analysisStartStr}}" bindchange="onAnalysisStartChange">
+          <view class="range-display">
+            <text class="date-text">{{analysisStartDisplay}}</text>
+          </view>
+        </picker>
+        <text class="range-separator">至</text>
+        <picker class="range-picker" mode="date" fields="{{pickerFields}}" value="{{analysisEndStr}}" bindchange="onAnalysisEndChange">
+          <view class="range-display">
+            <text class="date-text">{{analysisEndDisplay}}</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 分析模块：图表统计 -->
+      <view class="card-module analysis-chart-module" wx:if="{{currentTopTab === 'analysis'}}">
+        <view class="chart-header">任务完成情况</view>
+        <view class="chart-body">
+          <view class="pie-container">
+            <view class="pie-chart" style="background: {{totalCount === 0 ? '#f0f0f0' : 'conic-gradient(#07c160 0% ' + donePercent + '%, #ff4d4f ' + donePercent + '% 100%)'}};"></view>
+            <view class="pie-center">
+              <text class="pie-total">{{totalCount}}</text>
+              <text class="pie-label">总数</text>
+            </view>
+          </view>
+          <view class="legend-container">
+            <view class="legend-item {{analysisFilterStatus === 'done' ? 'active-legend' : ''}}" bindtap="filterAnalysis" data-status="done">
+              <view class="legend-color" style="background: #07c160;"></view>
+              <text class="legend-text">已完成 {{doneCount}} ({{donePercent}}%)</text>
+            </view>
+            <view class="legend-item {{analysisFilterStatus === 'undo' ? 'active-legend' : ''}}" bindtap="filterAnalysis" data-status="undo">
+              <view class="legend-color" style="background: #ff4d4f;"></view>
+              <text class="legend-text">未完成 {{undoCount}} ({{undoPercent}}%)</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 分析模块：过滤后的列表展示 -->
+      <view class="card-module analysis-list-module" wx:if="{{currentTopTab === 'analysis' && analysisFilterStatus}}">
+        <view class="list-header">{{analysisFilterStatus === 'done' ? '已完成事项' : '未完成事项'}}</view>
+        <block wx:if="{{filteredAnalysisTodos.length > 0}}">
+          <view class="todo-item-container" wx:for="{{filteredAnalysisTodos}}" wx:key="id" style="margin-bottom: 8px;">
+            <view class="todo-item-wrapper" style="transform: translateX(0px);">
+              <view class="todo-item">
+                <view class="checkbox {{item.isCompleted === 1 ? 'checked' : 'disabled-checkbox'}}"></view>
+                <text class="todo-content {{item.isCompleted === 1 ? 'completed-text' : ''}}">{{item.content}}</text>
+              </view>
+              <view class="todo-date-tag">{{item.startDate}}</view>
+            </view>
+          </view>
+        </block>
+        <view class="empty-tip" wx:else>暂无相关事项</view>
+      </view>
+
       <!-- TODO 事项列表 -->
-      <view class="card-module todo-list-module">
+      <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'config'}}">
         <!-- 添加待办 -->
         <view class="add-todo-container">
           <view class="checkbox disabled-checkbox"></view>

@@ -13,6 +13,21 @@ Page({
     prevDateText: '', // 左侧前一阶段文案
     nextDateText: '', // 右侧后一阶段文案
     pickerFields: 'day', // date picker 的层级: day, month, year
+    
+    // ====== 分析模块 State ======
+    analysisStartStr: '',
+    analysisEndStr: '',
+    analysisStartDisplay: '',
+    analysisEndDisplay: '',
+    analysisTodos: [],
+    filteredAnalysisTodos: [],
+    analysisFilterStatus: 'undo', // 默认展示未完成列表
+    doneCount: 0,
+    undoCount: 0,
+    totalCount: 0,
+    donePercent: 0,
+    undoPercent: 0,
+
     todos: [],
     newTodoContent: '',
     showEditModal: false,
@@ -90,14 +105,44 @@ Page({
 
   switchTopTab(e) {
     const tab = e.currentTarget.dataset.tab;
+    if (this.data.currentTopTab === tab) return;
+
     this.setData({ currentTopTab: tab });
+
+    if (tab === 'analysis') {
+      const today = new Date();
+      this.analysisStartDateObj = today;
+      this.analysisEndDateObj = today;
+      this.updateAnalysisDateDisplay(true, this.analysisStartDateObj);
+      this.updateAnalysisDateDisplay(false, this.analysisEndDateObj);
+      this.fetchAnalysisTodos();
+    } else {
+      const today = new Date();
+      this.currentSelectedDate = today;
+      this.updateDateDisplayAndRange(this.data.currentPeriod, this.currentSelectedDate);
+      this.fetchTodos();
+    }
   },
+
   switchPeriod(e) {
     const period = e.currentTarget.dataset.period;
     if (this.data.currentPeriod === period) return;
 
-    this.updateDateDisplayAndRange(period, this.currentSelectedDate);
-    this.fetchTodos();
+    this.setData({ currentPeriod: period });
+
+    if (this.data.currentTopTab === 'analysis') {
+      const today = new Date();
+      this.analysisStartDateObj = today;
+      this.analysisEndDateObj = today;
+      this.updateAnalysisDateDisplay(true, this.analysisStartDateObj);
+      this.updateAnalysisDateDisplay(false, this.analysisEndDateObj);
+      this.fetchAnalysisTodos();
+    } else {
+      const today = new Date();
+      this.currentSelectedDate = today;
+      this.updateDateDisplayAndRange(period, this.currentSelectedDate);
+      this.fetchTodos();
+    }
   },
 
   onDateChange(e) {
@@ -142,7 +187,7 @@ Page({
     const getSimpleFormat = (date) => {
       const m = String(date.getMonth() + 1).padStart(2, '0');
       const d = String(date.getDate()).padStart(2, '0');
-      return `${m}.${d}`;
+      return `${m}-${d}`;
     };
     
     if (period === 'day') {
@@ -157,8 +202,8 @@ Page({
       const nextDate = new Date(dateObj);
       nextDate.setDate(nextDate.getDate() + 1);
       
-      prevDateText = `${getSimpleFormat(prevDate)}`;
-      nextDateText = `${getSimpleFormat(nextDate)}`;
+      prevDateText = `${prevDate.getFullYear()}-${getSimpleFormat(prevDate)}`;
+      nextDateText = `${nextDate.getFullYear()}-${getSimpleFormat(nextDate)}`;
       
     } else if (period === 'week') {
       currentDateStr = `${year}-${month}-${day}`;
@@ -194,7 +239,7 @@ Page({
       
     } else if (period === 'month') {
       currentDateStr = `${year}-${month}`;
-      dateDisplayText = `${year}年${month}月`;
+      dateDisplayText = `${year}-${month}`;
       pickerFields = 'month';
       
       const firstDay = new Date(year, dateObj.getMonth(), 1);
@@ -203,21 +248,21 @@ Page({
       endDate = this.formatDate(lastDay);
       
       const prevMonthDate = new Date(year, dateObj.getMonth() - 1, 1);
-      prevDateText = `${prevMonthDate.getFullYear()}.${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+      prevDateText = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
       
       const nextMonthDate = new Date(year, dateObj.getMonth() + 1, 1);
-      nextDateText = `${nextMonthDate.getFullYear()}.${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
+      nextDateText = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}`;
       
     } else if (period === 'year') {
       currentDateStr = `${year}`;
-      dateDisplayText = `${year}年`;
+      dateDisplayText = `${year}`;
       pickerFields = 'year';
       
       startDate = `${year}-01-01`;
       endDate = `${year}-12-31`;
       
-      prevDateText = `${year - 1}年`;
-      nextDateText = `${year + 1}年`;
+      prevDateText = `${year - 1}`;
+      nextDateText = `${year + 1}`;
     }
     
     this.setData({
@@ -231,6 +276,159 @@ Page({
     
     this.currentStartDate = startDate;
     this.currentEndDate = endDate;
+  },
+
+  // ========== 分析模块逻辑 ==========
+  onAnalysisStartChange(e) {
+    this.handleAnalysisDateChange(e.detail.value, true);
+  },
+
+  onAnalysisEndChange(e) {
+    this.handleAnalysisDateChange(e.detail.value, false);
+  },
+
+  handleAnalysisDateChange(val, isStart) {
+    let dateObj;
+    if (this.data.pickerFields === 'year') {
+      dateObj = new Date(`${val}-01-01`);
+    } else if (this.data.pickerFields === 'month') {
+      dateObj = new Date(`${val}-01`);
+    } else {
+      dateObj = new Date(val);
+    }
+    
+    this.updateAnalysisDateDisplay(isStart, dateObj);
+    this.fetchAnalysisTodos();
+  },
+
+  updateAnalysisDateDisplay(isStart, dateObj) {
+    const period = this.data.currentPeriod;
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    
+    let dateStr = '';
+    let displayStr = '';
+
+    if (period === 'day') {
+      dateStr = `${year}-${month}-${day}`;
+      displayStr = `${year}-${month}-${day}`;
+    } else if (period === 'week') {
+      const dayOfWeek = dateObj.getDay();
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(dateObj);
+      monday.setDate(dateObj.getDate() + diffToMonday);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      
+      if (isStart) {
+        dateStr = this.formatDate(monday);
+        displayStr = `${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+      } else {
+        dateStr = this.formatDate(sunday);
+        displayStr = `${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+      }
+    } else if (period === 'month') {
+      if (isStart) {
+        const firstDay = new Date(year, dateObj.getMonth(), 1);
+        dateStr = this.formatDate(firstDay);
+      } else {
+        const lastDay = new Date(year, dateObj.getMonth() + 1, 0);
+        dateStr = this.formatDate(lastDay);
+      }
+      displayStr = `${year}-${month}`;
+    } else if (period === 'year') {
+      if (isStart) {
+        dateStr = `${year}-01-01`;
+      } else {
+        dateStr = `${year}-12-31`;
+      }
+      displayStr = `${year}`;
+    }
+    
+    if (isStart) {
+      this.analysisStartDateObj = dateObj;
+      this.setData({
+        analysisStartStr: dateStr,
+        analysisStartDisplay: displayStr
+      });
+    } else {
+      this.analysisEndDateObj = dateObj;
+      this.setData({
+        analysisEndStr: dateStr,
+        analysisEndDisplay: displayStr
+      });
+    }
+  },
+
+  fetchAnalysisTodos() {
+    const userId = this.getUserId();
+    if (!userId) return;
+
+    const dateType = this.getDateType();
+    
+    wx.showNavigationBarLoading();
+    request('/todo/getTodos', 'GET', {
+      userId,
+      dateType,
+      startDate: this.data.analysisStartStr,
+      endDate: this.data.analysisEndStr
+    }).then(res => {
+      wx.hideNavigationBarLoading();
+      if (res && res.code === 200) {
+        const todos = res.data || [];
+        const doneCount = todos.filter(t => t.isCompleted === 1).length;
+        const undoCount = todos.length - doneCount;
+        const totalCount = todos.length;
+        const donePercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+        const undoPercent = totalCount > 0 ? (100 - donePercent) : 0;
+        
+        // 获取完数据后，应用当前的过滤状态（默认是 'undo'）
+        const currentFilterStatus = this.data.analysisFilterStatus || 'undo';
+        const isCompletedVal = currentFilterStatus === 'done' ? 1 : 0;
+        const filtered = todos.filter(t => t.isCompleted === isCompletedVal);
+        filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        
+        this.setData({
+          analysisTodos: todos,
+          doneCount,
+          undoCount,
+          totalCount,
+          donePercent,
+          undoPercent,
+          analysisFilterStatus: currentFilterStatus,
+          filteredAnalysisTodos: filtered
+        });
+      }
+    }).catch(err => {
+      wx.hideNavigationBarLoading();
+      console.error(err);
+    });
+  },
+
+  filterAnalysis(e) {
+    const status = e.currentTarget.dataset.status;
+    const currentStatus = this.data.analysisFilterStatus;
+    
+    // Toggle off if clicking the same legend
+    if (currentStatus === status) {
+      this.setData({
+        analysisFilterStatus: null,
+        filteredAnalysisTodos: []
+      });
+      return;
+    }
+
+    const isCompletedVal = status === 'done' ? 1 : 0;
+    const filtered = this.data.analysisTodos.filter(t => t.isCompleted === isCompletedVal);
+    
+    // 降序排序
+    filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+    
+    this.setData({
+      analysisFilterStatus: status,
+      filteredAnalysisTodos: filtered
+    });
   },
 
   // ========== 日期快捷切换与滑动交互 ==========
