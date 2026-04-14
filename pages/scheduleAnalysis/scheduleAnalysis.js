@@ -639,8 +639,6 @@ Page({
     const actualCounts = {};
     let totalPlannedMins = 0;
     let totalActualMins = 0;
-    let matchedMins = 0;
-    let newItemsMins = 0;
     
     const typePlanned = {};
     const typeMatched = {};
@@ -678,15 +676,6 @@ Page({
         if (actualId) {
           actualCounts[actualId] = (actualCounts[actualId] || 0) + duration;
           totalActualMins += duration;
-          
-          if (!planId || planId !== actualId) {
-            newItemsMins += duration;
-          }
-        }
-
-        if (planId && actualId && planId === actualId) {
-          matchedMins += duration;
-          typeMatched[planId] = (typeMatched[planId] || 0) + duration;
         }
       }
     }
@@ -770,21 +759,56 @@ Page({
     const planPieGradient = generateGradient(planStats);
     const actualPieGradient = generateGradient(actualStats);
 
-    const overallCompletionRate = totalPlannedMins > 0 ? ((matchedMins / totalPlannedMins) * 100).toFixed(1) : 0;
-    const newItemsPercentage = ((newItemsMins / totalMins) * 100).toFixed(1);
-
+    let effectiveCompletedMins = 0;
     const completionStats = [];
     activityTypes.forEach(t => {
       const planned = typePlanned[t.typeCode] || 0;
       if (planned > 0) {
-        const matched = typeMatched[t.typeCode] || 0;
+        const actual = actualCounts[t.typeCode] || 0;
+        effectiveCompletedMins += Math.min(actual, planned);
         completionStats.push({
           typeCode: t.typeCode,
           typeName: t.typeName,
-          completionRate: ((matched / planned) * 100).toFixed(1)
+          completionRate: ((actual / planned) * 100).toFixed(1),
+          actualHours: (actual / 60).toFixed(1),
+          plannedHours: (planned / 60).toFixed(1),
+          plannedMins: planned
         });
       }
     });
+
+    // 按计划时间降序排列
+    completionStats.sort((a, b) => b.plannedMins - a.plannedMins);
+
+    const overallCompletionRate = totalPlannedMins > 0 ? ((effectiveCompletedMins / totalPlannedMins) * 100).toFixed(1) : 0;
+    
+    // 重新计算新增事项：只有不在计划内的事项才算新增，超出计划时间不算新增
+    let newItemsMins = 0;
+    const newItemCounts = {};
+    for (const typeCode in actualCounts) {
+      if (!planCounts[typeCode]) { // 如果该活动类型不在计划内
+        newItemCounts[typeCode] = actualCounts[typeCode];
+        newItemsMins += actualCounts[typeCode];
+      }
+    }
+    
+    const newItemsPercentage = ((newItemsMins / totalMins) * 100).toFixed(1);
+
+    const newItemsStats = [];
+    for (const typeCode in newItemCounts) {
+      const durationMins = newItemCounts[typeCode];
+      if (durationMins > 0) {
+        const typeObj = activityTypes.find(t => t.typeCode === typeCode);
+        newItemsStats.push({
+          typeCode: typeCode,
+          typeName: typeObj ? typeObj.typeName : '未知',
+          hours: (durationMins / 60).toFixed(1),
+          percentage: ((durationMins / totalMins) * 100).toFixed(1),
+          count: durationMins
+        });
+      }
+    }
+    newItemsStats.sort((a, b) => b.count - a.count);
 
     this.setData({
       planStats,
@@ -793,6 +817,7 @@ Page({
       actualPieGradient,
       overallCompletionRate,
       newItemsPercentage,
+      newItemsStats,
       completionStats
     });
   },

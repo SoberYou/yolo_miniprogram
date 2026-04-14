@@ -85,7 +85,41 @@ page {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease-in-out;
 }
+
+.type-item.dragging {
+  opacity: 0.9;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  transition: none;
+}
+
+.drag-handle {
+  padding: 8px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-icon {
+  width: 16px;
+  height: 2px;
+  background-color: #ccc;
+  position: relative;
+}
+
+.drag-icon::before, .drag-icon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 16px;
+  height: 2px;
+  background-color: #ccc;
+}
+
+.drag-icon::before { top: -5px; }
+.drag-icon::after { top: 5px; }
 
 .type-info {
   display: flex;

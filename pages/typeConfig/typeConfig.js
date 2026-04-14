@@ -74,7 +74,12 @@ Page({
       color: '#FF5733',
       sort: 1,
       enableFlag: 1
-    }
+    },
+    // Drag-and-drop state
+    isDragging: false,
+    draggingIndex: -1,
+    dragOverIndex: -1,
+    dragDeltaY: 0
   },
 
   onLoad() {
@@ -96,6 +101,97 @@ Page({
 
   goBack() {
     wx.navigateBack();
+  },
+
+  // Drag and drop event handlers
+  onDragStart(e) {
+    const index = parseInt(e.currentTarget.dataset.index);
+    this.setData({
+      draggingIndex: index,
+      dragOverIndex: index,
+      isDragging: true,
+      dragDeltaY: 0
+    });
+    this.startY = e.touches[0].clientY;
+    this.dragStartIndex = index;
+    // approx item height = 76px (16*2 padding + 32 content + 12 margin)
+    this.itemHeight = 76;
+  },
+
+  onDragMove(e) {
+    if (!this.data.isDragging) return;
+    const currentY = e.touches[0].clientY;
+    let deltaY = currentY - this.startY;
+    
+    // Constrain deltaY within the list bounds
+    const maxDeltaY = (this.data.activityTypes.length - 1 - this.dragStartIndex) * this.itemHeight;
+    const minDeltaY = -this.dragStartIndex * this.itemHeight;
+    if (deltaY > maxDeltaY) deltaY = maxDeltaY;
+    if (deltaY < minDeltaY) deltaY = minDeltaY;
+
+    let moveOffset = Math.round(deltaY / this.itemHeight);
+    let targetIndex = this.dragStartIndex + moveOffset;
+    
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex >= this.data.activityTypes.length) targetIndex = this.data.activityTypes.length - 1;
+    
+    this.setData({ 
+      dragDeltaY: deltaY,
+      dragOverIndex: targetIndex 
+    });
+  },
+
+  onDragEnd(e) {
+    if (!this.data.isDragging) return;
+    const fromIndex = this.dragStartIndex;
+    const toIndex = this.data.dragOverIndex;
+    
+    this.setData({
+      isDragging: false,
+      draggingIndex: -1,
+      dragOverIndex: -1,
+      dragDeltaY: 0
+    });
+    
+    if (fromIndex !== toIndex) {
+      const newArray = [...this.data.activityTypes];
+      const item = newArray.splice(fromIndex, 1)[0];
+      newArray.splice(toIndex, 0, item);
+      
+      // Update sort internally
+      newArray.forEach((t, idx) => {
+        t.sort = idx + 1;
+      });
+      
+      this.setData({ activityTypes: newArray });
+      this.saveSortOrder(newArray);
+    }
+  },
+
+  saveSortOrder(newArray) {
+    let userId = 0;
+    const user = wx.getStorageSync('user');
+    if (user && user.userId) {
+      userId = user.userId;
+    }
+    
+    const sortData = newArray.map(item => ({
+      id: item.id,
+      sortOrder: item.sort
+    }));
+
+    request(`/schedule/batchUpdateActivityTypeSort?userId=${userId}`, 'POST', sortData).then(res => {
+      if (res && res.code === 200) {
+        // Success without toast
+      } else {
+        wx.showToast({ title: '排序失败', icon: 'none' });
+        this.fetchActivityTypes(); // Revert on failure
+      }
+    }).catch(err => {
+      console.error('Failed to save sort order', err);
+      wx.showToast({ title: '排序失败', icon: 'none' });
+      this.fetchActivityTypes(); // Revert on failure
+    });
   },
 
   fetchActivityTypes() {

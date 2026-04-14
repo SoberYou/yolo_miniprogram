@@ -11,10 +11,21 @@
   </view>
 
   <view class="main-content">
-    <scroll-view class="type-list-area" scroll-y>
+    <scroll-view class="type-list-area" scroll-y="{{!isDragging}}">
       <view class="type-list">
-        <view class="type-item" wx:for="{{activityTypes}}" wx:key="id">
+        <view class="type-item {{draggingIndex === index ? 'dragging' : ''}}" 
+              wx:for="{{activityTypes}}" 
+              wx:key="id"
+              style="transform: translateY({{draggingIndex === index ? dragDeltaY : (index > draggingIndex && index <= dragOverIndex ? -76 : (index < draggingIndex && index >= dragOverIndex ? 76 : 0))}}px); z-index: {{draggingIndex === index ? 10 : 1}};">
           <view class="type-info">
+            <view class="drag-handle" 
+                  catchtouchstart="onDragStart"
+                  catchtouchmove="onDragMove"
+                  catchtouchend="onDragEnd"
+                  catchtouchcancel="onDragEnd"
+                  data-index="{{index}}">
+              <view class="drag-icon"></view>
+            </view>
             <view class="type-color" style="background-color: {{item.color}}"></view>
             <view class="type-text">
               <text class="type-name">{{item.typeName}}</text>

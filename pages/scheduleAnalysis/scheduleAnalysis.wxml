@@ -166,11 +166,18 @@
             <view class="stats-row">总体达成率: <text class="highlight">{{overallCompletionRate}}%</text></view>
             <view class="stats-row">新增事项占整天比例: <text class="highlight">{{newItemsPercentage}}%</text></view>
           </view>
+          <view class="stats-card" wx:if="{{newItemsStats.length > 0}}">
+            <view class="stats-subtitle">新增事项明细</view>
+            <view class="stats-item" wx:for="{{newItemsStats}}" wx:key="typeCode">
+              <text>{{item.typeName}}</text>
+              <text>{{item.hours}}h ({{item.percentage}}%)</text>
+            </view>
+          </view>
           <view class="stats-card">
             <view class="stats-subtitle">各事项完成率</view>
             <view class="stats-item" wx:for="{{completionStats}}" wx:key="typeCode">
               <text>{{item.typeName}}</text>
-              <text>{{item.completionRate}}%</text>
+              <text>{{item.completionRate}}% ({{item.actualHours}}h/{{item.plannedHours}}h)</text>
             </view>
           </view>
         </view>
