@@ -38,17 +38,59 @@ page {
 
 .main-content {
   flex: 1;
-  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Top Action Bar */
-.top-action-bar {
+.scroll-container {
+  padding: 16px;
+}
+
+/* Module Cards */
+.module-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.overall-category-module {
+  padding: 16px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 12px 16px;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+  overflow: visible; /* Let inner content scroll natively */
 }
+
+.category-single-module {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+}
+.category-single-module:last-child {
+  margin-bottom: 12px;
+}
+
+.category-title-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.category-indicator {
+  width: 4px;
+  height: 14px;
+  background-color: #07c160;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+
+/* Top Action Bar styles removed/integrated into module-card */
 
 .action-row {
   display: flex;
@@ -139,8 +181,8 @@ page {
 /* Template Body */
 .template-body {
   flex: 1;
-  padding: 16px;
   box-sizing: border-box;
+  height: 100%;
 }
 
 .tip-text {
@@ -148,4 +190,209 @@ page {
   color: #999;
   margin-left: 8px;
   white-space: nowrap;
+}
+
+/* Category Card (Now category-single-module) */
+.category-header {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.category-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.category-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.item-container {
+  position: relative;
+  width: 100%;
+  border-bottom: 1px solid #f0f0f0;
+  overflow: visible;
+  background: #ff4d4f; /* background for swipe delete */
+  transition: transform 0.2s ease;
+}
+
+.item-container:last-child {
+  border-bottom: none;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 70px;
+  height: 100%;
+  background-color: #ff3b30;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  z-index: 1;
+}
+
+.item-content-wrapper {
+  width: 100%;
+  background-color: #fff;
+  transition: transform 0.2s ease-out;
+  z-index: 2;
+  position: relative;
+}
+
+.item-content {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.item-content:active {
+  background-color: #f9f9f9;
+}
+
+/* Different Types Styles */
+.key-value {
+  display: flex;
+}
+.kv-key {
+  width: 100px;
+  color: #666;
+  font-size: 14px;
+}
+.kv-value {
+  flex: 1;
+  color: #333;
+  font-size: 14px;
+}
+
+.checked {
+  display: flex;
+  align-items: center;
+}
+.check-icon {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  margin-right: 12px;
+}
+.check-text {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+}
+.step-num {
+  font-size: 14px;
+  color: #666;
+  margin-right: 8px;
+  font-weight: 500;
+}
+.step-text {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.add-item-btn {
+  padding: 12px;
+  text-align: center;
+  color: #07c160;
+  font-size: 14px;
+  border-top: 1px dashed #f0f0f0;
+}
+
+.add-item-btn:active {
+  background-color: #f9f9f9;
+}
+
+/* Dialog */
+.dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-content {
+  width: 80%;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dialog-header {
+  padding: 16px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+}
+
+.dialog-body {
+  padding: 16px;
+}
+
+.form-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.dialog-input {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.type-radio-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.radio-label {
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.dialog-footer {
+  display: flex;
+  border-top: 1px solid #eee;
+}
+
+.dialog-btn {
+  flex: 1;
+  padding: 14px 0;
+  text-align: center;
+  font-size: 16px;
+}
+
+.btn-cancel {
+  color: #666;
+  border-right: 1px solid #eee;
+}
+
+.btn-confirm {
+  color: #07c160;
+  font-weight: bold;
 }

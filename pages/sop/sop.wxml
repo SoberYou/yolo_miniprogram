@@ -7,105 +7,110 @@
     </view>
   </view>
   
-  <view class="main-content">
-    
-    <!-- Top Action Bar -->
-    <view class="top-action-bar">
-      <!-- Row 1: 模版选择与新建 -->
-      <view class="action-row">
-        <view class="label-box">SOP模版</view>
-        <view class="picker-box">
-          <picker bindchange="onTemplateChange" value="{{templateIndex}}" range="{{templateList}}" range-key="name" style="width: 100%;">
-            <view class="picker-value">
-              <text class="picker-text">{{currentTemplate ? currentTemplate.name : '选择模版'}}</text>
-              <text class="dropdown-icon">▼</text>
-            </view>
-          </picker>
-        </view>
-        <view class="btn-create" bindtap="openCreateTemplateModal">+ 新建模版</view>
-      </view>
-
-      <!-- Row 2: 模版名称展示与增加分类 -->
-      <view class="action-row action-row-secondary" wx:if="{{currentTemplate}}">
-        <view class="label-box">模版名称</view>
-        <view class="value-box" bindlongpress="onTemplateLongPress">
-          <text class="name-text">{{currentTemplateDetail.name || currentTemplate.name}}</text>
-          <text class="tip-text">(长按编辑)</text>
-        </view>
-        <view class="btn-add-cat" catchtap="openCreateCategoryModal">+ 增加分类</view>
-      </view>
-    </view>
-
-    <!-- Template Detail Area -->
-    <scroll-view class="template-body" scroll-y="true" wx:if="{{currentTemplate}}">
+  <scroll-view class="main-content" scroll-y="true" style="padding-bottom: 80px; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: 0;" bounces="{{false}}">
+    <view class="scroll-container">
       
-      <!-- Categories List -->
-      <view class="category-list">
-        <block wx:for="{{currentTemplateDetail.categories}}" wx:key="id" wx:for-item="cat" wx:for-index="catIndex">
-          <view class="category-card">
+      <!-- 模块1: SOP筛选新增为单独一行 -->
+      <view class="module-card">
+        <view class="action-row" style="margin-bottom: 0;">
+          <view class="label-box">SOP筛选</view>
+          <view class="picker-box">
+            <picker bindchange="onTemplateChange" value="{{templateIndex}}" range="{{templateList}}" range-key="name" style="width: 100%;">
+              <view class="picker-value">
+                <text class="picker-text">{{currentTemplate ? currentTemplate.name : '选择模版'}}</text>
+                <text class="dropdown-icon">▼</text>
+              </view>
+            </picker>
+          </view>
+          <view class="btn-create" bindtap="openCreateTemplateModal">+ 新建模版</view>
+        </view>
+      </view>
+
+      <!-- 模块2: 模版名称与新增分类单独一行 -->
+      <view class="module-card" wx:if="{{currentTemplate}}">
+        <view class="action-row" style="margin-bottom: 0;">
+          <view class="label-box">模版名称</view>
+          <view class="value-box" bindlongpress="onTemplateLongPress">
+            <text class="name-text">{{currentTemplateDetail.name || currentTemplate.name}}</text>
+            <text class="tip-text">(长按编辑)</text>
+          </view>
+          <view class="btn-add-cat" catchtap="openCreateCategoryModal">+ 新增分类</view>
+        </view>
+      </view>
+
+      <!-- 模块3: 各分类为一个整体模块 -->
+      <view class="module-card overall-category-module" wx:if="{{currentTemplate}}">
+        <view class="category-list">
+          <block wx:for="{{currentTemplateDetail.categories}}" wx:key="id" wx:for-item="cat" wx:for-index="catIndex">
             
-            <!-- Category Header -->
-            <view class="category-header" bindlongpress="onCategoryLongPress" data-category="{{cat}}">
-              <text class="category-name">{{cat.name}}</text>
-            </view>
+            <!-- 每个分类又为单独模块 -->
+            <view class="category-single-module">
+              
+              <!-- Category Header -->
+              <view class="category-header" bindlongpress="onCategoryLongPress" data-category="{{cat}}">
+                <view class="category-title-wrap">
+                  <view class="category-indicator"></view>
+                  <text class="category-name">{{cat.name}}</text>
+                </view>
+              </view>
 
-            <!-- Category Items -->
-            <view class="category-items">
-              <block wx:for="{{cat.items}}" wx:key="id" wx:for-item="item" wx:for-index="itemIndex">
-                <view class="item-container" style="transform: translateX({{item.slideOffset || 0}}px);">
-                  <!-- Left Swipe Delete Button -->
-                  <view class="delete-btn" catchtap="onDeleteItem" data-item="{{item}}">删除</view>
-                  
-                  <!-- Item Content -->
-                  <view class="item-content-wrapper" 
-                        bindtouchstart="touchStart" 
-                        bindtouchmove="touchMove" 
-                        bindtouchend="touchEnd" 
-                        data-catindex="{{catIndex}}" 
-                        data-itemindex="{{itemIndex}}">
+              <!-- Category Items -->
+              <view class="category-items">
+                <block wx:for="{{cat.items}}" wx:key="id" wx:for-item="item" wx:for-index="itemIndex">
+                  <view class="item-container" style="transform: translateX({{item.slideOffset || 0}}px);">
+                    <!-- Left Swipe Delete Button -->
+                    <view class="delete-btn" catchtap="onDeleteItem" data-item="{{item}}">删除</view>
                     
-                    <view class="item-content {{cat.type}}" catchtap="openEditItemModal" data-category="{{cat}}" data-item="{{item}}">
+                    <!-- Item Content -->
+                    <view class="item-content-wrapper" 
+                          bindtouchstart="touchStart" 
+                          bindtouchmove="touchMove" 
+                          bindtouchend="touchEnd" 
+                          data-catindex="{{catIndex}}" 
+                          data-itemindex="{{itemIndex}}">
                       
-                      <!-- key-value -->
-                      <block wx:if="{{cat.type === 'key-value'}}">
-                        <view class="kv-key">{{item.itemKey}}</view>
-                        <view class="kv-value">{{item.itemValue}}</view>
-                      </block>
+                      <view class="item-content {{cat.type}}" catchtap="openEditItemModal" data-category="{{cat}}" data-item="{{item}}">
+                        
+                        <!-- key-value -->
+                        <block wx:if="{{cat.type === 'key-value'}}">
+                          <view class="kv-key">{{item.itemKey}}</view>
+                          <view class="kv-value">{{item.itemValue}}</view>
+                        </block>
 
-                      <!-- checked -->
-                      <block wx:elif="{{cat.type === 'checked'}}">
-                        <view class="check-icon"></view>
-                        <view class="check-text">{{item.itemValue || item.itemKey}}</view>
-                      </block>
+                        <!-- checked -->
+                        <block wx:elif="{{cat.type === 'checked'}}">
+                          <view class="check-icon"></view>
+                          <view class="check-text">{{item.itemValue || item.itemKey}}</view>
+                        </block>
 
-                      <!-- step -->
-                      <block wx:elif="{{cat.type === 'step'}}">
-                        <view class="step-num">{{itemIndex + 1}}.</view>
-                        <view class="step-text">{{item.itemValue || item.itemKey}}</view>
-                      </block>
+                        <!-- step -->
+                        <block wx:elif="{{cat.type === 'step'}}">
+                          <view class="step-num">{{itemIndex + 1}}.</view>
+                          <view class="step-text">{{item.itemValue || item.itemKey}}</view>
+                        </block>
 
+                      </view>
                     </view>
                   </view>
-                </view>
-              </block>
-            </view>
+                </block>
+              </view>
 
-            <!-- Add Item Button -->
-            <view class="add-item-btn" bindtap="openCreateItemModal" data-category="{{cat}}">
-              + 新增项
+              <!-- Add Item Button -->
+              <view class="add-item-btn" bindtap="openCreateItemModal" data-category="{{cat}}">
+                + 新增项
+              </view>
             </view>
-          </view>
-        </block>
+          </block>
+        </view>
       </view>
 
-    </scroll-view>
+      <!-- Empty State -->
+      <view class="empty-state" wx:else>
+        <text>暂无选中模版，请选择或新建</text>
+      </view>
 
-    <!-- Empty State -->
-    <view class="empty-state" wx:else>
-      <text>暂无选中模版，请选择或新建</text>
     </view>
-
-  </view>
+  </scroll-view>
 
   <!-- Universal Dialog -->
   <view class="dialog-mask" wx:if="{{dialog.visible}}" bindtap="closeDialog">
