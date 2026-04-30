@@ -1,12 +1,165 @@
-<view class="container">
+<!-- pages/sop/sop.wxml -->
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
   <!-- Custom Header -->
-  <view class="custom-header" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
       <text class="app-title">YOU ONLY LIVE ONCE</text>
     </view>
   </view>
   
-  <view class="main-content" style="padding-top: {{navBarHeight}}px;">
-    SOP
+  <view class="main-content">
+    
+    <!-- Top Action Bar -->
+    <view class="top-action-bar">
+      <!-- Row 1: 模版选择与新建 -->
+      <view class="action-row">
+        <view class="label-box">SOP模版</view>
+        <view class="picker-box">
+          <picker bindchange="onTemplateChange" value="{{templateIndex}}" range="{{templateList}}" range-key="name" style="width: 100%;">
+            <view class="picker-value">
+              <text class="picker-text">{{currentTemplate ? currentTemplate.name : '选择模版'}}</text>
+              <text class="dropdown-icon">▼</text>
+            </view>
+          </picker>
+        </view>
+        <view class="btn-create" bindtap="openCreateTemplateModal">+ 新建模版</view>
+      </view>
+
+      <!-- Row 2: 模版名称展示与增加分类 -->
+      <view class="action-row action-row-secondary" wx:if="{{currentTemplate}}">
+        <view class="label-box">模版名称</view>
+        <view class="value-box" bindlongpress="onTemplateLongPress">
+          <text class="name-text">{{currentTemplateDetail.name || currentTemplate.name}}</text>
+          <text class="tip-text">(长按编辑)</text>
+        </view>
+        <view class="btn-add-cat" catchtap="openCreateCategoryModal">+ 增加分类</view>
+      </view>
+    </view>
+
+    <!-- Template Detail Area -->
+    <scroll-view class="template-body" scroll-y="true" wx:if="{{currentTemplate}}">
+      
+      <!-- Categories List -->
+      <view class="category-list">
+        <block wx:for="{{currentTemplateDetail.categories}}" wx:key="id" wx:for-item="cat" wx:for-index="catIndex">
+          <view class="category-card">
+            
+            <!-- Category Header -->
+            <view class="category-header" bindlongpress="onCategoryLongPress" data-category="{{cat}}">
+              <text class="category-name">{{cat.name}}</text>
+            </view>
+
+            <!-- Category Items -->
+            <view class="category-items">
+              <block wx:for="{{cat.items}}" wx:key="id" wx:for-item="item" wx:for-index="itemIndex">
+                <view class="item-container" style="transform: translateX({{item.slideOffset || 0}}px);">
+                  <!-- Left Swipe Delete Button -->
+                  <view class="delete-btn" catchtap="onDeleteItem" data-item="{{item}}">删除</view>
+                  
+                  <!-- Item Content -->
+                  <view class="item-content-wrapper" 
+                        bindtouchstart="touchStart" 
+                        bindtouchmove="touchMove" 
+                        bindtouchend="touchEnd" 
+                        data-catindex="{{catIndex}}" 
+                        data-itemindex="{{itemIndex}}">
+                    
+                    <view class="item-content {{cat.type}}" catchtap="openEditItemModal" data-category="{{cat}}" data-item="{{item}}">
+                      
+                      <!-- key-value -->
+                      <block wx:if="{{cat.type === 'key-value'}}">
+                        <view class="kv-key">{{item.itemKey}}</view>
+                        <view class="kv-value">{{item.itemValue}}</view>
+                      </block>
+
+                      <!-- checked -->
+                      <block wx:elif="{{cat.type === 'checked'}}">
+                        <view class="check-icon"></view>
+                        <view class="check-text">{{item.itemValue || item.itemKey}}</view>
+                      </block>
+
+                      <!-- step -->
+                      <block wx:elif="{{cat.type === 'step'}}">
+                        <view class="step-num">{{itemIndex + 1}}.</view>
+                        <view class="step-text">{{item.itemValue || item.itemKey}}</view>
+                      </block>
+
+                    </view>
+                  </view>
+                </view>
+              </block>
+            </view>
+
+            <!-- Add Item Button -->
+            <view class="add-item-btn" bindtap="openCreateItemModal" data-category="{{cat}}">
+              + 新增项
+            </view>
+          </view>
+        </block>
+      </view>
+
+    </scroll-view>
+
+    <!-- Empty State -->
+    <view class="empty-state" wx:else>
+      <text>暂无选中模版，请选择或新建</text>
+    </view>
+
   </view>
+
+  <!-- Universal Dialog -->
+  <view class="dialog-mask" wx:if="{{dialog.visible}}" bindtap="closeDialog">
+    <view class="dialog-content" catchtap="preventClose">
+      <view class="dialog-header">{{dialog.title}}</view>
+      
+      <view class="dialog-body">
+        
+        <!-- Type Selection (Only for Category creation) -->
+        <block wx:if="{{dialog.mode === 'create_cat'}}">
+          <view class="form-label">模块类型</view>
+          <radio-group class="type-radio-group" bindchange="onDialogTypeChange">
+            <label class="radio-label">
+              <radio value="key-value" checked="{{dialog.formData.type === 'key-value'}}" /> 键值对
+            </label>
+            <label class="radio-label">
+              <radio value="checked" checked="{{dialog.formData.type === 'checked'}}" /> 检查项
+            </label>
+            <label class="radio-label">
+              <radio value="step" checked="{{dialog.formData.type === 'step'}}" /> 步骤项
+            </label>
+          </radio-group>
+        </block>
+
+        <!-- General Name Input (Template Name / Category Name / Item Value for checked/step) -->
+        <block wx:if="{{dialog.mode !== 'create_item' && dialog.mode !== 'edit_item'}}">
+          <view class="form-label">名称</view>
+          <input class="dialog-input" value="{{dialog.formData.name}}" bindinput="onDialogNameInput" placeholder="请输入名称" focus="{{dialog.visible}}" />
+        </block>
+
+        <!-- Item Inputs (Key-Value) -->
+        <block wx:if="{{(dialog.mode === 'create_item' || dialog.mode === 'edit_item') && dialog.catType === 'key-value'}}">
+          <view class="form-label">键 (Key)</view>
+          <input class="dialog-input" value="{{dialog.formData.itemKey}}" bindinput="onDialogKeyInput" placeholder="例如：活动名称" focus="{{dialog.visible}}" />
+          <view class="form-label" style="margin-top: 10px;">值 (Value)</view>
+          <input class="dialog-input" value="{{dialog.formData.itemValue}}" bindinput="onDialogValueInput" placeholder="例如：团建" />
+        </block>
+
+        <!-- Item Inputs (Checked / Step) -->
+        <block wx:if="{{(dialog.mode === 'create_item' || dialog.mode === 'edit_item') && dialog.catType !== 'key-value'}}">
+          <view class="form-label">内容</view>
+          <input class="dialog-input" value="{{dialog.formData.itemValue}}" bindinput="onDialogValueInput" placeholder="请输入内容" focus="{{dialog.visible}}" />
+        </block>
+        
+      </view>
+      
+      <view class="dialog-footer">
+        <view class="dialog-btn btn-cancel" bindtap="closeDialog">取消</view>
+        <view class="dialog-btn btn-confirm" bindtap="onDialogConfirm">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Action Sheet for Edit/Delete Long Press -->
+  <!-- Using wx.showActionSheet in JS for simplicity, no wxml needed -->
+
 </view>

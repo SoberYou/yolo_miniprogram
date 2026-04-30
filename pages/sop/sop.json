@@ -1,3 +1,5 @@
 {
-  "navigationBarTitleText": "SOP"
+  "navigationBarTitleText": "SOP",
+  "navigationStyle": "custom",
+  "usingComponents": {}
 }

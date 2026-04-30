@@ -197,10 +197,16 @@ Page({
       const d = String(date.getDate()).padStart(2, '0');
       return `${m}-${d}`;
     };
+
+    // 辅助函数：获取周几
+    const getWeekday = (date) => {
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      return weekdays[date.getDay()];
+    };
     
     if (period === 'day') {
       currentDateStr = `${year}-${month}-${day}`;
-      dateDisplayText = currentDateStr;
+      dateDisplayText = `${currentDateStr} ${getWeekday(dateObj)}`;
       startDate = currentDateStr;
       endDate = currentDateStr;
       pickerFields = 'day';
@@ -210,8 +216,8 @@ Page({
       const nextDate = new Date(dateObj);
       nextDate.setDate(nextDate.getDate() + 1);
       
-      prevDateText = `${prevDate.getFullYear()}-${getSimpleFormat(prevDate)}`;
-      nextDateText = `${nextDate.getFullYear()}-${getSimpleFormat(nextDate)}`;
+      prevDateText = `${prevDate.getFullYear()}-${getSimpleFormat(prevDate)} ${getWeekday(prevDate)}`;
+      nextDateText = `${nextDate.getFullYear()}-${getSimpleFormat(nextDate)} ${getWeekday(nextDate)}`;
       
     } else if (period === 'week') {
       currentDateStr = `${year}-${month}-${day}`;
