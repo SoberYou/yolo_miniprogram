@@ -1,0 +1,110 @@
+<view class="container" style="padding-top: {{navBarHeight + statusBarHeight}}px; box-sizing: border-box; --nav-height: {{navBarHeight + statusBarHeight}}px;">
+  <view class="custom-header" style="height: {{navBarHeight + statusBarHeight}}px; padding-top: {{statusBarHeight}}px; box-sizing: border-box;">
+    <view class="header-content" style="height: {{menuButtonHeight}}px; line-height: {{menuButtonHeight}}px; margin-top: {{menuButtonTop - statusBarHeight}}px;">
+      <text class="app-title">YOU ONLY LIVE ONCE</text>
+    </view>
+  </view>
+
+  <scroll-view class="main-content {{currentTab === 'view' ? 'view-fixed-content' : ''}}" scroll-y="{{currentTab !== 'view'}}" style="padding-bottom: 80px; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: 0;" bounces="{{false}}">
+    <view class="scroll-container {{currentTab === 'view' ? 'view-scroll-container' : ''}}">
+      <view class="card-module top-tabs">
+        <view class="tab {{currentTab === 'view' ? 'active' : ''}}" bindtap="switchInnerTab" data-tab="view">展示</view>
+        <view class="tab {{currentTab === 'config' ? 'active' : ''}}" bindtap="switchInnerTab" data-tab="config">配置</view>
+        <view class="tab {{currentTab === 'archive' ? 'active' : ''}}" bindtap="switchInnerTab" data-tab="archive">归档</view>
+      </view>
+
+      <block wx:if="{{currentTab === 'view'}}">
+        <view class="sticky-view-panel">
+          <view class="card-module filter-module">
+            <picker class="range-picker" mode="date" value="{{rangeStart}}" bindchange="onRangeStartChange">
+              <view class="range-display">{{rangeStart}}</view>
+            </picker>
+            <text class="range-separator">至</text>
+            <picker class="range-picker" mode="date" value="{{rangeEnd}}" bindchange="onRangeEndChange">
+              <view class="range-display">{{rangeEnd}}</view>
+            </picker>
+            <view class="refresh-btn" bindtap="loadScheduleView">刷</view>
+            <view class="refresh-btn toggle-time-btn" bindtap="toggleEventTimeVisible">{{showEventTime ? '隐' : '显'}}</view>
+          </view>
+
+          <view class="card-module schedule-module">
+            <scroll-view scroll-x="true" class="schedule-scroll">
+              <view class="schedule-table" style="width: {{tableWidth}}px;">
+                <view class="schedule-row header-row">
+                  <view class="time-cell header-cell sticky-time-cell">时间</view>
+                  <view class="date-cell header-cell" wx:for="{{dateHeaders}}" wx:key="date">
+                    <text>{{item.weekLabel}}</text>
+                    <text class="date-sub">{{item.date}}</text>
+                  </view>
+                </view>
+                <scroll-view scroll-y="true" class="schedule-body-scroll" bounces="{{false}}">
+                  <block wx:for="{{timeGroups}}" wx:key="index" wx:for-item="group">
+                    <block wx:for="{{group.rows}}" wx:key="timeRange" wx:for-item="row">
+                      <view class="schedule-row {{row.startTime <= currentSlotTime && row.endTime > currentSlotTime ? 'current-row' : ''}}">
+                        <view class="time-cell sticky-time-cell">{{row.timeRange}}</view>
+                        <view class="date-cell" wx:for="{{dateHeaders}}" wx:key="date" wx:for-item="dateItem">
+                          <view class="event-card {{event.statusView}}" wx:for="{{row.itemsByDate[dateItem.date] || []}}" wx:key="scheduleId" wx:for-item="event" bindtap="toggleExecution" data-schedule-id="{{event.scheduleId}}" data-date="{{dateItem.date}}">
+                            <view class="event-name">{{event.eventName}}</view>
+                            <view class="event-time" wx:if="{{showEventTime}}">{{event.startTime}} - {{event.endTime}}</view>
+                            <view class="event-status" catchtap="editExecutionTime" data-schedule-id="{{event.scheduleId}}" data-date="{{dateItem.date}}" data-time="{{event.executedAt}}">
+                              {{event.isExecuted ? ('已执行 ' + (event.executedAt || '')) : (event.statusView === 'expired' ? '已过期' : '待执行')}}
+                            </view>
+                          </view>
+                        </view>
+                      </view>
+                    </block>
+                  </block>
+                </scroll-view>
+              </view>
+            </scroll-view>
+            <view class="empty-tip" wx:if="{{timeGroups.length === 0}}">暂无时间待办</view>
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{currentTab === 'config'}}">
+        <view class="card-module form-module">
+          <input class="input" placeholder="事件名称" value="{{newEvent.eventName}}" bindinput="onNewEventNameInput" />
+          <view class="form-row">
+            <picker class="time-picker" mode="time" value="{{newEvent.startTime}}" bindchange="onNewStartTimeChange"><view>{{newEvent.startTime || '开始时间'}}</view></picker>
+            <picker class="time-picker" mode="time" value="{{newEvent.endTime}}" bindchange="onNewEndTimeChange"><view>{{newEvent.endTime || '结束时间'}}</view></picker>
+          </view>
+          <picker mode="date" value="{{newEvent.effectiveStartDate}}" bindchange="onNewStartDateChange">
+            <view class="date-input">有效开始日期：{{newEvent.effectiveStartDate}}</view>
+          </picker>
+          <view class="primary-btn" bindtap="createEvent">新增事件</view>
+        </view>
+
+        <view class="card-module list-module">
+          <view class="list-header">生效中事件</view>
+          <view class="event-row" wx:for="{{activeEvents}}" wx:key="id">
+            <view class="event-main">
+              <view class="event-title">{{item.eventName}}</view>
+              <view class="event-meta">{{item.startTime}} - {{item.endTime}} · 自 {{item.effectiveStartDate}} 起</view>
+            </view>
+            <view class="row-actions">
+              <view class="small-btn" bindtap="renameEvent" data-id="{{item.id}}" data-name="{{item.eventName}}">改名</view>
+              <view class="small-btn" bindtap="archiveEvent" data-id="{{item.id}}">归档</view>
+              <view class="small-btn danger" bindtap="deleteEvent" data-id="{{item.id}}">删除</view>
+            </view>
+          </view>
+          <view class="empty-tip" wx:if="{{activeEvents.length === 0}}">暂无生效中事件</view>
+        </view>
+      </block>
+
+      <block wx:if="{{currentTab === 'archive'}}">
+        <view class="card-module list-module">
+          <view class="list-header">归档事件</view>
+          <view class="event-row" wx:for="{{archivedEvents}}" wx:key="id">
+            <view class="event-main">
+              <view class="event-title">{{item.eventName}}</view>
+              <view class="event-meta">{{item.startTime}} - {{item.endTime}}</view>
+              <view class="event-meta">{{item.effectiveStartDate}} 至 {{item.effectiveEndDate}}</view>
+            </view>
+          </view>
+          <view class="empty-tip" wx:if="{{archivedEvents.length === 0}}">暂无归档事件</view>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+</view>

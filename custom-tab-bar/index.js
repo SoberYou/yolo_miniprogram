@@ -14,8 +14,8 @@ Component({
       pagePath: "/pages/scheduleAnalysis/scheduleAnalysis",
       text: "ANALYSIS"
     }, {
-      pagePath: "/pages/sop/sop",
-      text: "SOP"
+      pagePath: "/pages/eventSchedule/eventSchedule",
+      text: "时间待办"
     }]
   },
   methods: {
