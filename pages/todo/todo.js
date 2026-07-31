@@ -41,6 +41,7 @@ Page({
     notDoList: [],
     newDoContent: '',
     newNotDoContent: '',
+    currentDonotdoTab: 'do',
     
     // Drag to sort state
     isDragging: false,
@@ -127,6 +128,12 @@ Page({
       this.updateDateDisplayAndRange(this.data.currentPeriod, this.currentSelectedDate);
       this.fetchTodos();
     }
+  },
+
+  switchDonotdoTab(e) {
+    const tab = e.currentTarget.dataset.tab;
+    if (this.data.currentDonotdoTab === tab) return;
+    this.setData({ currentDonotdoTab: tab });
   },
 
   switchPeriod(e) {

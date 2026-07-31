@@ -7,8 +7,8 @@
     </view>
   </view>
   
-  <scroll-view class="main-content" scroll-y="true" style="padding-bottom: 80px; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: 0;" bounces="{{false}}">
-    <view class="scroll-container">
+  <scroll-view class="main-content {{currentTopTab === 'donotdo' ? 'donotdo-fixed-content' : ''}}" scroll-y="{{currentTopTab !== 'donotdo'}}" style="padding-bottom: {{currentTopTab === 'donotdo' ? 0 : 80}}px; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: {{currentTopTab === 'donotdo' ? 80 : 0}}px;" bounces="{{false}}">
+    <view class="scroll-container {{currentTopTab === 'donotdo' ? 'donotdo-scroll-container' : ''}}">
       <!-- 顶部 配置/分析/做不做清单 Tabs -->
       <view class="card-module tabs-module top-tabs">
         <view class="tab {{currentTopTab === 'config' ? 'active' : ''}}" bindtap="switchTopTab" data-tab="config">配置</view>
@@ -20,6 +20,11 @@
       <view class="card-module period-module" wx:if="{{currentTopTab !== 'donotdo'}}">
         <view class="period-btn {{currentPeriod === 'day' ? 'active' : ''}}" bindtap="switchPeriod" data-period="day">日</view>
         <view class="period-btn {{currentPeriod === 'month' ? 'active' : ''}}" bindtap="switchPeriod" data-period="month">月</view>
+      </view>
+
+      <view class="card-module donotdo-sub-tabs" wx:if="{{currentTopTab === 'donotdo'}}">
+        <view class="donotdo-sub-tab {{currentDonotdoTab === 'do' ? 'active' : ''}}" bindtap="switchDonotdoTab" data-tab="do">做清单</view>
+        <view class="donotdo-sub-tab {{currentDonotdoTab === 'notDo' ? 'active' : ''}}" bindtap="switchDonotdoTab" data-tab="notDo">不做清单</view>
       </view>
 
       <!-- 日期选择模块 (配置Tab下显示) -->
@@ -154,107 +159,111 @@
       </view>
 
       <!-- 做不做清单：做清单 -->
-      <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'donotdo'}}">
+      <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'donotdo' && currentDonotdoTab === 'do'}}">
         <view class="list-header" style="padding: 16px 20px 8px;">做清单</view>
         <view class="add-todo-container">
           <input class="add-todo-input" placeholder="添加做清单..." value="{{newDoContent}}" bindinput="onNewDoInput" bindconfirm="addDoItem" confirm-type="done" />
           <view class="add-todo-btn" bindtap="addDoItem" hover-class="btn-hover" style="background: #07c160; color: white;">添加</view>
         </view>
 
-        <block wx:if="{{doList.length > 0}}">
-          <view class="todo-item-container {{draggingId === item.id ? 'dragging-item' : ''}}" 
-                wx:for="{{doList}}" 
-                wx:key="id"
-                style="{{draggingId === item.id ? 'transform: translateY(' + dragTranslateY + 'px); z-index: 99;' : 'transform: translateY(0px); z-index: 1;'}}">
-            <view class="todo-item-wrapper" 
-                  style="transform: translateX({{item.slideOffset || 0}}px);" 
-                  bindtouchstart="touchStart" 
-                  bindtouchmove="touchMove" 
-                  bindtouchend="touchEnd" 
-                  bindlongpress="longPress"
-                  data-index="{{index}}"
-                  data-item="{{item}}"
-                  data-listtype="DO">
-              
-              <view class="todo-item" data-item="{{item}}" data-listtype="DO" bindtap="startEdit">
-                <view class="icon-do"></view>
-                <textarea wx:if="{{editingTodoId === item.id}}" 
-                       class="inline-edit-input" 
-                       value="{{editTodoContent}}" 
-                       focus="{{focusId === item.id}}" 
-                       auto-height="true"
-                       cursor-spacing="20"
-                       show-confirm-bar="{{false}}"
-                       catchtap="preventTap"
-                       bindinput="onEditTodoInput" 
-                       bindblur="finishEdit" 
-                       bindconfirm="finishEdit" 
-                       confirm-type="done"
-                       data-item="{{item}}"
-                       data-listtype="DO" />
+        <scroll-view class="donotdo-list-body" scroll-y="true" bounces="{{false}}">
+          <block wx:if="{{doList.length > 0}}">
+            <view class="todo-item-container {{draggingId === item.id ? 'dragging-item' : ''}}" 
+                  wx:for="{{doList}}" 
+                  wx:key="id"
+                  style="{{draggingId === item.id ? 'transform: translateY(' + dragTranslateY + 'px); z-index: 99;' : 'transform: translateY(0px); z-index: 1;'}}">
+              <view class="todo-item-wrapper" 
+                    style="transform: translateX({{item.slideOffset || 0}}px);" 
+                    bindtouchstart="touchStart" 
+                    bindtouchmove="touchMove" 
+                    bindtouchend="touchEnd" 
+                    bindlongpress="longPress"
+                    data-index="{{index}}"
+                    data-item="{{item}}"
+                    data-listtype="DO">
                 
-                <text wx:else class="todo-content">{{item.content}}</text>
+                <view class="todo-item" data-item="{{item}}" data-listtype="DO" bindtap="startEdit">
+                  <view class="icon-do"></view>
+                  <textarea wx:if="{{editingTodoId === item.id}}" 
+                         class="inline-edit-input" 
+                         value="{{editTodoContent}}" 
+                         focus="{{focusId === item.id}}" 
+                         auto-height="true"
+                         cursor-spacing="20"
+                         show-confirm-bar="{{false}}"
+                         catchtap="preventTap"
+                         bindinput="onEditTodoInput" 
+                         bindblur="finishEdit" 
+                         bindconfirm="finishEdit" 
+                         confirm-type="done"
+                         data-item="{{item}}"
+                         data-listtype="DO" />
+                  
+                  <text wx:else class="todo-content">{{item.content}}</text>
+                </view>
+              </view>
+              
+              <view class="delete-btn" bindtap="promptDelete" data-item="{{item}}" data-listtype="DO">
+                删除
               </view>
             </view>
-            
-            <view class="delete-btn" bindtap="promptDelete" data-item="{{item}}" data-listtype="DO">
-              删除
-            </view>
-          </view>
-        </block>
-        <view class="empty-tip" wx:else>暂无做清单事项</view>
+          </block>
+          <view class="empty-tip" wx:else>暂无做清单事项</view>
+        </scroll-view>
       </view>
 
       <!-- 做不做清单：不做清单 -->
-      <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'donotdo'}}">
+      <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'donotdo' && currentDonotdoTab === 'notDo'}}">
         <view class="list-header" style="padding: 16px 20px 8px;">不做清单</view>
         <view class="add-todo-container">
           <input class="add-todo-input" placeholder="添加不做清单..." value="{{newNotDoContent}}" bindinput="onNewNotDoInput" bindconfirm="addNotDoItem" confirm-type="done" />
           <view class="add-todo-btn" bindtap="addNotDoItem" hover-class="btn-hover" style="background: #ff4d4f; color: white;">添加</view>
         </view>
 
-        <block wx:if="{{notDoList.length > 0}}">
-          <view class="todo-item-container {{draggingId === item.id ? 'dragging-item' : ''}}" 
-                wx:for="{{notDoList}}" 
-                wx:key="id"
-                style="{{draggingId === item.id ? 'transform: translateY(' + dragTranslateY + 'px); z-index: 99;' : 'transform: translateY(0px); z-index: 1;'}}">
-            <view class="todo-item-wrapper" 
-                  style="transform: translateX({{item.slideOffset || 0}}px);" 
-                  bindtouchstart="touchStart" 
-                  bindtouchmove="touchMove" 
-                  bindtouchend="touchEnd" 
-                  bindlongpress="longPress"
-                  data-index="{{index}}"
-                  data-item="{{item}}"
-                  data-listtype="NOT_DO">
-              
-              <view class="todo-item" data-item="{{item}}" data-listtype="NOT_DO" bindtap="startEdit">
-                <view class="icon-not-do"></view>
-                <textarea wx:if="{{editingTodoId === item.id}}" 
-                       class="inline-edit-input" 
-                       value="{{editTodoContent}}" 
-                       focus="{{focusId === item.id}}" 
-                       auto-height="true"
-                       cursor-spacing="20"
-                       show-confirm-bar="{{false}}"
-                       catchtap="preventTap"
-                       bindinput="onEditTodoInput" 
-                       bindblur="finishEdit" 
-                       bindconfirm="finishEdit" 
-                       confirm-type="done"
-                       data-item="{{item}}"
-                       data-listtype="NOT_DO" />
+        <scroll-view class="donotdo-list-body" scroll-y="true" bounces="{{false}}">
+          <block wx:if="{{notDoList.length > 0}}">
+            <view class="todo-item-container {{draggingId === item.id ? 'dragging-item' : ''}}" 
+                  wx:for="{{notDoList}}" 
+                  wx:key="id"
+                  style="{{draggingId === item.id ? 'transform: translateY(' + dragTranslateY + 'px); z-index: 99;' : 'transform: translateY(0px); z-index: 1;'}}">
+              <view class="todo-item-wrapper" 
+                    style="transform: translateX({{item.slideOffset || 0}}px);" 
+                    bindtouchstart="touchStart" 
+                    bindtouchmove="touchMove" 
+                    bindtouchend="touchEnd" 
+                    bindlongpress="longPress"
+                    data-index="{{index}}"
+                    data-item="{{item}}"
+                    data-listtype="NOT_DO">
                 
-                <text wx:else class="todo-content">{{item.content}}</text>
+                <view class="todo-item" data-item="{{item}}" data-listtype="NOT_DO" bindtap="startEdit">
+                  <view class="icon-not-do"></view>
+                  <textarea wx:if="{{editingTodoId === item.id}}" 
+                         class="inline-edit-input" 
+                         value="{{editTodoContent}}" 
+                         focus="{{focusId === item.id}}" 
+                         auto-height="true"
+                         cursor-spacing="20"
+                         show-confirm-bar="{{false}}"
+                         catchtap="preventTap"
+                         bindinput="onEditTodoInput" 
+                         bindblur="finishEdit" 
+                         bindconfirm="finishEdit" 
+                         confirm-type="done"
+                         data-item="{{item}}"
+                         data-listtype="NOT_DO" />
+                  
+                  <text wx:else class="todo-content">{{item.content}}</text>
+                </view>
+              </view>
+              
+              <view class="delete-btn" bindtap="promptDelete" data-item="{{item}}" data-listtype="NOT_DO">
+                删除
               </view>
             </view>
-            
-            <view class="delete-btn" bindtap="promptDelete" data-item="{{item}}" data-listtype="NOT_DO">
-              删除
-            </view>
-          </view>
-        </block>
-        <view class="empty-tip" wx:else>暂无不做清单事项</view>
+          </block>
+          <view class="empty-tip" wx:else>暂无不做清单事项</view>
+        </scroll-view>
       </view>
 
     </view>

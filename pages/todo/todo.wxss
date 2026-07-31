@@ -49,6 +49,81 @@ page {
   padding: 16px;
 }
 
+.donotdo-fixed-content {
+  overflow: hidden;
+}
+
+.donotdo-scroll-container {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.donotdo-scroll-container .top-tabs,
+.donotdo-scroll-container .donotdo-sub-tabs {
+  flex-shrink: 0;
+}
+
+.donotdo-sub-tabs {
+  display: flex;
+  padding: 6px;
+}
+
+.donotdo-sub-tab {
+  flex: 1;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  border-radius: 8px;
+}
+
+.donotdo-sub-tab.active {
+  background: #f0f0f0;
+  color: #000;
+  font-weight: 600;
+}
+
+.donotdo-scroll-container .todo-list-module {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.donotdo-scroll-container .todo-list-module:last-child {
+  margin-bottom: 0;
+}
+
+.donotdo-scroll-container .list-header,
+.donotdo-scroll-container .add-todo-container {
+  flex-shrink: 0;
+  background: #fff;
+  z-index: 2;
+}
+
+.donotdo-scroll-container .add-todo-container {
+  position: relative;
+  top: auto;
+  box-shadow: 0 8px 0 #fff;
+}
+
+.donotdo-scroll-container .donotdo-list-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 8px;
+}
+
+.donotdo-scroll-container .add-todo-container::before,
+.donotdo-scroll-container .add-todo-container::after {
+  display: none;
+}
+
 /* Card Module Style */
 .card-module {
   background-color: #fff;
