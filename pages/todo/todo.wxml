@@ -108,10 +108,10 @@
       <!-- TODO 事项列表 -->
       <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'config'}}">
         <!-- 添加待办 -->
-        <view class="add-todo-container">
+        <view class="add-todo-container config-add-row">
           <view class="checkbox disabled-checkbox"></view>
           <input class="add-todo-input" placeholder="添加待办事项..." value="{{newTodoContent}}" bindinput="onNewTodoInput" bindconfirm="addTodo" confirm-type="done" />
-          <view class="add-todo-btn" bindtap="addTodo" hover-class="btn-hover">添加</view>
+          <view class="add-todo-btn config-add-btn" bindtap="addTodo" hover-class="btn-hover">添加</view>
         </view>
 
         <block wx:if="{{todos.length > 0}}">
@@ -160,7 +160,6 @@
 
       <!-- 做不做清单：做清单 -->
       <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'donotdo' && currentDonotdoTab === 'do'}}">
-        <view class="list-header" style="padding: 16px 20px 8px;">做清单</view>
         <view class="add-todo-container">
           <input class="add-todo-input" placeholder="添加做清单..." value="{{newDoContent}}" bindinput="onNewDoInput" bindconfirm="addDoItem" confirm-type="done" />
           <view class="add-todo-btn" bindtap="addDoItem" hover-class="btn-hover" style="background: #07c160; color: white;">添加</view>
@@ -214,7 +213,6 @@
 
       <!-- 做不做清单：不做清单 -->
       <view class="card-module todo-list-module" wx:if="{{currentTopTab === 'donotdo' && currentDonotdoTab === 'notDo'}}">
-        <view class="list-header" style="padding: 16px 20px 8px;">不做清单</view>
         <view class="add-todo-container">
           <input class="add-todo-input" placeholder="添加不做清单..." value="{{newNotDoContent}}" bindinput="onNewNotDoInput" bindconfirm="addNotDoItem" confirm-type="done" />
           <view class="add-todo-btn" bindtap="addNotDoItem" hover-class="btn-hover" style="background: #ff4d4f; color: white;">添加</view>

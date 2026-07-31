@@ -411,7 +411,7 @@ page {
   color: #333;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e5e5e5;
 }
 
 .analysis-list-module .list-header {
@@ -419,7 +419,7 @@ page {
   top: 314px;
   z-index: 85;
   background: #fff;
-  box-shadow: 0 -16px 0 #fff, 0 8px 0 #fff;
+  box-shadow: 0 -16px 0 #fff, 0 8px 0 #fff, inset 0 -1px 0 #e5e5e5;
   transform: translateZ(0);
 }
 
@@ -513,7 +513,7 @@ page {
   display: flex;
   align-items: center;
   padding: 8px 0 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #e5e5e5;
   margin-bottom: 8px;
   position: sticky;
   top: 88px;
@@ -563,6 +563,24 @@ page {
   padding: 6px 16px;
   border-radius: 16px;
   transition: all 0.2s;
+}
+
+.config-add-row {
+  border-bottom: none;
+  box-shadow: 0 -20px 0 #fff;
+}
+
+.config-add-row::after {
+  bottom: 0;
+  height: 1px;
+  background: #e5e5e5;
+}
+
+.config-add-btn {
+  background-color: #07c160;
+  color: #fff;
+  border-radius: 16px;
+  padding: 6px 16px;
 }
 
 .add-todo-btn.btn-hover {
