@@ -5,8 +5,8 @@
     </view>
   </view>
 
-  <scroll-view class="main-content {{currentTab === 'view' ? 'view-fixed-content' : ''}}" scroll-y="{{currentTab !== 'view'}}" style="padding-bottom: 80px; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: 0;" bounces="{{false}}">
-    <view class="scroll-container {{currentTab === 'view' ? 'view-scroll-container' : ''}}">
+  <scroll-view class="main-content fixed-content" scroll-y="{{false}}" style="padding-bottom: 0; position: absolute; top: {{navBarHeight + statusBarHeight}}px; bottom: 80px;" bounces="{{false}}">
+    <view class="scroll-container fixed-scroll-container">
       <view class="card-module top-tabs">
         <view class="tab {{currentTab === 'view' ? 'active' : ''}}" bindtap="switchInnerTab" data-tab="view">展示</view>
         <view class="tab {{currentTab === 'config' ? 'active' : ''}}" bindtap="switchInnerTab" data-tab="config">配置</view>
@@ -77,32 +77,38 @@
 
         <view class="card-module list-module">
           <view class="list-header">生效中事件</view>
-          <view class="event-row" wx:for="{{activeEvents}}" wx:key="id">
-            <view class="event-main">
-              <view class="event-title">{{item.eventName}}</view>
-              <view class="event-meta">{{item.startTime}} - {{item.endTime}} · 自 {{item.effectiveStartDate}} 起</view>
+          <scroll-view class="event-list-body" scroll-y="true" bounces="{{false}}">
+            <view class="event-row-container" wx:for="{{activeEvents}}" wx:key="id">
+              <view class="swipe-actions">
+                <view class="small-btn swipe-rename" bindtap="renameEvent" data-id="{{item.id}}" data-name="{{item.eventName}}">改名</view>
+                <view class="small-btn swipe-archive" bindtap="archiveEvent" data-id="{{item.id}}">归档</view>
+                <view class="small-btn swipe-delete" bindtap="deleteEvent" data-id="{{item.id}}">删除</view>
+              </view>
+              <view class="event-row swipe-row" style="transform: translateX({{item.slideOffset || 0}}px);" bindtouchstart="eventTouchStart" bindtouchmove="eventTouchMove" bindtouchend="eventTouchEnd" data-index="{{index}}">
+                <view class="event-main">
+                  <view class="event-title">{{item.eventName}}</view>
+                  <view class="event-meta">{{item.startTime}} - {{item.endTime}} · 自 {{item.effectiveStartDate}} 起</view>
+                </view>
+              </view>
             </view>
-            <view class="row-actions">
-              <view class="small-btn" bindtap="renameEvent" data-id="{{item.id}}" data-name="{{item.eventName}}">改名</view>
-              <view class="small-btn" bindtap="archiveEvent" data-id="{{item.id}}">归档</view>
-              <view class="small-btn danger" bindtap="deleteEvent" data-id="{{item.id}}">删除</view>
-            </view>
-          </view>
-          <view class="empty-tip" wx:if="{{activeEvents.length === 0}}">暂无生效中事件</view>
+            <view class="empty-tip" wx:if="{{activeEvents.length === 0}}">暂无生效中事件</view>
+          </scroll-view>
         </view>
       </block>
 
       <block wx:if="{{currentTab === 'archive'}}">
         <view class="card-module list-module">
           <view class="list-header">归档事件</view>
-          <view class="event-row" wx:for="{{archivedEvents}}" wx:key="id">
-            <view class="event-main">
-              <view class="event-title">{{item.eventName}}</view>
-              <view class="event-meta">{{item.startTime}} - {{item.endTime}}</view>
-              <view class="event-meta">{{item.effectiveStartDate}} 至 {{item.effectiveEndDate}}</view>
+          <scroll-view class="event-list-body" scroll-y="true" bounces="{{false}}">
+            <view class="event-row" wx:for="{{archivedEvents}}" wx:key="id">
+              <view class="event-main">
+                <view class="event-title">{{item.eventName}}</view>
+                <view class="event-meta">{{item.startTime}} - {{item.endTime}}</view>
+                <view class="event-meta">{{item.effectiveStartDate}} 至 {{item.effectiveEndDate}}</view>
+              </view>
             </view>
-          </view>
-          <view class="empty-tip" wx:if="{{archivedEvents.length === 0}}">暂无归档事件</view>
+            <view class="empty-tip" wx:if="{{archivedEvents.length === 0}}">暂无归档事件</view>
+          </scroll-view>
         </view>
       </block>
     </view>

@@ -43,6 +43,17 @@ page {
   padding: 16px;
 }
 
+.fixed-content {
+  overflow: hidden;
+}
+
+.fixed-scroll-container {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
 .view-fixed-content {
   overflow: hidden;
 }
@@ -301,6 +312,10 @@ page {
   margin-top: 4px;
 }
 
+.form-module {
+  flex-shrink: 0;
+}
+
 .form-module .input {
   height: 40px;
   background: #f7f7f7;
@@ -321,7 +336,19 @@ page {
   text-align: center;
 }
 
+.list-module {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
 .list-header {
+  flex-shrink: 0;
+  background: #fff;
+  z-index: 2;
   font-size: 15px;
   font-weight: bold;
   color: #333;
@@ -330,9 +357,69 @@ page {
   border-bottom: 1px solid #f0f0f0;
 }
 
+.event-list-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.event-row-container {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid #f5f5f5;
+}
+
 .event-row {
   padding: 12px 0;
   border-bottom: 1px solid #f5f5f5;
+  background: #fff;
+}
+
+.event-row-container .event-row {
+  border-bottom: none;
+}
+
+.swipe-row {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 180px;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: #fafafa;
+  z-index: 1;
+}
+
+.swipe-actions .small-btn {
+  width: 60px;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+}
+
+.swipe-actions .swipe-rename {
+  background: #2f80ed;
+}
+
+.swipe-actions .swipe-archive {
+  background: #f5a623;
+}
+
+.swipe-actions .swipe-delete {
+  background: #ff3b30;
 }
 
 .event-row:last-child {

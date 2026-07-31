@@ -29,6 +29,8 @@ Page({
     currentSlotTime: '',
     tableWidth: 896,
     showEventTime: false,
+    touchStartX: 0,
+    touchStartY: 0,
     activeEvents: [],
     archivedEvents: [],
     newEvent: {
@@ -159,7 +161,8 @@ Page({
     return events.map(item => ({
       ...item,
       startTime: normalizeTime(item.startTime),
-      endTime: normalizeTime(item.endTime)
+      endTime: normalizeTime(item.endTime),
+      slideOffset: item.slideOffset || 0
     }));
   },
 
@@ -234,7 +237,7 @@ Page({
 
   deleteEvent(e) {
     const id = e.currentTarget.dataset.id;
-    wx.showModal({
+    wx.showModal({ 
       title: '确认删除',
       content: '仅无执行记录的事件可删除，确认继续？',
       success: (res) => {
@@ -245,6 +248,30 @@ Page({
           .catch(this.showRequestError);
       }
     });
+  },
+
+  eventTouchStart(e) {
+    const touch = e.touches[0];
+    this.setData({
+      touchStartX: touch.clientX,
+      touchStartY: touch.clientY
+    });
+  },
+
+  eventTouchMove(e) {
+    const index = e.currentTarget.dataset.index;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - this.data.touchStartX;
+    const deltaY = touch.clientY - this.data.touchStartY;
+    if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+    const offset = Math.max(Math.min(deltaX, 0), -180);
+    this.setData({ [`activeEvents[${index}].slideOffset`]: offset });
+  },
+
+  eventTouchEnd(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.activeEvents[index];
+    this.setData({ [`activeEvents[${index}].slideOffset`]: item.slideOffset < -60 ? -180 : 0 });
   },
 
   showRequestError(err) {
