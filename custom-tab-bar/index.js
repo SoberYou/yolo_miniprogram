@@ -15,7 +15,7 @@ Component({
       text: "ANALYSIS"
     }, {
       pagePath: "/pages/eventSchedule/eventSchedule",
-      text: "时间待办"
+      text: "TIMELINE"
     }]
   },
   methods: {

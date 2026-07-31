@@ -119,8 +119,45 @@ page {
 
 /* Date Picker Module */
 .date-picker-module {
+  box-sizing: border-box;
+  height: 68px;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  position: sticky;
+  top: 12px;
+  z-index: 80;
+  background: #fff;
+  border: 1px solid #eeeeee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateZ(0);
+}
+
+.date-picker-module::before,
+.date-picker-module::after {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  background: #f5f6fa;
+  pointer-events: none;
+}
+
+.date-picker-module::before {
+  top: -14px;
+  height: 14px;
+}
+
+.date-picker-module::after {
+  bottom: -9px;
+  height: 9px;
+}
+
+.config-sticky-mask {
+  position: sticky;
+  top: 80px;
+  height: 8px;
+  background: #f5f6fa;
+  z-index: 75;
 }
 
 /* Date Range Module (Analysis) */
@@ -128,8 +165,37 @@ page {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
+  height: 68px;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  position: sticky;
+  top: 12px;
+  z-index: 90;
+  background: #fff;
+  border: 1px solid #eeeeee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateZ(0);
+}
+
+.date-range-module::before,
+.date-range-module::after {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  background: #f5f6fa;
+  pointer-events: none;
+}
+
+.date-range-module::before {
+  top: -14px;
+  height: 14px;
+}
+
+.date-range-module::after {
+  bottom: -9px;
+  height: 9px;
 }
 
 .range-picker {
@@ -145,8 +211,28 @@ page {
 
 /* Analysis Chart Module */
 .analysis-chart-module {
+  box-sizing: border-box;
+  height: 202px;
   padding: 20px 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  position: sticky;
+  top: 88px;
+  z-index: 80;
+  background: #fff;
+  border: 1px solid #eeeeee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateZ(0);
+}
+
+.analysis-chart-module::after {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  bottom: -9px;
+  height: 9px;
+  background: #f5f6fa;
+  pointer-events: none;
 }
 
 .chart-header {
@@ -161,6 +247,7 @@ page {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  height: 120px;
 }
 
 .pie-container {
@@ -234,6 +321,12 @@ page {
 /* Analysis List Module */
 .analysis-list-module {
   padding: 16px;
+  position: relative;
+  z-index: 70;
+  overflow: visible;
+  background: #fff;
+  border: 1px solid #eeeeee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .list-header {
@@ -243,6 +336,36 @@ page {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.analysis-list-module .list-header {
+  position: sticky;
+  top: 314px;
+  z-index: 85;
+  background: #fff;
+  box-shadow: 0 -16px 0 #fff, 0 8px 0 #fff;
+  transform: translateZ(0);
+}
+
+.analysis-list-module .list-header::before,
+.analysis-list-module .list-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.analysis-list-module .list-header::before {
+  top: -16px;
+  height: 16px;
+  background: #fff;
+}
+
+.analysis-list-module .list-header::after {
+  bottom: -8px;
+  height: 8px;
+  background: #fff;
 }
 
 .todo-date-tag {
@@ -263,6 +386,7 @@ page {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  height: 100%;
 }
 
 .current-date-picker {
@@ -303,6 +427,10 @@ page {
 .todo-list-module {
   padding: 16px;
   min-height: 200px;
+  position: relative;
+  overflow: visible;
+  background: #fff;
+  z-index: 40;
 }
 
 .add-todo-container {
@@ -311,6 +439,32 @@ page {
   padding: 8px 0 16px;
   border-bottom: 1px solid #f5f5f5;
   margin-bottom: 8px;
+  position: sticky;
+  top: 88px;
+  z-index: 70;
+  background: #fff;
+  box-shadow: 0 -20px 0 #fff, 0 8px 0 #fff;
+}
+
+.add-todo-container::before,
+.add-todo-container::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.add-todo-container::before {
+  top: -18px;
+  height: 18px;
+  background: #fff;
+}
+
+.add-todo-container::after {
+  bottom: -12px;
+  height: 12px;
+  background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0));
 }
 
 .disabled-checkbox {

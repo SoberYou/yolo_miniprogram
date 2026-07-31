@@ -11,7 +11,7 @@
     "pages/typeConfig/typeConfig",
     "pages/scheduleAnalysis/scheduleAnalysis",
     "pages/todo/todo",
-    "pages/sop/sop"
+    "pages/eventSchedule/eventSchedule"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -40,8 +40,8 @@
         "text": "ANALYSIS"
       },
       {
-        "pagePath": "pages/sop/sop",
-        "text": "SOP"
+        "pagePath": "pages/eventSchedule/eventSchedule",
+        "text": "TIMELINE"
       }
     ]
   },

@@ -78,6 +78,7 @@ Page({
     return user ? user.userId : null;
   },
 
+
   // Map 'day', 'week', 'month', 'year' to 'DAY', 'WEEK', 'MONTH', 'YEAR'
   getDateType() {
     return this.data.currentPeriod.toUpperCase();
@@ -116,11 +117,7 @@ Page({
     this.setData({ currentTopTab: tab });
 
     if (tab === 'analysis') {
-      const today = new Date();
-      this.analysisStartDateObj = today;
-      this.analysisEndDateObj = today;
-      this.updateAnalysisDateDisplay(true, this.analysisStartDateObj);
-      this.updateAnalysisDateDisplay(false, this.analysisEndDateObj);
+      this.setDefaultAnalysisRange(this.data.currentPeriod);
       this.fetchAnalysisTodos();
     } else if (tab === 'donotdo') {
       this.fetchDoNotDoList();
@@ -134,16 +131,13 @@ Page({
 
   switchPeriod(e) {
     const period = e.currentTarget.dataset.period;
+    if (!['day', 'month'].includes(period)) return;
     if (this.data.currentPeriod === period) return;
 
     this.setData({ currentPeriod: period });
 
     if (this.data.currentTopTab === 'analysis') {
-      const today = new Date();
-      this.analysisStartDateObj = today;
-      this.analysisEndDateObj = today;
-      this.updateAnalysisDateDisplay(true, this.analysisStartDateObj);
-      this.updateAnalysisDateDisplay(false, this.analysisEndDateObj);
+      this.setDefaultAnalysisRange(period);
       this.fetchAnalysisTodos();
     } else {
       const today = new Date();
@@ -293,6 +287,22 @@ Page({
   },
 
   // ========== 分析模块逻辑 ==========
+  setDefaultAnalysisRange(period) {
+    const today = new Date();
+    const start = new Date(today);
+    if (period === 'month') {
+      start.setMonth(start.getMonth() - 5);
+      start.setDate(1);
+    } else {
+      start.setMonth(start.getMonth() - 1);
+      start.setDate(start.getDate() + 1);
+    }
+    this.analysisStartDateObj = start;
+    this.analysisEndDateObj = today;
+    this.updateAnalysisDateDisplay(true, start);
+    this.updateAnalysisDateDisplay(false, today);
+  },
+
   onAnalysisStartChange(e) {
     this.handleAnalysisDateChange(e.detail.value, true);
   },
