@@ -312,6 +312,11 @@ page {
   margin-top: 4px;
 }
 
+.event-status.editing-time {
+  color: #07c160;
+  font-weight: 600;
+}
+
 .form-module {
   flex-shrink: 0;
 }
@@ -453,3 +458,4 @@ page {
   font-size: 14px;
   padding: 36px 0;
 }
+

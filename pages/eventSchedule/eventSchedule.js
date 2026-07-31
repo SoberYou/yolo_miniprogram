@@ -31,6 +31,7 @@ Page({
     showEventTime: false,
     touchStartX: 0,
     touchStartY: 0,
+    editingExecutionKey: '',
     activeEvents: [],
     archivedEvents: [],
     newEvent: {
@@ -106,9 +107,22 @@ Page({
     }).then(res => {
       const data = res.data || {};
       const dateHeaders = data.dateHeaders || [];
+      const timeGroups = (data.timeGroups || []).map(group => ({
+        ...group,
+        rows: (group.rows || []).map(row => {
+          const itemsByDate = {};
+          Object.keys(row.itemsByDate || {}).forEach(date => {
+            itemsByDate[date] = (row.itemsByDate[date] || []).map(item => ({
+              ...item,
+              editKey: `${item.scheduleId}_${date}`
+            }));
+          });
+          return { ...row, itemsByDate };
+        })
+      }));
       this.setData({
         dateHeaders,
-        timeGroups: data.timeGroups || [],
+        timeGroups,
         currentSlotTime: data.currentSlotTime || '',
         tableWidth: 104 + dateHeaders.length * 118
       });
@@ -116,6 +130,7 @@ Page({
   },
 
   toggleExecution(e) {
+    if (this.data.editingExecutionKey === e.currentTarget.dataset.key) return;
     const userId = this.getUserId();
     request(`/eventSchedule/execution/toggle?userId=${userId}`, 'POST', {
       scheduleId: e.currentTarget.dataset.scheduleId,
@@ -125,24 +140,22 @@ Page({
     }).catch(this.showRequestError);
   },
 
-  editExecutionTime(e) {
-    const scheduleId = e.currentTarget.dataset.scheduleId;
-    const executeDate = e.currentTarget.dataset.date;
-    wx.showModal({
-      title: '修改执行时间',
-      editable: true,
-      placeholderText: '例如 09:30',
-      content: e.currentTarget.dataset.time || '',
-      success: (res) => {
-        if (!res.confirm || !res.content) return;
-        const userId = this.getUserId();
-        request(`/eventSchedule/execution/updateTime?userId=${userId}`, 'POST', {
-          scheduleId,
-          executeDate,
-          executedAt: res.content
-        }).then(() => this.loadScheduleView()).catch(this.showRequestError);
-      }
-    });
+  prepareExecutionTimeEdit(e) {
+    this.setData({ editingExecutionKey: e.currentTarget.dataset.key });
+  },
+
+  preventCardTap() {},
+
+  onExecutionTimeChange(e) {
+    const userId = this.getUserId();
+    request(`/eventSchedule/execution/updateTime?userId=${userId}`, 'POST', {
+      scheduleId: e.currentTarget.dataset.scheduleId,
+      executeDate: e.currentTarget.dataset.date,
+      executedAt: e.detail.value
+    }).then(() => {
+      this.setData({ editingExecutionKey: '' });
+      this.loadScheduleView();
+    }).catch(this.showRequestError);
   },
 
   loadActiveEvents() {

@@ -43,10 +43,13 @@
                       <view class="schedule-row {{row.startTime <= currentSlotTime && row.endTime > currentSlotTime ? 'current-row' : ''}}">
                         <view class="time-cell sticky-time-cell">{{row.timeRange}}</view>
                         <view class="date-cell" wx:for="{{dateHeaders}}" wx:key="date" wx:for-item="dateItem">
-                          <view class="event-card {{event.statusView}}" wx:for="{{row.itemsByDate[dateItem.date] || []}}" wx:key="scheduleId" wx:for-item="event" bindtap="toggleExecution" data-schedule-id="{{event.scheduleId}}" data-date="{{dateItem.date}}">
+                          <view class="event-card {{event.statusView}}" wx:for="{{row.itemsByDate[dateItem.date] || []}}" wx:key="scheduleId" wx:for-item="event" bindtap="toggleExecution" bindlongpress="prepareExecutionTimeEdit" data-schedule-id="{{event.scheduleId}}" data-date="{{dateItem.date}}" data-key="{{event.editKey}}">
                             <view class="event-name">{{event.eventName}}</view>
                             <view class="event-time" wx:if="{{showEventTime}}">{{event.startTime}} - {{event.endTime}}</view>
-                            <view class="event-status" catchtap="editExecutionTime" data-schedule-id="{{event.scheduleId}}" data-date="{{dateItem.date}}" data-time="{{event.executedAt}}">
+                            <picker wx:if="{{editingExecutionKey === event.editKey}}" mode="time" value="{{event.executedAt || event.startTime || '09:00'}}" bindchange="onExecutionTimeChange" catchtap="preventCardTap" data-schedule-id="{{event.scheduleId}}" data-date="{{dateItem.date}}">
+                              <view class="event-status editing-time">选择执行时间</view>
+                            </picker>
+                            <view wx:else class="event-status">
                               {{event.isExecuted ? ('已执行 ' + (event.executedAt || '')) : (event.statusView === 'expired' ? '已过期' : '待执行')}}
                             </view>
                           </view>
@@ -113,4 +116,5 @@
       </block>
     </view>
   </scroll-view>
+
 </view>
