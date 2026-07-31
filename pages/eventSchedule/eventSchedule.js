@@ -141,7 +141,8 @@ Page({
   },
 
   prepareExecutionTimeEdit(e) {
-    this.setData({ editingExecutionKey: e.currentTarget.dataset.key });
+    const key = e.currentTarget.dataset.key;
+    this.setData({ editingExecutionKey: this.data.editingExecutionKey === key ? '' : key });
   },
 
   preventCardTap() {},
